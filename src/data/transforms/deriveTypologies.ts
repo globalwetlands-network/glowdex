@@ -1,5 +1,13 @@
 import type { ClusterRaw, Cluster, TypologyMap } from '../types/cluster.types';
 
+// Helper to convert hex to rgba
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function deriveTypologies(rawClusters: ClusterRaw[]): TypologyMap {
   const scale5: Record<number, Cluster> = {};
   const scale18: Record<number, Cluster> = {};
@@ -17,7 +25,7 @@ export function deriveTypologies(rawClusters: ClusterRaw[]): TypologyMap {
           name: `Typology ${id}`, // Could be enhanced with names if available
           clusterNumber: id,
           color: row.hex_5,
-          fillColor: `${row.hex_5}4D`, // ~30% opacity (4D is hex for 77/255)
+          fillColor: hexToRgba(row.hex_5, 0.3), // ~30% opacity
         };
       }
     }
@@ -31,7 +39,7 @@ export function deriveTypologies(rawClusters: ClusterRaw[]): TypologyMap {
           name: `Typology ${id}`,
           clusterNumber: id,
           color: row.hex_18,
-          fillColor: `${row.hex_18}4D`,
+          fillColor: hexToRgba(row.hex_18, 0.3),
         };
       }
     }

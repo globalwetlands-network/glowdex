@@ -11,17 +11,21 @@
   },
   "dependencies": {
     "@types/papaparse": "^5.5.2",
+    "mapbox-gl": "^3.18.1",
     "papaparse": "^5.5.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-map-gl": "^7.1.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/geojson": "^7946.0.16",
+    "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/react-map-gl": "^6.1.7",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.24",
     "eslint": "^9.39.1",
