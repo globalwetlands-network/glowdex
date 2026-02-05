@@ -27,29 +27,34 @@ export function useScientificData(): ScientificData {
 
   useEffect(() => {
     async function load() {
-      console.time('DataLoad');
+      try {
+        console.time('DataLoad');
 
-      // Parallel load
-      // Note: loadGridGeoJson is synchronous (JSON import), others might be async if we needed fetch,
-      // but here they are also synchronous CSV parsers. We keep the structure async-ready.
-      const gridItems = loadGridItems();
-      const residuals = loadResiduals();
-      const rawClusters = loadAllClusters();
-      const geojson = loadGridGeoJson();
+        // NOTE: Loaders are currently synchronous (using Vite's ?raw import).
+        // This is intentional for Glow-6 to ensure deterministic build-time data loading.
+        const gridItems = loadGridItems();
+        const residuals = loadResiduals();
+        const rawClusters = loadAllClusters();
+        const geojson = loadGridGeoJson();
 
-      // Transforms
-      const typologies = deriveTypologies(rawClusters);
-      const gridCells = joinGridData(gridItems, residuals, rawClusters);
+        // Transforms
+        const typologies = deriveTypologies(rawClusters);
+        const gridCells = joinGridData(gridItems, residuals, rawClusters);
 
-      console.timeEnd('DataLoad');
-      console.log(`Loaded ${gridCells.length} grid cells`);
+        console.timeEnd('DataLoad');
+        console.log(`Loaded ${gridCells.length} grid cells`);
 
-      setData({
-        isLoading: false,
-        gridCells,
-        typologies,
-        geojson,
-      });
+        setData({
+          isLoading: false,
+          gridCells,
+          typologies,
+          geojson,
+        });
+      } catch (error) {
+        console.error('Failed to load scientific data', error);
+        // Stop loading state so UI doesn't hang, potentially show empty state
+        setData(prev => ({ ...prev, isLoading: false }));
+      }
     }
 
     load();

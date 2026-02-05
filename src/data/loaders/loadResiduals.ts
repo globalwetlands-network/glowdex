@@ -1,7 +1,8 @@
-import rawData from '../raw/grid-items-residuals.csv?raw';
+import rawData from '@/data/raw/grid-items-residuals.csv?raw';
 import { parseCsv } from './csvParser';
 import type { Residuals, ResidualsRaw } from '../types/grid.types';
 
+// NOTE: Synchronous build-time import.
 export function loadResiduals(): Residuals[] {
   const raw = parseCsv<ResidualsRaw>(rawData);
 
