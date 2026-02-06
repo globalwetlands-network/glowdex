@@ -56,7 +56,6 @@ function App() {
             gridCells={filteredGridCells}
             geojson={geojson!}
             typologies={typologies!}
-            hoveredCellId={null} // Map manages specific hover, App doesn't track it visually currently
             selectedCellId={selectedCellId}
             typologyScale={currentTypologyScale}
             onCellSelect={handleCellSelect}

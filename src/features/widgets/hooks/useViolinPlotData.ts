@@ -16,17 +16,16 @@ export function useViolinPlotData(gridCells: RichGridCell[]) {
     // Safety check
     if (!gridCells.length) return { residuals: [] };
 
-    // Extract residuals (assuming we want to plot the distribution of model residuals)
-    // Note: 'residuals' on gridCell might be a dictionary. We need a specific key.
-    // Looking at 'loadResiduals.ts', it returns an object of values.
-    // Let's grab the first available key or a specific one for parity.
-
-    // Checking one cell to see keys (heuristic, ideally strict type)
-    // For this generic hook, we'll map 'res_5' if available, as a default demo.
+    // Hardcoded key for parity/checking.
+    // In legacy, this would be selected via UI. For now, we use a known valid metric.
+    const METRIC_KEY = 'mang_spec_score';
 
     const residuals = gridCells
-      .map(c => c.residuals['res_5']) // Using res_5 as a primary metric example
-      .filter(v => typeof v === 'number') as number[];
+      .map(c => c.residuals[METRIC_KEY])
+      .filter(v => typeof v === 'number' && !isNaN(v));
+
+    // Temporary logging for verification
+    console.log(`[ViolinPlot] Data points for ${METRIC_KEY}:`, residuals.length);
 
     return {
       residuals
