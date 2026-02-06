@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { RichGridCell } from '@/data/transforms/joinGridWithClusters';
+import type { RichGridCell } from '@/data/types/grid.types';
 
 interface MapTooltipProps {
   x: number;

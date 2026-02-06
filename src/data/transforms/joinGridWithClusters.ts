@@ -1,15 +1,7 @@
-import type { GridItem } from '../types/grid.types';
-import type { Residuals } from '../types/grid.types';
+import type { GridItem, Residuals, RichGridCell } from '../types/grid.types';
 import type { ClusterRaw } from '../types/cluster.types';
 
-export interface RichGridCell extends GridItem {
-  residuals: Record<string, number>; // Always defined, empty object if missing
-  cluster5?: number; // typology ID in scale 5
-  cluster18?: number; // typology ID in scale 18
-  mangroves: boolean;
-  saltmarsh: boolean;
-  seagrass: boolean;
-}
+// RichGridCell is now imported from grid.types.ts
 
 export function joinGridData(
   gridItems: GridItem[],
@@ -41,12 +33,13 @@ export function joinGridData(
     return {
       ...item,
       residuals: res,
-      // ASSUMPTION: cluster_X columns are string integers. Missing values handled as undefined.
+
       cluster5: clusterInfo?.cluster_5 ? parseInt(clusterInfo.cluster_5, 10) : undefined,
       cluster18: clusterInfo?.cluster_18 ? parseInt(clusterInfo.cluster_18, 10) : undefined,
       mangroves: clusterInfo?.mang_presence === '1',
       saltmarsh: clusterInfo?.salt_presence === '1',
       seagrass: clusterInfo?.seag_presence === '1',
+
     };
   });
 }

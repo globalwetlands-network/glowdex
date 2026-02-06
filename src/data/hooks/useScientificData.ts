@@ -4,7 +4,8 @@ import { loadResiduals } from '../loaders/loadResiduals';
 import { loadAllClusters } from '../loaders/loadAllClusters';
 import { loadGridGeoJson } from '../loaders/loadGridGeojson';
 
-import { joinGridData, type RichGridCell } from '../transforms/joinGridWithClusters';
+import { joinGridData } from '../transforms/joinGridWithClusters';
+import type { RichGridCell } from '../types/grid.types';
 import { deriveTypologies } from '../transforms/deriveTypologies';
 
 import type { GridGeoJSON } from '../types/geo.types';
