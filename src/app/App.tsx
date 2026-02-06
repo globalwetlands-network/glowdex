@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Map } from '@/features/map/components/Map';
 import { useScientificData } from '@/data/hooks/useScientificData';
-
+import { useIndicators } from '@/data/hooks/useIndicators';
 
 // Widgets & Hooks
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
-import { ViolinPlot } from '@/features/widgets/components/ViolinPlot';
+import { GroupedViolinPlot } from '@/features/widgets/components/ViolinPlot';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
-import { useViolinPlotData } from '@/features/widgets/hooks/useViolinPlotData';
+import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { INITIAL_FILTER_STATE, type FilterState } from '@/features/widgets/types/filter.types';
 
 // Icons
@@ -16,6 +16,7 @@ import { Layers, Menu, X } from 'lucide-react';
 
 function App() {
   const { gridCells, geojson, typologies, isLoading } = useScientificData();
+  const { indicators } = useIndicators();
 
   // App State
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
@@ -24,7 +25,7 @@ function App() {
 
   // Derived Data
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
-  const violinData = useViolinPlotData(filteredGridCells);
+  const distributions = useIndicatorDistributions(filteredGridCells, indicators, filterState, selectedCellId);
 
   const selectedCell = selectedCellId && gridCells
     ? gridCells.find(c => c.id === selectedCellId) || null
@@ -141,15 +142,13 @@ function App() {
 
           {/* Section: Analysis */}
           <div className="space-y-3 pb-8">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Distribution</h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Distributions</h2>
             {isLoading ? (
               <div className="h-32 bg-gray-50 rounded animate-pulse" />
             ) : (
-              <ViolinPlot
-                title="Residual Distribution"
-                data={violinData.residuals}
-                color="#3b82f6"
-                height={200}
+              <GroupedViolinPlot
+                distributions={distributions}
+                isLoading={isLoading}
               />
             )}
           </div>
@@ -167,4 +166,3 @@ function App() {
 }
 
 export default App;
-
