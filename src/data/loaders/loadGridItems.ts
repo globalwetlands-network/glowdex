@@ -10,9 +10,9 @@ export function loadGridItems(): GridItem[] {
 
   return raw.map(row => ({
     id: parseInt(row.ID, 10),
-    lat: parseFloat(row.lat),
-    lng: parseFloat(row.lng),
-    country: row.country,
-    iso3: row.iso3,
+    lat: parseFloat(row.lat || '0'), // Fallback 0 or parse logic if lat/lng missing/named differently
+    lng: parseFloat(row.lng || '0'),
+    country: row.TERRITORY1, // Map from CSV header
+    iso3: row.ISO_TER1,      // Map from CSV header
   }));
 }

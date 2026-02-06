@@ -23,31 +23,39 @@ export function useIndicatorDistributions(
 
     const distributions: DistributionsByDimension = {};
 
-    // 2. Iterate through all indicators
-    indicators.forEach(indicator => {
-      // 3. Filter values for this specific indicator
-      // Logic: Only include values where the indicator is relevant to the habitat?
-      // Legacy app likely filtered based on Habitat Presence AND Indicator relevance.
-      // E.g. If indicator is 'mangrove_area', only include cells with mangroves?
-      // Or just rely on the fact that if a cell has no mangroves, it likely has no mangrove_area value (or 0/null).
-      // We rely on the value being present and numeric in 'residuals'.
+    // 2. Filter indicators based on selected cell's habitats (if a cell is selected)
+    // Legacy parity: "Indicators irrelevant to the selected cell’s habitat are not rendered"
+    const relevantIndicators = selectedCell
+      ? indicators.filter(ind => {
+        if (ind.habitat === 'all') return true;
+        if (ind.habitat === 'mangroves' && selectedCell.mangroves) return true;
+        if (ind.habitat === 'saltmarsh' && selectedCell.saltmarsh) return true;
+        if (ind.habitat === 'seagrass' && selectedCell.seagrass) return true;
+        return false;
+      })
+      : indicators;
 
+    // 3. Iterate through filtered indicators
+    relevantIndicators.forEach(indicator => {
+      // 4. Filter values for this specific indicator
+      // We process all cells to build the distribution context
       const values = gridCells
         .map(cell => cell.residuals[indicator.key])
         .filter(v => typeof v === 'number' && !isNaN(v));
 
       if (values.length === 0) return;
 
-      // 4. Get selected value
+      // 5. Get selected value
       let selectedValue: number | undefined;
       if (selectedCell) {
         const val = selectedCell.residuals[indicator.key];
+        // Only mark if value is valid
         if (typeof val === 'number' && !isNaN(val)) {
           selectedValue = val;
         }
       }
 
-      // 5. Group by dimension
+      // 6. Group by dimension
       if (!distributions[indicator.dimension]) {
         distributions[indicator.dimension] = [];
       }
