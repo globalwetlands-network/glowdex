@@ -1,40 +1,171 @@
 import { useState } from 'react';
-import { useScientificData } from '../data/hooks/useScientificData';
-import { Map } from '../features/map/components/Map';
+import { Map } from '@/features/map/components/Map';
+import { useScientificData } from '@/data/hooks/useScientificData';
+
+
+// Widgets & Hooks
+import { FilterControls } from '@/features/widgets/components/FilterControls';
+import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
+import { ViolinPlot } from '@/features/widgets/components/ViolinPlot';
+import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
+import { useViolinPlotData } from '@/features/widgets/hooks/useViolinPlotData';
+import { INITIAL_FILTER_STATE, type FilterState } from '@/features/widgets/types/filter.types';
+
+// Icons
+import { Layers, Menu, X } from 'lucide-react';
 
 function App() {
-  const { isLoading, gridCells, geojson, typologies } = useScientificData();
-  const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
+  const { gridCells, geojson, typologies, isLoading } = useScientificData();
 
-  if (isLoading || !gridCells || !geojson || !typologies) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading Map Data...</div>
-      </div>
-    );
-  }
+  // App State
+  const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
+  const [filterState, setFilterState] = useState<FilterState>(INITIAL_FILTER_STATE);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+
+  // Derived Data
+  const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
+  const violinData = useViolinPlotData(filteredGridCells);
+
+  const selectedCell = selectedCellId && gridCells
+    ? gridCells.find(c => c.id === selectedCellId) || null
+    : null;
+
+  const currentTypologyScale = filterState.typologyScale;
+
+  const handleCellSelect = (id: number | null) => {
+    setSelectedCellId(id);
+    if (id && window.innerWidth < 768) {
+      setIsMobilePanelOpen(true); // Auto-open panel on mobile select
+    }
+  };
 
   return (
-    <div className="h-screen w-screen flex flex-col">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-sm z-10">
-        <h1 className="text-xl font-bold text-gray-900">GLOWdex</h1>
-        <div className="text-sm text-gray-500">
-          {selectedCellId ? `Selected Cell: ${selectedCellId}` : 'Select a grid cell'}
-        </div>
-      </header>
+    <div className="h-screen w-screen flex flex-col md:flex-row overflow-hidden bg-gray-100">
 
-      <main className="flex-1 relative">
-        <Map
-          gridCells={gridCells}
-          geojson={geojson}
-          typologies={typologies}
-          selectedCellId={selectedCellId}
-          onCellSelect={setSelectedCellId}
-        />
-      </main>
+      {/* 1. MAP AREA (Flex-1, fills remaining space) */}
+      <div className="flex-1 relative order-1 md:order-2 h-1/2 md:h-full">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-500 font-medium text-sm">Loading GLOWdex...</p>
+            </div>
+          </div>
+        ) : (
+          <Map
+            gridCells={filteredGridCells}
+            geojson={geojson!}
+            typologies={typologies!}
+            hoveredCellId={null} // Map manages specific hover, App doesn't track it visually currently
+            selectedCellId={selectedCellId}
+            typologyScale={currentTypologyScale}
+            onCellSelect={handleCellSelect}
+          />
+        )}
+
+        {/* Floating Mobile Header / Toggle */}
+        <div className="absolute top-4 left-4 z-10 md:hidden">
+          <button
+            onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
+            className="bg-white p-2 rounded-md shadow-md text-gray-700 hover:bg-gray-50"
+          >
+            {isMobilePanelOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* 2. SIDE PANEL (Left on desktop, Bottom/Sheet on mobile) */}
+      <div className={`
+        bg-white shadow-xl z-20 flex flex-col
+        md:w-96 md:h-full md:border-r md:border-gray-200 md:relative md:order-1
+        ${/* Mobile styles: fixed bottom sheet or column below map */ ''}
+        w-full fixed bottom-0 max-h-[60vh] md:max-h-full transition-transform duration-300 ease-in-out
+        ${isMobilePanelOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
+        md:translate-y-0
+      `}>
+
+        {/* Header */}
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
+          <div className="flex items-center space-x-2">
+            <div className="bg-blue-600 text-white p-1.5 rounded-md">
+              <Layers size={18} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 leading-tight">GLOWdex</h1>
+              <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Analysis Panel</p>
+            </div>
+          </div>
+          {/* Close button for mobile only */}
+          <button
+            onClick={() => setIsMobilePanelOpen(false)}
+            className="md:hidden text-gray-400 hover:text-gray-600"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+
+          {/* Section: Selected Cell */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Selection</h2>
+              {selectedCellId && (
+                <button
+                  onClick={() => handleCellSelect(null)}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <SelectionPanel
+              selectedCell={selectedCell}
+              typologies={typologies || { scale5: {}, scale18: {} }}
+              currentScale={currentTypologyScale}
+            />
+          </div>
+
+          <div className="border-t border-gray-100 my-4" />
+
+          {/* Section: Filters */}
+          <div className="space-y-3">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filters</h2>
+            <FilterControls
+              filterState={filterState}
+              onFilterChange={setFilterState}
+            />
+          </div>
+
+          <div className="border-t border-gray-100 my-4" />
+
+          {/* Section: Analysis */}
+          <div className="space-y-3 pb-8">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Distribution</h2>
+            {isLoading ? (
+              <div className="h-32 bg-gray-50 rounded animate-pulse" />
+            ) : (
+              <ViolinPlot
+                title="Residual Distribution"
+                data={violinData.residuals}
+                color="#3b82f6"
+                height={200}
+              />
+            )}
+          </div>
+
+        </div>
+
+        {/* Footer info */}
+        <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
+          {filteredGridCells.length.toLocaleString()} Grid Cells Visible
+        </div>
+
+      </div>
     </div>
   );
 }
 
-export default App
+export default App;
 
