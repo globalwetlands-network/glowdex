@@ -11,7 +11,8 @@ export function useIndicatorDistributions(
   indicators: Indicator[],
   // filterState is conceptually used by the caller to filter gridCells first
   _filterState: FilterState,
-  selectedCellId: number | null
+  selectedCellId: number | null,
+  quantile: number
 ): DistributionsByDimension {
   return useMemo(() => {
     if (!gridCells.length || !indicators.length) return {};
@@ -23,8 +24,7 @@ export function useIndicatorDistributions(
 
     const distributions: DistributionsByDimension = {};
 
-    // 2. Filter indicators based on selected cell's habitats (if a cell is selected)
-    // Legacy parity: "Indicators irrelevant to the selected cell’s habitat are not rendered"
+    // 2. Filter indicators based on selected cell's habitats (Strict Parity)
     const relevantIndicators = selectedCell
       ? indicators.filter(ind => {
         if (ind.habitat === 'all') return true;
@@ -37,25 +37,37 @@ export function useIndicatorDistributions(
 
     // 3. Iterate through filtered indicators
     relevantIndicators.forEach(indicator => {
-      // 4. Filter values for this specific indicator
-      // We process all cells to build the distribution context
-      const values = gridCells
+      // 4. Extract valid numeric values
+      let values = gridCells
         .map(cell => cell.residuals[indicator.key])
-        .filter(v => typeof v === 'number' && !isNaN(v));
+        .filter((v): v is number => typeof v === 'number' && !isNaN(v));
 
       if (values.length === 0) return;
 
-      // 5. Get selected value
+      // 5. Apply Quantile Filter (Legacy Parity: Keep middle range [q, 1-q])
+      values.sort((a, b) => a - b);
+
+      const lowerIndex = Math.floor(values.length * quantile);
+      const upperIndex = Math.floor(values.length * (1 - quantile));
+
+      if (values.length > 0) {
+        values = values.slice(lowerIndex, upperIndex);
+      }
+
+      // 6. Final Data Presence Check
+      if (values.length === 0) return;
+
+      // 7. Get selected value
       let selectedValue: number | undefined;
       if (selectedCell) {
         const val = selectedCell.residuals[indicator.key];
-        // Only mark if value is valid
         if (typeof val === 'number' && !isNaN(val)) {
+          // We keep the selected value even if it falls outside the plotted distribution (legacy behavior).
           selectedValue = val;
         }
       }
 
-      // 6. Group by dimension
+      // 8. Group by dimension
       if (!distributions[indicator.dimension]) {
         distributions[indicator.dimension] = [];
       }
@@ -68,5 +80,5 @@ export function useIndicatorDistributions(
     });
 
     return distributions;
-  }, [gridCells, indicators, selectedCellId]); // filterState is implicitly applied to gridCells by upstream hook
+  }, [gridCells, indicators, selectedCellId, quantile]);
 }

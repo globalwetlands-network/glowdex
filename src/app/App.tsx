@@ -25,7 +25,13 @@ function App() {
 
   // Derived Data
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
-  const distributions = useIndicatorDistributions(filteredGridCells, indicators, filterState, selectedCellId);
+  const distributions = useIndicatorDistributions(
+    filteredGridCells,
+    indicators,
+    filterState,
+    selectedCellId,
+    filterState.quantile
+  );
 
   const selectedCell = selectedCellId && gridCells
     ? gridCells.find(c => c.id === selectedCellId) || null
@@ -107,6 +113,18 @@ function App() {
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
+
+          {/* Section: Filters */}
+          <div className="space-y-3">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filters</h2>
+            <FilterControls
+              filterState={filterState}
+              onFilterChange={setFilterState}
+            />
+          </div>
+
+          <div className="border-t border-gray-100 my-4" />
+
           {/* Section: Selected Cell */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -129,13 +147,28 @@ function App() {
 
           <div className="border-t border-gray-100 my-4" />
 
-          {/* Section: Filters */}
+          {/* Section: Quantile Slider (New Parity Feature) */}
           <div className="space-y-3">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filters</h2>
-            <FilterControls
-              filterState={filterState}
-              onFilterChange={setFilterState}
-            />
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Quantile for Typology Violin Plot:
+                <span className="ml-1 text-gray-700 bg-gray-100 px-1 rounded">{filterState.quantile.toFixed(2)}</span>
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="range"
+                min="0"
+                max="0.5" // Usually quantiles like this go up to 0.5 (filtering from both ends), or 0->1?
+                // Legacy: "Default quantile: 0.25". "Range 0-1, step 0.05".
+                // If it filters [q, 1-q], then max q must be < 0.5 (otherwise range is inverted).
+                // Let's assume max 0.45 or 0.5 (median).
+                step="0.05"
+                value={filterState.quantile}
+                onChange={(e) => setFilterState(prev => ({ ...prev, quantile: parseFloat(e.target.value) }))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-900"
+              />
+            </div>
           </div>
 
           <div className="border-t border-gray-100 my-4" />

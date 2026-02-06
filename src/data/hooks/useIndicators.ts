@@ -10,14 +10,41 @@ export function useIndicators() {
       sg: 'seagrass'
     };
 
-    return (indicatorRaw as unknown as Array<Record<string, unknown>>).map(i => ({
-      key: i.indicator as string,
-      label: i.label as string,
-      dimension: i.dimension as string,
-      habitat: habitatMap[i.habitat as string] || 'all',
-      direction: i.direction as 1 | -1,
-      description: i.description as string
-    })) as Indicator[];
+    return (indicatorRaw as unknown as Array<Record<string, unknown>>).map(i => {
+      const habitatKey = i.habitat as string;
+      const habitatLabel = habitatMap[habitatKey] || 'all';
+
+      // Prefix label with habitat if not 'all'
+      // Example: "Fish density" -> "Mangroves Fish density"? 
+      // User requested: "Mangrove fish density".
+      // habitatMap values are 'mangroves', 'saltmarsh', 'seagrass'.
+      // We should capitalize first letter: "Mangroves" vs "Mangrove"?
+      // Legacy example: "Mangrove fish density". 
+      // So singular "Mangrove" might be better? 
+      // check habitatMap: 'mangroves', 'saltmarsh', 'seagrass'.
+      // Let's use a display dictionary for prefixes to be safe and match legacy exactly.
+
+      const prefixMap: Record<string, string> = {
+        mg: 'Mangrove',
+        sm: 'Saltmarsh',
+        sg: 'Seagrass',
+        all: ''
+      };
+
+      const prefix = prefixMap[habitatKey] || '';
+      const rawLabel = i.label as string;
+      // If prefix exists, prepend it.
+      const label = prefix ? `${prefix} ${rawLabel}` : rawLabel;
+
+      return {
+        key: i.indicator as string,
+        label,
+        dimension: i.dimension as string,
+        habitat: habitatLabel,
+        direction: i.direction as 1 | -1,
+        description: i.description as string
+      };
+    }) as Indicator[];
   }, []);
 
   const dimensions: IndicatorDimension[] = useMemo(() => {

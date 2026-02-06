@@ -31,13 +31,9 @@ export function useFilteredGridCells(
       if (!matchesHabitat) return false;
 
       // 2. Quantile Filtering
-      // Placeholder: If quantileFilter is active (e.g., > 0.5), filter by some metric.
-      // For now, if null, pass.
-      if (filterState.quantileFilter !== null) {
-        // TODO: Define which metric governs the quantile filter. 
-        // Using a placeholder check on a residual or specific value if strictly required.
-        // Legacy parity check needed here. Assuming pass-through for now until logic defined.
-      }
+      // Quantile filtering is applied at the Indicator Distribution level (useIndicatorDistributions),
+      // not at the global Map/Grid Cell visibility level.
+      // So we do not filter cells here based on filterState.quantile.
 
       return true;
     });

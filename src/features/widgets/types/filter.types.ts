@@ -5,7 +5,7 @@ export interface FilterState {
     seagrass: boolean;
   };
   typologyScale: 'scale5' | 'scale18';
-  quantileFilter: number | null; // e.g. 0.5 for median cutoff, or null if off
+  quantile: number;
 }
 
 export const INITIAL_FILTER_STATE: FilterState = {
@@ -15,5 +15,5 @@ export const INITIAL_FILTER_STATE: FilterState = {
     seagrass: true,
   },
   typologyScale: 'scale5',
-  quantileFilter: null,
+  quantile: 0.25,
 };
