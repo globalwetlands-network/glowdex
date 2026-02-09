@@ -1,4 +1,4 @@
-import { Filter, Sprout, Droplets, Waves } from 'lucide-react';
+import { Sprout, Droplets, Waves } from 'lucide-react';
 import type { FilterState } from '../types/filter.types';
 
 interface FilterControlsProps {
@@ -27,9 +27,25 @@ export function FilterControls({ filterState, onFilterChange }: FilterControlsPr
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm space-y-6">
-      <div className="flex items-center space-x-2 text-gray-700 font-semibold border-b pb-2">
-        <Filter className="w-5 h-5" />
-        <span>Data Filters</span>
+      {/* Typology Scale Switch */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-gray-500 uppercase tracking-wider">Typology Scale</label>
+        <div className="flex bg-gray-100 p-1 rounded-md">
+          <button
+            onClick={() => setScale('scale5')}
+            className={`flex-1 py-1 text-sm font-medium rounded-sm transition-all ${filterState.typologyScale === 'scale5' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            5 Typologies
+          </button>
+          <button
+            onClick={() => setScale('scale18')}
+            className={`flex-1 py-1 text-sm font-medium rounded-sm transition-all ${filterState.typologyScale === 'scale18' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            18 Typologies
+          </button>
+        </div>
       </div>
 
       {/* Habitat Toggles */}
@@ -71,27 +87,6 @@ export function FilterControls({ filterState, onFilterChange }: FilterControlsPr
           </div>
           <div className={`w-3 h-3 rounded-full ${filterState.habitats.seagrass ? 'bg-blue-500' : 'bg-gray-300'}`} />
         </button>
-      </div>
-
-      {/* Typology Scale Switch */}
-      <div className="space-y-3">
-        <label className="text-sm font-medium text-gray-500 uppercase tracking-wider">Typology Scale</label>
-        <div className="flex bg-gray-100 p-1 rounded-md">
-          <button
-            onClick={() => setScale('scale5')}
-            className={`flex-1 py-1 text-sm font-medium rounded-sm transition-all ${filterState.typologyScale === 'scale5' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            5 Typologies
-          </button>
-          <button
-            onClick={() => setScale('scale18')}
-            className={`flex-1 py-1 text-sm font-medium rounded-sm transition-all ${filterState.typologyScale === 'scale18' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            18 Typologies
-          </button>
-        </div>
       </div>
     </div>
   );
