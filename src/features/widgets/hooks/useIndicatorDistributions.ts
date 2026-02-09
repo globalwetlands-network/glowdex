@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { quantile } from 'd3-array';
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { FilterState } from '../types/filter.types';
 import type {
@@ -9,65 +10,87 @@ import type {
 export function useIndicatorDistributions(
   gridCells: RichGridCell[],
   indicators: Indicator[],
-  // filterState is conceptually used by the caller to filter gridCells first
-  _filterState: FilterState,
+  filterState: FilterState,
   selectedCellId: number | null,
-  quantile: number
+  quantileValue: number
 ): DistributionsByDimension {
   return useMemo(() => {
     if (!gridCells.length || !indicators.length) return {};
 
-    // 1. Pre-calculate lookup for selected cell values
     const selectedCell = selectedCellId
       ? gridCells.find(c => c.id === selectedCellId)
       : null;
 
+    // 1. Filter by habitat presence (legacy pattern)
+    const habitatPresence = selectedCell ? {
+      mangroves: selectedCell.mangroves === true,
+      saltmarsh: selectedCell.saltmarsh === true,
+      seagrass: selectedCell.seagrass === true,
+    } : null;
+
+    const habitatFilteredIndicators = indicators.filter(ind => {
+      if (ind.habitat === 'all') return true;
+
+      // Check UI filter (always required)
+      const habitatEnabled = filterState.habitats[ind.habitat];
+      if (!habitatEnabled) return false;
+
+      // If a cell is selected, also check habitat presence in that cell
+      if (habitatPresence) {
+        return habitatPresence[ind.habitat] === true;
+      }
+
+      // No cell selected: just use UI filter
+      return true;
+    });
+
+    // 2. Apply quantile significance test
+    const significantIndicators = habitatFilteredIndicators.filter(indicator => {
+      const values = gridCells
+        .map(cell => cell.residuals[indicator.key])
+        .filter((v): v is number => typeof v === 'number' && !isNaN(v));
+
+      if (values.length === 0) return false;
+
+      // Calculate quantile range
+      const upper = quantile(values, 0.5 + quantileValue / 2);
+      const lower = quantile(values, 0.5 - quantileValue / 2);
+
+      if (upper === undefined || lower === undefined) return false;
+
+      // Significance test: range must not cross zero
+      const significanceFactor = Math.sign(lower) === Math.sign(upper) ? Math.sign(upper) : 0;
+      return significanceFactor !== 0;
+    });
+
+    // 3. Build distributions for significant indicators
     const distributions: DistributionsByDimension = {};
 
-    // 2. Filter indicators based on selected cell's habitats (Strict Parity)
-    const relevantIndicators = selectedCell
-      ? indicators.filter(ind => {
-        if (ind.habitat === 'all') return true;
-        if (ind.habitat === 'mangroves' && selectedCell.mangroves) return true;
-        if (ind.habitat === 'saltmarsh' && selectedCell.saltmarsh) return true;
-        if (ind.habitat === 'seagrass' && selectedCell.seagrass) return true;
-        return false;
-      })
-      : indicators;
-
-    // 3. Iterate through filtered indicators
-    relevantIndicators.forEach(indicator => {
-      // 4. Extract valid numeric values
+    significantIndicators.forEach(indicator => {
       let values = gridCells
         .map(cell => cell.residuals[indicator.key])
         .filter((v): v is number => typeof v === 'number' && !isNaN(v));
 
       if (values.length === 0) return;
 
-      // 5. Apply Quantile Filter (Legacy Parity: Keep middle range [q, 1-q])
+      // Apply quantile trimming to values (keep middle range)
       values.sort((a, b) => a - b);
+      const lowerIndex = Math.floor(values.length * quantileValue);
+      const upperIndex = Math.floor(values.length * (1 - quantileValue));
+      values = values.slice(lowerIndex, upperIndex);
 
-      const lowerIndex = Math.floor(values.length * quantile);
-      const upperIndex = Math.floor(values.length * (1 - quantile));
-
-      if (values.length > 0) {
-        values = values.slice(lowerIndex, upperIndex);
-      }
-
-      // 6. Final Data Presence Check
       if (values.length === 0) return;
 
-      // 7. Get selected value
+      // Get selected value
       let selectedValue: number | undefined;
       if (selectedCell) {
         const val = selectedCell.residuals[indicator.key];
         if (typeof val === 'number' && !isNaN(val)) {
-          // We keep the selected value even if it falls outside the plotted distribution (legacy behavior).
           selectedValue = val;
         }
       }
 
-      // 8. Group by dimension
+      // Group by dimension
       if (!distributions[indicator.dimension]) {
         distributions[indicator.dimension] = [];
       }
@@ -79,6 +102,14 @@ export function useIndicatorDistributions(
       });
     });
 
-    return distributions;
-  }, [gridCells, indicators, selectedCellId, quantile]);
+    // 4. Sort dimensions alphabetically (legacy behavior)
+    const sortedDistributions: DistributionsByDimension = {};
+    Object.keys(distributions)
+      .sort()
+      .forEach(dim => {
+        sortedDistributions[dim] = distributions[dim];
+      });
+
+    return sortedDistributions;
+  }, [gridCells, indicators, filterState, selectedCellId, quantileValue]);
 }
