@@ -7,6 +7,18 @@ import type {
   DistributionsByDimension
 } from '../types/indicator.types';
 
+// Cumulative impacts restriction
+const LEGACY_CUMULATIVE_INDICATORS = new Set([
+  'pressure_mangrove_climate_rate'
+]);
+
+// Dimension ordering
+const DIMENSION_ORDER = [
+  'Cumulative Impacts',
+  'Ecological Structure and Function',
+  'Habitat Extent Change'
+];
+
 export function useIndicatorDistributions(
   gridCells: RichGridCell[],
   indicators: Indicator[],
@@ -21,7 +33,7 @@ export function useIndicatorDistributions(
       ? gridCells.find(c => c.id === selectedCellId)
       : null;
 
-    // 1. Filter by habitat presence (legacy pattern)
+    // 1. Filter by habitat (UI filter + cell presence)
     const habitatPresence = selectedCell ? {
       mangroves: selectedCell.mangroves === true,
       saltmarsh: selectedCell.saltmarsh === true,
@@ -44,44 +56,46 @@ export function useIndicatorDistributions(
       return true;
     });
 
-    // 2. Apply quantile significance test
-    const significantIndicators = habitatFilteredIndicators.filter(indicator => {
+    // 2. Restrict cumulative impacts
+    const cumulativeRestrictedIndicators = habitatFilteredIndicators.filter(ind => {
+      if (ind.dimension === 'Cumulative Impacts') {
+        return LEGACY_CUMULATIVE_INDICATORS.has(ind.key);
+      }
+      return true;
+    });
+
+    // 3. Apply quantile significance test (ONLY if cell is selected)
+    const significantIndicators = selectedCell
+      ? cumulativeRestrictedIndicators.filter(indicator => {
+        const values = gridCells
+          .map(cell => cell.residuals[indicator.key])
+          .filter((v): v is number => typeof v === 'number' && !isNaN(v));
+
+        if (values.length === 0) return false;
+
+        // Calculate quantile range
+        const upper = quantile(values, 0.5 + quantileValue / 2);
+        const lower = quantile(values, 0.5 - quantileValue / 2);
+
+        if (upper === undefined || lower === undefined) return false;
+
+        // Significance test: range must not cross zero
+        const significanceFactor = Math.sign(lower) === Math.sign(upper) ? Math.sign(upper) : 0;
+        return significanceFactor !== 0;
+      })
+      : cumulativeRestrictedIndicators; // No quantile filtering when no cell selected
+
+    // 4. Build distributions with full values
+    const distributions: DistributionsByDimension = {};
+
+    significantIndicators.forEach(indicator => {
       const values = gridCells
         .map(cell => cell.residuals[indicator.key])
         .filter((v): v is number => typeof v === 'number' && !isNaN(v));
 
-      if (values.length === 0) return false;
-
-      // Calculate quantile range
-      const upper = quantile(values, 0.5 + quantileValue / 2);
-      const lower = quantile(values, 0.5 - quantileValue / 2);
-
-      if (upper === undefined || lower === undefined) return false;
-
-      // Significance test: range must not cross zero
-      const significanceFactor = Math.sign(lower) === Math.sign(upper) ? Math.sign(upper) : 0;
-      return significanceFactor !== 0;
-    });
-
-    // 3. Build distributions for significant indicators
-    const distributions: DistributionsByDimension = {};
-
-    significantIndicators.forEach(indicator => {
-      let values = gridCells
-        .map(cell => cell.residuals[indicator.key])
-        .filter((v): v is number => typeof v === 'number' && !isNaN(v));
-
       if (values.length === 0) return;
 
-      // Apply quantile trimming to values (keep middle range)
-      values.sort((a, b) => a - b);
-      const lowerIndex = Math.floor(values.length * quantileValue);
-      const upperIndex = Math.floor(values.length * (1 - quantileValue));
-      values = values.slice(lowerIndex, upperIndex);
-
-      if (values.length === 0) return;
-
-      // Get selected value
+      // Get selected value (marker only, not a filter)
       let selectedValue: number | undefined;
       if (selectedCell) {
         const val = selectedCell.residuals[indicator.key];
@@ -97,18 +111,18 @@ export function useIndicatorDistributions(
 
       distributions[indicator.dimension].push({
         indicator,
-        values,
+        values, // Full distribution - no trimming
         selectedValue
       });
     });
 
-    // 4. Sort dimensions alphabetically (legacy behavior)
+    // 5. Order dimensions explicitly 
     const sortedDistributions: DistributionsByDimension = {};
-    Object.keys(distributions)
-      .sort()
-      .forEach(dim => {
+    DIMENSION_ORDER.forEach(dim => {
+      if (distributions[dim]) {
         sortedDistributions[dim] = distributions[dim];
-      });
+      }
+    });
 
     return sortedDistributions;
   }, [gridCells, indicators, filterState, selectedCellId, quantileValue]);
