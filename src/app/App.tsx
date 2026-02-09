@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Map } from '@/features/map/components/Map';
 import { useScientificData } from '@/data/hooks/useScientificData';
 import { useIndicators } from '@/data/hooks/useIndicators';
+import { getFeatureCenterCoords } from '@/utils/geoUtils';
 
 // Widgets & Hooks
 import { FilterControls } from '@/features/widgets/components/FilterControls';
@@ -33,8 +34,19 @@ function App() {
     filterState.quantile
   );
 
-  const selectedCell = selectedCellId && gridCells
-    ? gridCells.find(c => c.id === selectedCellId) || null
+  const selectedCell = selectedCellId && gridCells && geojson
+    ? (() => {
+      const cell = gridCells.find(c => c.id === selectedCellId);
+      if (!cell) return null;
+
+      // Find matching GeoJSON feature and calculate centerCoords (legacy approach)
+      const feature = geojson.features.find(f => f.properties.ID === selectedCellId);
+      if (feature) {
+        const centerCoords = getFeatureCenterCoords(feature);
+        return { ...cell, centerCoords };
+      }
+      return cell;
+    })()
     : null;
 
   const currentTypologyScale = filterState.typologyScale;

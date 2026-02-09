@@ -1,5 +1,6 @@
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
+import { formatCoordinate } from '@/utils/coordinates';
 
 interface SelectionPanelProps {
   selectedCell: RichGridCell | null;
@@ -17,21 +18,40 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
     );
   }
 
-  const { id, country, cluster5, cluster18, mangroves, saltmarsh, seagrass } = selectedCell;
+  const { id, country, cluster5, cluster18, mangroves, saltmarsh, seagrass, lat, lng } = selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
   const clusterInfo = typologies[currentScale][clusterId];
 
+  // Format coordinates
+  // Use centerCoords if available (from GeoJSON bbox), otherwise fallback to lat/lng
+  const centerCoords = (selectedCell as any).centerCoords;
+  const coords = centerCoords || { latitude: lat, longitude: lng };
+  const coordinatesFormatted = formatCoordinate(coords);
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4">
-      {/* Header: ID + Country */}
+      {/* Country Name */}
       <div>
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Cell #{id}</h3>
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{country || 'Unknown Country'}</p>
-          </div>
-          <span className="inline-block px-2 py-1 rounded text-xs font-mono bg-gray-100 text-gray-600 border border-gray-200">
-            Typology {clusterId}
+        <h3 className="text-xl font-bold text-gray-900">{country || 'Unknown Country'}</h3>
+      </div>
+
+      {/* Coordinates */}
+      <div>
+        <p className="text-sm text-gray-600">{coordinatesFormatted}</p>
+      </div>
+
+      {/* ID + Typology Pills */}
+      <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          <span className="text-xs font-medium text-gray-500">ID</span>
+          <span className="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-900 text-sm font-medium border border-gray-200">
+            {id}
+          </span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <span className="text-xs font-medium text-gray-500">Typology</span>
+          <span className="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-900 text-sm font-medium border border-gray-200">
+            {clusterId}
           </span>
         </div>
       </div>
