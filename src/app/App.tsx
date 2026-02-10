@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Map } from '@/features/map/components/Map';
+import { GridMap as Map } from '@/features/map/components/Map';
 import { useScientificData } from '@/data/hooks/useScientificData';
 import { useIndicators } from '@/data/hooks/useIndicators';
 import { getFeatureCenterCoords } from '@/utils/geoUtils';

@@ -5,10 +5,14 @@ interface MapTooltipProps {
   x: number;
   y: number;
   cell: RichGridCell | undefined;
+  typologyScale: 'scale5' | 'scale18';
 }
 
-function MapTooltip({ x, y, cell }: MapTooltipProps) {
+function MapTooltip({ x, y, cell, typologyScale = 'scale5' }: MapTooltipProps) {
   if (!cell) return null;
+
+  const clusterId = typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18;
+  const label = typologyScale === 'scale5' ? 'Micro-Typology (5)' : 'Macro-Typology (18)';
 
   return (
     <div
@@ -17,9 +21,9 @@ function MapTooltip({ x, y, cell }: MapTooltipProps) {
     >
       <div className="font-bold text-gray-900">Cell ID: {cell.id}</div>
       <div className="text-gray-600">{cell.country}</div>
-      {cell.cluster5 && (
+      {clusterId !== undefined && (
         <div className="text-xs text-gray-500 mt-1">
-          Typology (5): {cell.cluster5}
+          {label}: <span className="font-medium text-gray-700">{clusterId}</span>
         </div>
       )}
     </div>

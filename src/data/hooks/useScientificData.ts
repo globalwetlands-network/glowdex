@@ -36,8 +36,10 @@ export function useScientificData(): ScientificData {
       try {
         console.time('DataLoad');
 
-        // NOTE: Loaders are currently synchronous (using Vite's ?raw import).
-        // This is intentional to ensure deterministic build-time data loading.
+        /* NOTE: 
+        Loaders are currently synchronous (using Vite's ?raw import).
+        This is intentional to ensure deterministic build-time data loading.
+        */
         const gridItems = loadGridItems();
         const residuals = loadResiduals();
         const rawClusters = loadAllClusters();

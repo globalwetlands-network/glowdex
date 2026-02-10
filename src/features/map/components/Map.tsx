@@ -1,13 +1,20 @@
-import MapGL, { NavigationControl } from 'react-map-gl';
+// Core
 import { useMemo } from 'react';
+import MapGL, { NavigationControl } from 'react-map-gl';
+
+// Data Types
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
 
+// Components
 import { GridLayer } from './GridLayer';
 import MapTooltip from './MapTooltip';
+
+// Hooks
 import { useMapInteraction } from '../hooks/useMapInteraction';
 
+// Styles
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapProps {
@@ -27,70 +34,53 @@ const INITIAL_VIEW_STATE = {
   zoom: 3,
 };
 
-export function Map({
+export function GridMap({
   gridCells,
   geojson,
   typologies,
   selectedCellId,
-  // hoveredCellId, // Derived internally from useMapInteraction now? Or passed down?
-  // Actually App passes hoveredCellId, but useMapInteraction also returns it.
-  // Let's rely on useMapInteraction internal state for hover to keep it responsive,
-  // OR accept props if "lifted" state is required for other widgets.
-  // Providing parity with legacy usually implies Map drives hover state.
-  hoveredCellId: propHoveredCellId,
   typologyScale = 'scale5',
   onCellSelect,
 }: MapProps & {
-  hoveredCellId?: number | null;
   typologyScale?: 'scale5' | 'scale18';
 }) {
-
-  // Refined: Map component should just take 'onCellSelect' from parent (if passed in props, not shown in interface above yet)
-  // But wait, the previous interface had `onCellSelect`.
-  // Let's respect the interface defined in line 12.
-
-  // Filter GeoJSON features to only those present in the filtered gridCells
+  /* 
+  Filter GeoJSON features to only those present in the filtered gridCells and
+  Filter & Enrich GeoJSON Features
+  */
   const filteredGeoJson = useMemo(() => {
-    // Optimization: If gridCells length == total geojson features, avoid filtering?
-    // But gridCells might be filtered by habitat.
-    const validIds = new Set(gridCells.map(c => c.id));
+    if (!gridCells.length) return { ...geojson, features: [] };
 
-    return {
-      ...geojson,
-      features: geojson.features.filter(f => {
-        const id = f.properties.ID;
-        return validIds.has(id);
-      }).map(f => {
-        // Enrich with cluster data for current scale
-        const id = f.properties.ID;
-        const cell = gridCells.find(c => c.id === id);
-        return {
-          ...f,
+    // 1. Create a lookup map for grid cell data
+    const cellMap = new Map<number, RichGridCell>(gridCells.map(c => [c.id, c]));
+
+    // 2. Filter features that exist in our data AND enrich them with cluster info
+    const enrichedFeatures = geojson.features.reduce((acc, feature) => {
+      const id = feature.properties.ID;
+      const cell = cellMap.get(id);
+
+      if (cell) {
+        acc.push({
+          ...feature,
           properties: {
-            ...f.properties,
-            cluster: (typologyScale === 'scale5' ? cell?.cluster5 : cell?.cluster18) || 0
+            ...feature.properties,
+            cluster: (typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18) || 0
           }
-        };
-      })
-    };
+        });
+      }
+      return acc;
+    }, [] as typeof geojson.features);
+
+    return { ...geojson, features: enrichedFeatures };
   }, [geojson, gridCells, typologyScale]);
 
-  // Hook interaction
-  // We need to pass the Click Handler up.
-  // If MapProps includes `onCellSelect`, we pass it to the hook.
-  // NOTE: I cannot see 'onCellSelect' in the function signature I am replacing, 
-  // but I can see it in the file view at line 34.
-  // I will use `arguments[0].onCellSelect`.
-
-  const { hoveredCellId: internalHover, hoverInfo, onHover, onClick } = useMapInteraction({
+  const { hoveredCellId, hoverInfo, onHover, onClick } = useMapInteraction({
     onCellSelect,
   });
 
-  const effectiveHoverId = propHoveredCellId ?? internalHover;
-
   // Find hovered cell data
-  const hoveredCell = effectiveHoverId
-    ? gridCells.find((c) => c.id === effectiveHoverId)
+  const hoveredCell = hoveredCellId
+    ? gridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
   if (!MAPBOX_TOKEN) {
@@ -117,7 +107,7 @@ export function Map({
         <GridLayer
           geojson={filteredGeoJson}
           typologies={typologies}
-          hoveredCellId={effectiveHoverId}
+          hoveredCellId={hoveredCellId}
           selectedCellId={selectedCellId}
           typologyScale={typologyScale}
         />
@@ -127,6 +117,7 @@ export function Map({
             x={hoverInfo.x}
             y={hoverInfo.y}
             cell={hoveredCell}
+            typologyScale={typologyScale}
           />
         )}
       </MapGL>
