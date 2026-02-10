@@ -1,15 +1,20 @@
+// Core
 import { useState, useEffect } from 'react';
+
+// Loaders
 import { loadGridItems } from '../loaders/loadGridItems';
 import { loadResiduals } from '../loaders/loadResiduals';
 import { loadAllClusters } from '../loaders/loadAllClusters';
 import { loadGridGeoJson } from '../loaders/loadGridGeojson';
 
-import { joinGridData } from '../transforms/joinGridWithClusters';
+// Data Types
 import type { RichGridCell } from '../types/grid.types';
-import { deriveTypologies } from '../transforms/deriveTypologies';
-
 import type { GridGeoJSON } from '../types/geo.types';
 import type { TypologyMap } from '../types/cluster.types';
+
+// Transformation & Derivation
+import { joinGridData } from '../transforms/joinGridWithClusters';
+import { deriveTypologies } from '../transforms/deriveTypologies';
 
 interface ScientificData {
   isLoading: boolean;
@@ -32,7 +37,7 @@ export function useScientificData(): ScientificData {
         console.time('DataLoad');
 
         // NOTE: Loaders are currently synchronous (using Vite's ?raw import).
-        // This is intentional for Glow-6 to ensure deterministic build-time data loading.
+        // This is intentional to ensure deterministic build-time data loading.
         const gridItems = loadGridItems();
         const residuals = loadResiduals();
         const rawClusters = loadAllClusters();

@@ -10,9 +10,8 @@ export function loadGridItems(): GridItem[] {
 
   return raw.map(row => ({
     id: parseInt(row.ID, 10),
-    lat: parseFloat(row.lat || '0'),
-    lng: parseFloat(row.lng || '0'),
     country: row.TERRITORY1,
     iso3: row.ISO_TER1,
+    // lat/lng are not in CSV. App.tsx derives centerCoords from GeoJSON when needed.
   }));
 }

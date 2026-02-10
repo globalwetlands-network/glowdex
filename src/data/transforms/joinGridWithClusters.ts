@@ -1,8 +1,6 @@
 import type { GridItem, Residuals, RichGridCell } from '../types/grid.types';
 import type { ClusterRaw } from '../types/cluster.types';
 
-// RichGridCell is now imported from grid.types.ts
-
 export function joinGridData(
   gridItems: GridItem[],
   residuals: Residuals[],
@@ -10,8 +8,10 @@ export function joinGridData(
   rawClusters: ClusterRaw[]
 ): RichGridCell[] {
 
-  // ASSUMPTION: GridItem ID is unique.
-  // ASSUMPTION: Cluster raw file contains one row per GridItem.
+  /* ASSUMPTION(S): 
+  - GridItem ID is unique.
+  - Cluster raw file contains one row per GridItem.
+  */
 
   // Create quick lookup maps
   const residualsMap = new Map<number, Record<string, number>>();
@@ -21,19 +21,18 @@ export function joinGridData(
   rawClusters.forEach(c => clusterMap.set(parseInt(c.ID, 10), c));
 
   return gridItems.map(item => {
-    // defaults to empty object to avoid null checks downstream
+
     const res = residualsMap.get(item.id) || {};
 
     const clusterInfo = clusterMap.get(item.id);
 
     if (!clusterInfo) {
-      console.warn(`[Glow6] Missing cluster info for GridCell ID: ${item.id}`);
+      console.warn(`Missing cluster info for GridCell ID: ${item.id}`);
     }
 
     return {
       ...item,
       residuals: res,
-
       cluster5: clusterInfo?.cluster_5 ? parseInt(clusterInfo.cluster_5, 10) : undefined,
       cluster18: clusterInfo?.cluster_18 ? parseInt(clusterInfo.cluster_18, 10) : undefined,
       mangroves: clusterInfo?.mang_presence === '1',
