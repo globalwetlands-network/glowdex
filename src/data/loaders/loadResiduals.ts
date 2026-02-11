@@ -23,7 +23,7 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
  * // Result: [{ id: 1, values: { 'pressure_mangrove_climate_rate': 0.42, ... } }]
  * ```
  * 
- * @note Synchronous build-time import using Vite's ?raw syntax.
+ * @remarks Synchronous build-time import using Vite's ?raw syntax.
  */
 export function loadResiduals(): Residuals[] {
   const raw = parseCsv<ResidualsRaw>(rawData);

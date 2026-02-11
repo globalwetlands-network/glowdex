@@ -36,7 +36,7 @@ function parseClusterId(value: string | undefined): number | undefined {
  * @param rawClusters - Cluster assignments (one row per grid cell)
  * @returns Array of enriched grid cells with all joined data
  * 
- * @note Assumptions:
+ * @remarks Assumptions:
  *       - Grid item IDs are unique
  *       - Raw clusters file contains exactly one row per grid item
  *       - Missing cluster info triggers a console warning

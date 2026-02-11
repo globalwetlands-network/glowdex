@@ -12,7 +12,7 @@ import type { ClusterRaw } from '../types/cluster.types';
  * 
  * @returns Array of raw cluster definitions
  * 
- * @note Synchronous build-time import using Vite's ?raw syntax.
+ * @remarks Synchronous build-time import using Vite's ?raw syntax.
  *       Data is bundled at compile time for deterministic loading.
  */
 export function loadAllClusters(): ClusterRaw[] {

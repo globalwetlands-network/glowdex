@@ -10,7 +10,7 @@ import rawData from '@/data/raw/grid.geojson?raw';
  * 
  * @returns Parsed GeoJSON FeatureCollection of grid cell polygons
  * 
- * @note Synchronous build-time import using Vite's ?raw syntax.
+ * @remarks Synchronous build-time import using Vite's ?raw syntax.
  *       GeoJSON is bundled at compile time for immediate availability.
  */
 export function loadGridGeoJson(): GridGeoJSON {

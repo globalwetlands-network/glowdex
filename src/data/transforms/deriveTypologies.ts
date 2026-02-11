@@ -35,7 +35,7 @@ function hexToRgba(hex: string, alpha: number): string {
  * @param rawClusters - Raw cluster data from CSV (one row per grid cell)
  * @returns Object containing scale5 and scale18 typology maps
  * 
- * @note The raw data contains duplicate cluster definitions (one per grid cell).
+ * @remarks The raw data contains duplicate cluster definitions (one per grid cell).
  *       This function deduplicates by building a map keyed by cluster ID.
  * 
  * @example

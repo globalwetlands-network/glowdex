@@ -12,10 +12,10 @@ import type { GridItem, GridItemRaw } from '../types/grid.types';
  * 
  * @returns Array of grid cell metadata objects
  * 
- * @note Latitude/longitude coordinates are NOT included in this CSV.
+ * @remarks Latitude/longitude coordinates are NOT included in this CSV.
  *       Center coordinates are calculated from GeoJSON geometries when needed.
  * 
- * @note Synchronous build-time import using Vite's ?raw syntax.
+ * @remarks Synchronous build-time import using Vite's ?raw syntax.
  *       This ensures deterministic data loading at compile time.
  *       Future versions may replace this with async API fetches.
  */
