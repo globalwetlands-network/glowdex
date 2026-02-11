@@ -12,7 +12,7 @@ function MapTooltip({ x, y, cell, typologyScale = 'scale5' }: MapTooltipProps) {
   if (!cell) return null;
 
   const clusterId = typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18;
-  const label = typologyScale === 'scale5' ? 'Micro-Typology (5)' : 'Macro-Typology (18)';
+  const label = typologyScale === 'scale5' ? 'Typology (5)' : 'Typology (18)';
 
   return (
     <div

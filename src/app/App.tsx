@@ -26,12 +26,17 @@ function App() {
 
   // Derived Data
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
+
+  // Convert typologyScale from 'scale5'/'scale18' to 5/18 for the hook
+  const typologyScaleNumber = filterState.typologyScale === 'scale5' ? 5 : 18;
+
   const distributions = useIndicatorDistributions(
     filteredGridCells,
     indicators,
     filterState,
     selectedCellId,
-    filterState.quantile
+    filterState.quantile,
+    typologyScaleNumber  // LEGACY PARITY: Enable typology cluster scoping
   );
 
   const selectedCell = selectedCellId && gridCells && geojson
