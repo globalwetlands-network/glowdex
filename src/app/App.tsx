@@ -8,12 +8,12 @@ import { INITIAL_FILTER_STATE, type FilterState } from '@/features/widgets/types
 
 // App-specific hooks and components
 import { useSelectedCell } from './hooks/useSelectedCell';
-import { useMobilePanel } from './hooks/useMobilePanel';
 import { useTypologyScale } from './hooks/useTypologyScale';
 import { AppLayout } from './components/AppLayout';
 import { SidePanel } from './components/SidePanel';
 import { LoadingState } from './components/LoadingState';
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
+import type { MobileTab } from './types/app.types';
 
 /**
  * Main application component
@@ -27,9 +27,9 @@ function App() {
   // State management
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
   const [filterState, setFilterState] = useState<FilterState>(INITIAL_FILTER_STATE);
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
 
   // Custom hooks
-  const mobilePanel = useMobilePanel();
   const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
@@ -47,9 +47,9 @@ function App() {
   // Event handlers
   const handleCellSelect = (id: number | null) => {
     setSelectedCellId(id);
-    // Auto-open panel on mobile when a cell is selected
+    // Auto-switch to Analysis tab on mobile when a cell is selected
     if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-      mobilePanel.open();
+      setMobileActiveTab('panel');
     }
   };
 
@@ -74,8 +74,6 @@ function App() {
   // Render side panel
   const sidePanel = (
     <SidePanel
-      isOpen={mobilePanel.isOpen}
-      onClose={mobilePanel.close}
       filterState={filterState}
       onFilterChange={setFilterState}
       selectedCell={selectedCell}
@@ -91,8 +89,8 @@ function App() {
     <AppLayout
       mapArea={mapArea}
       sidePanel={sidePanel}
-      isMobilePanelOpen={mobilePanel.isOpen}
-      onToggleMobilePanel={mobilePanel.toggle}
+      mobileActiveTab={mobileActiveTab}
+      onMobileTabChange={setMobileActiveTab}
     />
   );
 }

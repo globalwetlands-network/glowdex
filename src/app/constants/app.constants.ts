@@ -5,6 +5,9 @@
 /** Mobile breakpoint in pixels */
 export const MOBILE_BREAKPOINT = 768;
 
+/** Mobile tab navigation height in pixels */
+export const TAB_HEIGHT = 48;
+
 /** Quantile slider configuration */
 export const QUANTILE_CONFIG = {
   MIN: 0,

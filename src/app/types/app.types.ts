@@ -19,3 +19,8 @@ export interface MobilePanelState {
   close: () => void;
   toggle: () => void;
 }
+
+/**
+ * Mobile tab options
+ */
+export type MobileTab = 'panel' | 'map';

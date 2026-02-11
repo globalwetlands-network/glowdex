@@ -1,44 +1,44 @@
-import { Menu, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import type { MobileTab } from '../types/app.types';
+import { MobileTabNavigation } from './MobileTabNavigation';
 
 interface AppLayoutProps {
   mapArea: ReactNode;
   sidePanel: ReactNode;
-  isMobilePanelOpen: boolean;
-  onToggleMobilePanel: () => void;
+  mobileActiveTab: MobileTab;
+  onMobileTabChange: (tab: MobileTab) => void;
 }
 
 /**
  * Responsive application layout
  * Desktop: Side panel (left) + Map (right)
- * Mobile: Map (top) + Sliding panel (bottom)
+ * Mobile: Tab navigation + Content area (panel OR map)
  */
 export function AppLayout({
   mapArea,
   sidePanel,
-  isMobilePanelOpen,
-  onToggleMobilePanel,
+  mobileActiveTab,
+  onMobileTabChange,
 }: AppLayoutProps) {
   return (
     <div className="h-screen w-screen flex flex-col md:flex-row overflow-hidden bg-gray-100">
-      {/* Map Area (Flex-1, fills remaining space) */}
-      <div className="flex-1 relative order-1 md:order-2 h-1/2 md:h-full">
-        {mapArea}
+      {/* Mobile Tab Navigation (only visible on mobile) */}
+      <MobileTabNavigation activeTab={mobileActiveTab} onTabChange={onMobileTabChange} />
 
-        {/* Floating Mobile Header / Toggle */}
-        <div className="absolute top-4 left-4 z-10 md:hidden">
-          <button
-            onClick={onToggleMobilePanel}
-            className="bg-white p-2 rounded-md shadow-md text-gray-700 hover:bg-gray-50"
-            aria-label={isMobilePanelOpen ? 'Close menu' : 'Open menu'}
-          >
-            {isMobilePanelOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+      {/* Desktop: Side Panel (Left) */}
+      <div className="hidden md:flex md:order-1">
+        {sidePanel}
       </div>
 
-      {/* Side Panel (Left on desktop, Bottom sheet on mobile) */}
-      {sidePanel}
+      {/* Mobile: Conditional Content (Panel OR Map) */}
+      <div className="flex-1 md:hidden overflow-hidden">
+        {mobileActiveTab === 'panel' ? sidePanel : mapArea}
+      </div>
+
+      {/* Desktop: Map Area (Right) */}
+      <div className="hidden md:flex md:flex-1 md:order-2 md:relative">
+        {mapArea}
+      </div>
     </div>
   );
 }

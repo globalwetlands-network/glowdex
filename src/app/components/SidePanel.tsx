@@ -1,4 +1,4 @@
-import { Layers, X } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -11,8 +11,6 @@ import { GroupedViolinPlot } from '@/features/widgets/components/ViolinPlot';
 import { QuantileSlider } from './QuantileSlider';
 
 interface SidePanelProps {
-  isOpen: boolean;
-  onClose: () => void;
   filterState: FilterState;
   onFilterChange: (state: FilterState) => void;
   selectedCell: EnrichedGridCell | null;
@@ -25,11 +23,9 @@ interface SidePanelProps {
 
 /**
  * Side panel containing filters, selection info, and analysis widgets
- * Responsive: slides up from bottom on mobile, fixed sidebar on desktop
+ * Responsive: Full-screen on mobile (via tabs), fixed sidebar on desktop
  */
 export function SidePanel({
-  isOpen,
-  onClose,
   filterState,
   onFilterChange,
   selectedCell,
@@ -44,15 +40,7 @@ export function SidePanel({
   };
 
   return (
-    <div
-      className={`
-        bg-white shadow-xl z-20 flex flex-col
-        md:w-96 md:h-full md:border-r md:border-gray-200 md:relative md:order-1
-        w-full fixed bottom-0 max-h-[60vh] md:max-h-full transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}
-        md:translate-y-0
-      `}
-    >
+    <div className="bg-white shadow-xl flex flex-col w-full md:w-96 h-full md:border-r md:border-gray-200">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
         <div className="flex items-center space-x-2">
@@ -66,14 +54,6 @@ export function SidePanel({
             </p>
           </div>
         </div>
-        {/* Close button for mobile only */}
-        <button
-          onClick={onClose}
-          className="md:hidden text-gray-400 hover:text-gray-600"
-          aria-label="Close panel"
-        >
-          <X size={20} />
-        </button>
       </div>
 
       {/* Scrollable Content */}
