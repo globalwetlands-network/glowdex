@@ -1,20 +1,14 @@
-// Core
 import { useMemo } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl';
 
-// Data Types
-import type { RichGridCell } from '@/data/types/grid.types';
-import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
+import type { GridGeoJSON } from '@/data/types/geo.types';
+import type { RichGridCell } from '@/data/types/grid.types';
 
-// Components
+import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import MapTooltip from './MapTooltip';
 
-// Hooks
-import { useMapInteraction } from '../hooks/useMapInteraction';
-
-// Styles
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapProps {
@@ -23,17 +17,60 @@ interface MapProps {
   typologies: TypologyMap;
   selectedCellId: number | null;
   onCellSelect: (id: number | null) => void;
+  typologyScale?: 'scale5' | 'scale18';
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Initial view state (centered largely on Indonesia / Australia region or global)
 const INITIAL_VIEW_STATE = {
   longitude: 115,
   latitude: -5,
   zoom: 3,
 };
 
+/**
+ * Filters and enriches GeoJSON features with cluster information
+ * Only includes features that exist in the filtered grid cells
+ */
+function enrichGeoJsonFeatures(
+  geojson: GridGeoJSON,
+  gridCells: RichGridCell[],
+  typologyScale: 'scale5' | 'scale18'
+): GridGeoJSON {
+  if (!gridCells.length) {
+    return { ...geojson, features: [] };
+  }
+
+  // Create lookup map for O(1) cell access
+  const cellMap = new Map<number, RichGridCell>(
+    gridCells.map(c => [c.id, c])
+  );
+
+  // Filter and enrich features with cluster data
+  const enrichedFeatures = geojson.features.reduce((acc, feature) => {
+    const id = feature.properties.ID;
+    const cell = cellMap.get(id);
+
+    if (cell) {
+      const cluster = typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18;
+      acc.push({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          cluster: cluster || 0
+        }
+      });
+    }
+    return acc;
+  }, [] as typeof geojson.features);
+
+  return { ...geojson, features: enrichedFeatures };
+}
+
+/**
+ * Main map component displaying global wetlands grid cells
+ * Supports hover interactions, cell selection, and typology visualization
+ */
 export function GridMap({
   gridCells,
   geojson,
@@ -41,46 +78,18 @@ export function GridMap({
   selectedCellId,
   typologyScale = 'scale5',
   onCellSelect,
-}: MapProps & {
-  typologyScale?: 'scale5' | 'scale18';
-}) {
-  /* 
-  Filter GeoJSON features to only those present in the filtered gridCells and
-  Filter & Enrich GeoJSON Features
-  */
-  const filteredGeoJson = useMemo(() => {
-    if (!gridCells.length) return { ...geojson, features: [] };
-
-    // 1. Create a lookup map for grid cell data
-    const cellMap = new Map<number, RichGridCell>(gridCells.map(c => [c.id, c]));
-
-    // 2. Filter features that exist in our data AND enrich them with cluster info
-    const enrichedFeatures = geojson.features.reduce((acc, feature) => {
-      const id = feature.properties.ID;
-      const cell = cellMap.get(id);
-
-      if (cell) {
-        acc.push({
-          ...feature,
-          properties: {
-            ...feature.properties,
-            cluster: (typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18) || 0
-          }
-        });
-      }
-      return acc;
-    }, [] as typeof geojson.features);
-
-    return { ...geojson, features: enrichedFeatures };
-  }, [geojson, gridCells, typologyScale]);
+}: MapProps) {
+  const filteredGeoJson = useMemo(
+    () => enrichGeoJsonFeatures(geojson, gridCells, typologyScale),
+    [geojson, gridCells, typologyScale]
+  );
 
   const { hoveredCellId, hoverInfo, onHover, onClick } = useMapInteraction({
     onCellSelect,
   });
 
-  // Find hovered cell data
   const hoveredCell = hoveredCellId
-    ? gridCells.find((c) => c.id === hoveredCellId)
+    ? gridCells.find(c => c.id === hoveredCellId)
     : undefined;
 
   if (!MAPBOX_TOKEN) {
@@ -112,7 +121,7 @@ export function GridMap({
           typologyScale={typologyScale}
         />
 
-        {hoverInfo && (
+        {hoverInfo && hoveredCell && (
           <MapTooltip
             x={hoverInfo.x}
             y={hoverInfo.y}
