@@ -70,9 +70,9 @@ export function GridLayer({
     const colorExpression = createColorExpression(typologies, typologyScale);
 
     return {
-      'fill-color': colorExpression as any,
+      'fill-color': colorExpression,
       'fill-outline-color': 'rgba(0,0,0,0.1)',
-    };
+    } as FillLayerSpecification['paint'];
   }, [typologies, typologyScale]);
 
   const highlightPaint: LineLayerSpecification['paint'] = {
