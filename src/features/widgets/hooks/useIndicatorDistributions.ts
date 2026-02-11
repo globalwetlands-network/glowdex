@@ -198,7 +198,7 @@ export function useIndicatorDistributions(
     if (!gridCells.length || !indicators.length) return {};
 
     const selectedCell = selectedCellId
-      ? gridCells.find(c => c.id === selectedCellId)
+      ? (gridCells.find(c => c.id === selectedCellId) || null)
       : null;
 
     // Scope to typology cluster
