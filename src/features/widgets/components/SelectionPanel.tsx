@@ -24,8 +24,8 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
 
   // Format coordinates
   // Use centerCoords if available (from GeoJSON bbox), otherwise fallback to lat/lng
-  const centerCoords = (selectedCell as any).centerCoords;
-  const coords = centerCoords || { latitude: lat, longitude: lng };
+  const centerCoords = (selectedCell as RichGridCell & { centerCoords?: { latitude: number; longitude: number } }).centerCoords;
+  const coords = centerCoords || { latitude: lat || 0, longitude: lng || 0 };
   const coordinatesFormatted = formatCoordinate(coords);
 
   return (
