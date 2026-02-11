@@ -10,6 +10,9 @@ import { loadResiduals } from '../loaders/loadResiduals';
 import { deriveTypologies } from '../transforms/deriveTypologies';
 import { joinGridData } from '../transforms/joinGridWithClusters';
 
+/**
+ * Complete scientific dataset for the application
+ */
 interface ScientificData {
   isLoading: boolean;
   gridCells: RichGridCell[];
@@ -18,18 +21,29 @@ interface ScientificData {
 }
 
 /**
- * Loads all scientific data (grid cells, residuals, clusters, GeoJSON)
- * Performs data transformations and joins
+ * Loads and processes all scientific data for the application
+ * 
+ * Orchestrates the complete data loading pipeline:
+ * 1. Loads raw data from CSV and GeoJSON files
+ * 2. Derives typology cluster definitions
+ * 3. Joins grid items with clusters and residuals
+ * 
+ * @returns Promise resolving to complete scientific dataset
+ * 
+ * @remarks All loaders use Vite's ?raw import for synchronous, deterministic
+ *          build-time data loading. This ensures data is bundled with the app.
+ * 
+ * @throws Error if any data loading or transformation fails
+ * 
  */
 async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
-  // Loaders are synchronous (using Vite's ?raw import)
-  // This ensures deterministic build-time data loading
+  // Load all raw data sources (synchronous via Vite's ?raw import)
   const gridItems = loadGridItems();
   const residuals = loadResiduals();
   const rawClusters = loadAllClusters();
   const geojson = loadGridGeoJson();
 
-  // Transform and join data
+  // Transform and join data into usable structures
   const typologies = deriveTypologies(rawClusters);
   const gridCells = joinGridData(gridItems, residuals, rawClusters);
 
@@ -41,8 +55,24 @@ async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
 }
 
 /**
- * Hook to load and manage all scientific data for the application
- * Loads grid cells, residuals, typologies, and GeoJSON on mount
+ * React hook to load and manage all scientific data for the application
+ * 
+ * Loads the complete dataset on component mount:
+ * - Grid cell metadata (country, ISO codes)
+ * - Indicator residual values
+ * - Typology cluster assignments (5-scale and 18-scale)
+ * - GeoJSON geometries for map visualization
+ * - Habitat presence flags (mangroves, saltmarsh, seagrass)
+ * 
+ * @returns Scientific data object with loading state
+ * 
+ * @remarks Data loading is logged to console with timing information.
+ *          Check browser console for load time and cell count.
+ * 
+ * @remarks On error, loading state is set to false to prevent UI hanging.
+ *          Error details are logged to console.
+ * 
+ * ```
  */
 export function useScientificData(): ScientificData {
   const [data, setData] = useState<ScientificData>({
@@ -53,7 +83,7 @@ export function useScientificData(): ScientificData {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    /** Loads all scientific data asynchronously */
     async function load() {
       try {
         console.time('DataLoad');
@@ -68,14 +98,15 @@ export function useScientificData(): ScientificData {
           ...loadedData,
         });
       } catch (error) {
-        console.error('Failed to load scientific data', error);
-        // Stop loading state so UI doesn't hang
+        console.error('Failed to load scientific data:', error);
+
+        // Stop loading state to prevent UI from hanging indefinitely
         setData(prev => ({ ...prev, isLoading: false }));
       }
     }
 
     load();
-  }, []);
+  }, []); // Empty dependency array: load only once on mount
 
   return data;
 }
