@@ -1,40 +1,48 @@
+
 import { useState } from 'react';
+
+// Context
+import { AppProviders } from '@/app/AppProviders';
+import { useData } from '@/context/DataProvider';
+import { useFilter } from '@/context/FilterProvider';
+import { useSelection } from '@/context/SelectionProvider';
+
+// Feature Hooks & Components
 import { GridMap as Map } from '@/features/map/components/Map';
-import { useScientificData } from '@/data/hooks/useScientificData';
-import { useIndicators } from '@/data/hooks/useIndicators';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
-import { INITIAL_FILTER_STATE, type FilterState } from '@/features/widgets/types/filter.types';
 
-// App-specific hooks and components
+// App Components
+import { AppLayout } from './components/AppLayout';
+import { LoadingState } from './components/LoadingState';
+import { SidePanel } from './components/SidePanel';
+
+// App Hooks, Constants & Types
+import { MOBILE_BREAKPOINT } from './constants/app.constants';
 import { useSelectedCell } from './hooks/useSelectedCell';
 import { useTypologyScale } from './hooks/useTypologyScale';
-import { AppLayout } from './components/AppLayout';
-import { SidePanel } from './components/SidePanel';
-import { LoadingState } from './components/LoadingState';
-import { MOBILE_BREAKPOINT } from './constants/app.constants';
 import type { MobileTab } from './types/app.types';
 
 /**
- * Main application component
- * Orchestrates data fetching, state management, and layout rendering
+ * Inner App component that consumes contexts
+ * Handles derived state and layout orchestration
  */
-function App() {
-  // Data fetching
-  const { gridCells, geojson, typologies, isLoading } = useScientificData();
-  const { indicators } = useIndicators();
+function AppShell() {
+  // Context consumption
+  const { gridCells, geojson, typologies, indicators, isLoading } = useData();
+  const { filterState, setFilterState } = useFilter();
+  const { selectedCellId, setSelectedCellId } = useSelection();
 
-  // State management
-  const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
-  const [filterState, setFilterState] = useState<FilterState>(INITIAL_FILTER_STATE);
+  // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
 
-  // Custom hooks
-  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+  // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
-  // Derived data
+  // 1. Filter grid cells based on UI controls
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
+
+  // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
     filteredGridCells,
     indicators,
@@ -44,10 +52,13 @@ function App() {
     typologyScaleNumber
   );
 
+  // Derived selection object
+  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
   // Event handlers
   const handleCellSelect = (id: number | null) => {
     setSelectedCellId(id);
-    // Auto-switch to Analysis tab on mobile when a cell is selected
+    // Auto-switch to Analysis tab on mobile
     if (id && window.innerWidth < MOBILE_BREAKPOINT) {
       setMobileActiveTab('panel');
     }
@@ -92,6 +103,18 @@ function App() {
       mobileActiveTab={mobileActiveTab}
       onMobileTabChange={setMobileActiveTab}
     />
+  );
+}
+
+/**
+ * Main App Entry Point
+ * Wraps the shell in providers
+ */
+function App() {
+  return (
+    <AppProviders>
+      <AppShell />
+    </AppProviders>
   );
 }
 

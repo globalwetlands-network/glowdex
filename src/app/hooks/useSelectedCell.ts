@@ -33,7 +33,7 @@ export function useSelectedCell(
     // Find matching GeoJSON feature and calculate centerCoords (legacy approach)
     const feature = geojson.features.find(f => f.properties.ID === selectedCellId);
     if (!feature) {
-      return cell;
+      return cell as EnrichedGridCell;
     }
 
     const centerCoords = getFeatureCenterCoords(feature);

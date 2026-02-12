@@ -1,5 +1,5 @@
 import bbox from '@turf/bbox';
-import type { Feature, Polygon, MultiPolygon, GeoJsonProperties } from 'geojson';
+import type { Feature } from 'geojson';
 
 export function getBboxCenter({ minLng, minLat, maxLng, maxLat }: {
   minLng: number;
@@ -12,7 +12,7 @@ export function getBboxCenter({ minLng, minLat, maxLng, maxLat }: {
   return { latitude: centerLat, longitude: centerLng };
 }
 
-export function getFeatureCenterCoords(feature: Feature<Polygon | MultiPolygon, GeoJsonProperties>): { latitude: number; longitude: number } {
+export function getFeatureCenterCoords(feature: Feature<any>): { latitude: number; longitude: number } {
   const [minLng, minLat, maxLng, maxLat] = bbox(feature);
   return getBboxCenter({ minLng, minLat, maxLng, maxLat });
 }
