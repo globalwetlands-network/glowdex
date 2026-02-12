@@ -33,7 +33,12 @@ export function useIndicators() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+
+    /**
+     * Load indicators
+     */
     async function load() {
+
       try {
         const data = await loadIndicators();
         setIndicators(data);

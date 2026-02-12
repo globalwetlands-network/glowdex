@@ -12,7 +12,7 @@ export function getBboxCenter({ minLng, minLat, maxLng, maxLat }: {
   return { latitude: centerLat, longitude: centerLng };
 }
 
-export function getFeatureCenterCoords(feature: Feature<any>): { latitude: number; longitude: number } {
+export function getFeatureCenterCoords(feature: Feature): { latitude: number; longitude: number } {
   const [minLng, minLat, maxLng, maxLat] = bbox(feature);
   return getBboxCenter({ minLng, minLat, maxLng, maxLat });
 }

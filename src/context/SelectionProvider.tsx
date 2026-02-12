@@ -1,14 +1,8 @@
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
-interface SelectionContextValue {
-  selectedCellId: number | null;
-  setSelectedCellId: (id: number | null) => void;
-  hoveredCellId: number | null;
-  setHoveredCellId: (id: number | null) => void;
-}
-
-const SelectionContext = createContext<SelectionContextValue | undefined>(undefined);
+// Context
+import { SelectionContext, type SelectionContextValue } from './SelectionContext';
 
 export function SelectionProvider({ children }: { children: ReactNode }) {
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
@@ -26,12 +20,4 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
       {children}
     </SelectionContext.Provider>
   );
-}
-
-export function useSelection() {
-  const context = useContext(SelectionContext);
-  if (context === undefined) {
-    throw new Error('useSelection must be used within a SelectionProvider');
-  }
-  return context;
 }
