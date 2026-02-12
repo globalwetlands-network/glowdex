@@ -1,4 +1,3 @@
-import rawData from '@/data/raw/all-clusters.csv?raw';
 import { parseCsv } from './csvParser';
 import type { ClusterRaw } from '../types/cluster.types';
 
@@ -10,11 +9,15 @@ import type { ClusterRaw } from '../types/cluster.types';
  * - Fill and stroke colors for map visualization
  * - Typology scale associations (5 or 18 clusters)
  * 
- * @returns Array of raw cluster definitions
+ * @returns Promise resolving to array of raw cluster definitions
  * 
- * @remarks Synchronous build-time import using Vite's ?raw syntax.
- *       Data is bundled at compile time for deterministic loading.
+ * @remarks Fetches data from /data/all-clusters.csv at runtime.
  */
-export function loadAllClusters(): ClusterRaw[] {
-  return parseCsv<ClusterRaw>(rawData);
+export async function loadAllClusters(): Promise<ClusterRaw[]> {
+  const response = await fetch('/data/all-clusters.csv');
+  if (!response.ok) {
+    throw new Error(`Failed to load clusters: ${response.statusText}`);
+  }
+  const text = await response.text();
+  return parseCsv<ClusterRaw>(text);
 }

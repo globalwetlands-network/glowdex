@@ -1,5 +1,4 @@
 import type { GridGeoJSON } from '../types/geo.types';
-import rawData from '@/data/raw/grid.geojson?raw';
 
 /**
  * Loads grid cell geometries as GeoJSON FeatureCollection
@@ -8,11 +7,14 @@ import rawData from '@/data/raw/grid.geojson?raw';
  * - ID: Grid cell identifier
  * - Bounding box coordinates for center point calculation
  * 
- * @returns Parsed GeoJSON FeatureCollection of grid cell polygons
+ * @returns Promise resolving to GeoJSON FeatureCollection
  * 
- * @remarks Synchronous build-time import using Vite's ?raw syntax.
- *       GeoJSON is bundled at compile time for immediate availability.
+ * @remarks Fetches data from /data/grid.geojson at runtime.
  */
-export function loadGridGeoJson(): GridGeoJSON {
-  return JSON.parse(rawData) as GridGeoJSON;
+export async function loadGridGeoJson(): Promise<GridGeoJSON> {
+  const response = await fetch('/data/grid.geojson');
+  if (!response.ok) {
+    throw new Error(`Failed to load GeoJSON: ${response.statusText}`);
+  }
+  return response.json();
 }

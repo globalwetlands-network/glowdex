@@ -24,24 +24,25 @@ interface ScientificData {
  * Loads and processes all scientific data for the application
  * 
  * Orchestrates the complete data loading pipeline:
- * 1. Loads raw data from CSV and GeoJSON files
+ * 1. Fetches raw data from static assets (CSV/GeoJSON)
  * 2. Derives typology cluster definitions
  * 3. Joins grid items with clusters and residuals
  * 
  * @returns Promise resolving to complete scientific dataset
  * 
- * @remarks All loaders use Vite's ?raw import for synchronous, deterministic
- *          build-time data loading. This ensures data is bundled with the app.
+ * @remarks Fetches data in parallel to minimize load time.
  * 
  * @throws Error if any data loading or transformation fails
  * 
  */
 async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
-  // Load all raw data sources (synchronous via Vite's ?raw import)
-  const gridItems = loadGridItems();
-  const residuals = loadResiduals();
-  const rawClusters = loadAllClusters();
-  const geojson = loadGridGeoJson();
+  // Load all raw data sources in parallel
+  const [gridItems, residuals, rawClusters, geojson] = await Promise.all([
+    loadGridItems(),
+    loadResiduals(),
+    loadAllClusters(),
+    loadGridGeoJson(),
+  ]);
 
   // Transform and join data into usable structures
   const typologies = deriveTypologies(rawClusters);

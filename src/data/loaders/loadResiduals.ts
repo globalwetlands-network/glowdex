@@ -1,4 +1,3 @@
-import rawData from '@/data/raw/grid-items-residuals.csv?raw';
 import { parseCsv } from './csvParser';
 import type { Residuals, ResidualsRaw } from '../types/grid.types';
 
@@ -15,18 +14,17 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
  * 3. Filters out empty/undefined values (sparse data)
  * 4. Returns a clean key-value map of indicator residuals
  * 
- * @returns Array of residual objects, one per grid cell
+ * @returns Promise resolving to array of residual objects
  * 
- * @example
- * ```ts
- * const residuals = loadResiduals();
- * // Result: [{ id: 1, values: { 'pressure_mangrove_climate_rate': 0.42, ... } }]
- * ```
- * 
- * @remarks Synchronous build-time import using Vite's ?raw syntax.
+ * @remarks Fetches data from /data/grid-items-residuals.csv at runtime.
  */
-export function loadResiduals(): Residuals[] {
-  const raw = parseCsv<ResidualsRaw>(rawData);
+export async function loadResiduals(): Promise<Residuals[]> {
+  const response = await fetch('/data/grid-items-residuals.csv');
+  if (!response.ok) {
+    throw new Error(`Failed to load residuals: ${response.statusText}`);
+  }
+  const text = await response.text();
+  const raw = parseCsv<ResidualsRaw>(text);
 
   return raw.map(row => {
     const { ID, ...rest } = row;

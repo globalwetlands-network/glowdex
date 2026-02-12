@@ -1,4 +1,3 @@
-import rawData from '@/data/raw/grid-items.csv?raw';
 import { parseCsv } from './csvParser';
 import type { GridItem, GridItemRaw } from '../types/grid.types';
 
@@ -10,17 +9,17 @@ import type { GridItem, GridItemRaw } from '../types/grid.types';
  * - Country/territory name
  * - ISO3 country code
  * 
- * @returns Array of grid cell metadata objects
+ * @returns Promise resolving to array of grid cell metadata objects
  * 
- * @remarks Latitude/longitude coordinates are NOT included in this CSV.
- *       Center coordinates are calculated from GeoJSON geometries when needed.
- * 
- * @remarks Synchronous build-time import using Vite's ?raw syntax.
- *       This ensures deterministic data loading at compile time.
- *       Future versions may replace this with async API fetches.
+ * @remarks Fetches data from /data/grid-items.csv at runtime.
  */
-export function loadGridItems(): GridItem[] {
-  const raw = parseCsv<GridItemRaw>(rawData);
+export async function loadGridItems(): Promise<GridItem[]> {
+  const response = await fetch('/data/grid-items.csv');
+  if (!response.ok) {
+    throw new Error(`Failed to load grid items: ${response.statusText}`);
+  }
+  const text = await response.text();
+  const raw = parseCsv<GridItemRaw>(text);
 
   return raw.map(row => ({
     id: parseInt(row.ID, 10),

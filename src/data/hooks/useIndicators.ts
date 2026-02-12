@@ -1,48 +1,8 @@
-import { useMemo } from 'react';
 
-import indicatorRaw from '@/data/raw/indicator-labels.json';
+import { useEffect, useMemo, useState } from 'react';
 
+import { loadIndicators } from '../loaders/loadIndicators';
 import type { Indicator, IndicatorDimension } from '@/features/widgets/types/indicator.types';
-
-type HabitatKey = 'mg' | 'sm' | 'sg' | 'all';
-type HabitatId = 'mangroves' | 'saltmarsh' | 'seagrass' | 'all';
-
-const HABITAT_MAP: Record<HabitatKey, HabitatId> = {
-  mg: 'mangroves',
-  sm: 'saltmarsh',
-  sg: 'seagrass',
-  all: 'all'
-};
-
-const HABITAT_PREFIX_MAP: Record<HabitatKey, string> = {
-  mg: 'Mangrove',
-  sm: 'Saltmarsh',
-  sg: 'Seagrass',
-  all: ''
-};
-
-/**
- * Transforms raw indicator data into typed Indicator objects
- * Adds habitat prefixes to labels (e.g., "Fish density" -> "Mangrove Fish density")
- */
-function transformIndicators(raw: Array<Record<string, unknown>>): Indicator[] {
-  return raw.map(i => {
-    const habitatKey = i.habitat as HabitatKey;
-    const habitatLabel = HABITAT_MAP[habitatKey] || 'all';
-    const prefix = HABITAT_PREFIX_MAP[habitatKey] || '';
-    const rawLabel = i.label as string;
-    const label = prefix ? `${prefix} ${rawLabel}` : rawLabel;
-
-    return {
-      key: i.indicator as string,
-      label,
-      dimension: i.dimension as string,
-      habitat: habitatLabel,
-      direction: i.direction as 1 | -1,
-      description: i.description as string
-    };
-  });
-}
 
 /**
  * Groups indicators by dimension
@@ -68,13 +28,28 @@ function groupByDimension(indicators: Indicator[]): IndicatorDimension[] {
  * Returns flat list of indicators and grouped by dimension
  */
 export function useIndicators() {
-  const indicators: Indicator[] = useMemo(() => {
-    return transformIndicators(indicatorRaw as unknown as Array<Record<string, unknown>>);
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await loadIndicators();
+        setIndicators(data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Failed to load indicators:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setIsLoading(false);
+      }
+    }
+    load();
   }, []);
 
   const dimensions: IndicatorDimension[] = useMemo(() => {
     return groupByDimension(indicators);
   }, [indicators]);
 
-  return { indicators, dimensions };
+  return { indicators, dimensions, isLoading, error };
 }
