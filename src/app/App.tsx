@@ -3,9 +3,9 @@ import { useState } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
-import { useData } from '@/context/DataProvider';
-import { useFilter } from '@/context/FilterProvider';
-import { useSelection } from '@/context/SelectionProvider';
+import { useData } from '@/context/DataContext';
+import { useFilter } from '@/context/FilterContext';
+import { useSelection } from '@/context/SelectionContext';
 
 // Feature Hooks & Components
 import { GridMap as Map } from '@/features/map/components/Map';
