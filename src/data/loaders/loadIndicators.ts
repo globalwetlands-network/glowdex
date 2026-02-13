@@ -1,4 +1,5 @@
 
+import { fetchAsset } from '@/utils/fetchUtils';
 import type { Indicator, HabitatId } from '@/features/widgets/types/indicator.types';
 
 // Types for raw JSON structure
@@ -57,7 +58,7 @@ function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
  * @returns Promise resolving to array of Indicator objects
  */
 export async function loadIndicators(): Promise<Indicator[]> {
-  const response = await fetch('/data/indicator-labels.json');
+  const response = await fetchAsset('data/indicator-labels.json');
   if (!response.ok) {
     throw new Error(`Failed to load indicators: ${response.statusText}`);
   }

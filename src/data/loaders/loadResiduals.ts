@@ -1,3 +1,5 @@
+
+import { fetchAsset } from '@/utils/fetchUtils';
 import { parseCsv } from './csvParser';
 import type { Residuals, ResidualsRaw } from '../types/grid.types';
 
@@ -19,7 +21,7 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
  * @remarks Fetches data from /data/grid-items-residuals.csv at runtime.
  */
 export async function loadResiduals(): Promise<Residuals[]> {
-  const response = await fetch('/data/grid-items-residuals.csv');
+  const response = await fetchAsset('data/grid-items-residuals.csv');
   if (!response.ok) {
     throw new Error(`Failed to load residuals: ${response.statusText}`);
   }
@@ -33,7 +35,7 @@ export async function loadResiduals(): Promise<Residuals[]> {
     const values: Record<string, number> = {};
     Object.entries(rest).forEach(([key, val]) => {
       if (val !== undefined && val !== '') {
-        values[key] = parseFloat(val);
+        values[key] = parseFloat(val as string);
       }
     });
 

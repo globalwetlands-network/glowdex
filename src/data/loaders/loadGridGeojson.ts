@@ -1,3 +1,4 @@
+import { fetchAsset } from '@/utils/fetchUtils';
 import type { GridGeoJSON } from '../types/geo.types';
 
 /**
@@ -12,7 +13,7 @@ import type { GridGeoJSON } from '../types/geo.types';
  * @remarks Fetches data from /data/grid.geojson at runtime.
  */
 export async function loadGridGeoJson(): Promise<GridGeoJSON> {
-  const response = await fetch('/data/grid.geojson');
+  const response = await fetchAsset('data/grid.geojson');
   if (!response.ok) {
     throw new Error(`Failed to load GeoJSON: ${response.statusText}`);
   }
