@@ -12,9 +12,19 @@ const BASE_URL = import.meta.env?.BASE_URL ?? '/';
  * @returns The full URL with base path
  */
 export function getAssetUrl(path: string): string {
-  // Remove leading slashes to avoid double slashes with BASE_URL
-  const cleanPath = path.replace(/^\/+/, '');
-  return `${BASE_URL}${cleanPath}`;
+  // Normalize base to always start and end with slash
+  const base = BASE_URL.startsWith('/') ? BASE_URL : `/${BASE_URL}`;
+  const safeBase = base.endsWith('/') ? base : `${base}/`;
+
+  const dummyOrigin = 'http://internal-check';
+  const resolved = new URL(path, `${dummyOrigin}${safeBase}`);
+
+  // Security: ensure resolved path stays within BASE_URL
+  if (!resolved.pathname.startsWith(safeBase)) {
+    throw new Error(`Invalid asset path: Path traversal not allowed in "${path}"`);
+  }
+
+  return resolved.pathname;
 }
 
 /**
