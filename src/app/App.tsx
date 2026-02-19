@@ -29,9 +29,24 @@ import type { MobileTab } from './types/app.types';
  */
 function AppShell() {
   // Context consumption
-  const { gridCells, geojson, typologies, indicators, isLoading } = useData();
+  const { gridCells, geojson, typologies, indicators, isLoading, error } = useData();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen bg-gray-50 text-gray-500">
+        <div className="text-center space-y-2">
+          <p className="font-medium text-gray-700">
+            Unable to load scientific data.
+          </p>
+          <p className="text-xs text-gray-400">
+            {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
