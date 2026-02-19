@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/frontend-rebuild # TODO: remove this branch after deployment
+      - develop
   workflow_dispatch:
 
 permissions:
