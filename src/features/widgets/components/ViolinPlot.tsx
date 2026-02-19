@@ -54,7 +54,7 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
     line: { color: '#3b82f6', width: 1 },
     fillcolor: 'rgba(59, 130, 246, 0.3)',
     orientation: 'h', // Horizontal
-    hoverinfo: 'x',
+    hoverinfo: 'skip',
     showlegend: false,
     width: 0.8,
   };
@@ -73,7 +73,7 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
       showgrid: false,
       zeroline: false,
     },
-    hovermode: 'closest',
+    hovermode: false,
     dragmode: false,
   };
 
@@ -96,7 +96,7 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
         color: '#db2777', // Pink/Magenta for visibility
         line: { color: '#fff', width: 2 }
       },
-      hoverinfo: 'x',
+      hoverinfo: 'skip',
       name: 'Selected',
       showlegend: false
     } as Plotly.Data);
