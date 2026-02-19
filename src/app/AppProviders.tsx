@@ -1,4 +1,3 @@
-
 import { type ReactNode } from 'react';
 import { DataProvider } from '@/context/DataProvider';
 import { FilterProvider } from '@/context/FilterProvider';

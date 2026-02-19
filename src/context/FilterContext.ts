@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from 'react';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 

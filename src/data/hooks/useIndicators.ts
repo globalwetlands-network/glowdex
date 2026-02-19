@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from 'react';
 
 import { loadIndicators } from '../loaders/loadIndicators';

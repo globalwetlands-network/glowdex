@@ -1,4 +1,3 @@
-
 /**
  * Base URL provided by Vite.
  * In dev: "/"

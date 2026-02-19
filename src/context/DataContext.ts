@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from 'react';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';

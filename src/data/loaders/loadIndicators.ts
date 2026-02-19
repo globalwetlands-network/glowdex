@@ -1,4 +1,3 @@
-
 import { fetchAsset } from '@/utils/fetchUtils';
 import type { Indicator, HabitatId } from '@/features/widgets/types/indicator.types';
 

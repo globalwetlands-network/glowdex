@@ -1,4 +1,3 @@
-
 import { useMemo, useState, type ReactNode } from 'react';
 import { INITIAL_FILTER_STATE, type FilterState } from '@/features/widgets/types/filter.types';
 

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 // Context
@@ -33,20 +32,7 @@ function AppShell() {
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center w-screen h-screen bg-gray-50 text-gray-500">
-        <div className="text-center space-y-2">
-          <p className="font-medium text-gray-700">
-            Unable to load scientific data.
-          </p>
-          <p className="text-xs text-gray-400">
-            {error.message}
-          </p>
-        </div>
-      </div>
-    );
-  }
+
 
   // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
@@ -110,6 +96,21 @@ function AppShell() {
       visibleCellCount={filteredGridCells.length}
     />
   );
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen bg-gray-50 text-gray-500">
+        <div className="text-center space-y-2">
+          <p className="font-medium text-gray-700">
+            Unable to load scientific data.
+          </p>
+          <p className="text-xs text-gray-400">
+            {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AppLayout

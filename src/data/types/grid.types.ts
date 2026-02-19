@@ -1,4 +1,3 @@
-
 export interface GridItemRaw {
   ID: string;
   TERRITORY1: string;

@@ -1,4 +1,3 @@
-
 import { fetchAsset } from '@/utils/fetchUtils';
 import { parseCsv } from './csvParser';
 import type { Residuals, ResidualsRaw } from '../types/grid.types';
