@@ -9,17 +9,8 @@ import type { Indicator, DistributionsByDimension, HabitatId } from '../types/in
 // Utils
 import { quantile } from 'd3-array';
 
-// Cumulative impacts restriction
-const LEGACY_CUMULATIVE_INDICATORS = new Set([
-  'pressure_mangrove_climate_rate'
-]);
-
-// Dimension ordering
-const DIMENSION_ORDER = [
-  'Cumulative Impacts',
-  'Ecological Structure and Function',
-  'Habitat Extent Change'
-];
+// Config
+import { LEGACY_CUMULATIVE_INDICATORS, DIMENSION_ORDER } from '../config/analysis.config';
 
 /**
  * Filters grid cells to only those in the selected cell's typology cluster
