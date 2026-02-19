@@ -95,7 +95,7 @@ export function GridMap({
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-        Missing VITE_MAPBOX_TOKEN in .env.local
+        Mapbox token not configured. Please ensure a valid Mapbox access token is provided.
       </div>
     );
   }
