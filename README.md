@@ -215,6 +215,22 @@ Default: http://localhost:5173
 npm run build
 ```
 
+### Environment & Mapbox Setup
+
+This project uses Mapbox GL JS and requires a valid access token.
+
+1.  **Get a Token**: Create an account at [Mapbox](https://www.mapbox.com/) and generate a public access token.
+
+2.  **Local Setup**: Create a `.env.local` file in the root directory:
+    ```bash
+    VITE_MAPBOX_TOKEN=pk.your_token_here
+    ```
+    
+3.  **CI/CD (GitHub Actions)**:
+    -   Go to **Settings > Secrets and variables > Actions**.
+    -   Add a new repository secret named `VITE_MAPBOX_TOKEN`.
+    -   Paste your Mapbox token as the value.
+    -   *Note: The build process will fail without this token.*
 
 ---
 
