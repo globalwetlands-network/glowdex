@@ -220,6 +220,8 @@ npm run build
 This project uses Mapbox GL JS and requires a valid access token.
 
 1.  **Get a Token**: Create an account at [Mapbox](https://www.mapbox.com/) and generate a public access token.
+    -   *Security Note: We strongly recommend restricting this token to your application's URL/origin in the Mapbox dashboard to prevent misuse.*
+
 
 2.  **Local Setup**: Create a `.env.local` file in the root directory:
     ```bash
