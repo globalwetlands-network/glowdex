@@ -1,0 +1,212 @@
+// Core
+import { useMemo } from 'react';
+
+// Types
+import type { RichGridCell } from '@/data/types/grid.types';
+import type { FilterState } from '../types/filter.types';
+import type { Indicator, DistributionsByDimension, HabitatId } from '../types/indicator.types';
+
+// Utils
+import { quantile } from 'd3-array';
+
+// Config
+import { LEGACY_CUMULATIVE_INDICATORS, DIMENSION_ORDER } from '../config/analysis.config';
+
+/**
+ * Filters grid cells to only those in the selected cell's typology cluster
+ */
+function getScopedGridCells(
+  gridCells: RichGridCell[],
+  selectedCell: RichGridCell | null,
+  typologyScale: 5 | 18
+): RichGridCell[] {
+  if (!selectedCell) return gridCells;
+
+  const clusterKey = typologyScale === 5 ? 'cluster5' : 'cluster18';
+  const clusterValue = selectedCell[clusterKey];
+
+  if (clusterValue === undefined) return gridCells;
+
+  return gridCells.filter(c => c[clusterKey] === clusterValue);
+}
+
+/**
+ * Extracts residual values for an indicator from grid cells
+ */
+function getIndicatorValues(
+  gridCells: RichGridCell[],
+  indicatorKey: string
+): number[] {
+  return gridCells
+    .map(cell => cell.residuals[indicatorKey])
+    .filter((v): v is number => typeof v === 'number' && !isNaN(v));
+}
+
+/**
+ * Tests if an indicator is statistically significant using quantile range
+ * Significance = quantile range doesn't cross zero
+ */
+function isIndicatorSignificant(
+  values: number[],
+  quantileValue: number
+): boolean {
+  if (values.length === 0) return false;
+
+  const upper = quantile(values, 0.5 + quantileValue / 2);
+  const lower = quantile(values, 0.5 - quantileValue / 2);
+
+  if (upper === undefined || lower === undefined) return false;
+
+  // Range must not cross zero
+  return Math.sign(lower) === Math.sign(upper);
+}
+
+/**
+ * Filters indicators by habitat presence and UI settings
+ */
+function filterByHabitat(
+  indicators: Indicator[],
+  filterState: FilterState,
+  selectedCell: RichGridCell | null
+): Indicator[] {
+  const habitatPresence = selectedCell ? {
+    mangroves: selectedCell.mangroves === true,
+    saltmarsh: selectedCell.saltmarsh === true,
+    seagrass: selectedCell.seagrass === true,
+  } : null;
+
+  return indicators.filter(ind => {
+    if (ind.habitat === 'all') return true;
+
+    // Check UI filter (always required)
+    const habitatEnabled = filterState.habitats[ind.habitat];
+    if (!habitatEnabled) return false;
+
+    // If a cell is selected, also check habitat presence in that cell
+    if (habitatPresence) {
+      return habitatPresence[ind.habitat as HabitatId] === true;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Restricts cumulative impact indicators to approved set
+ */
+function filterCumulativeImpacts(indicators: Indicator[]): Indicator[] {
+  return indicators.filter(ind => {
+    if (ind.dimension === 'Cumulative Impacts') {
+      return LEGACY_CUMULATIVE_INDICATORS.has(ind.key);
+    }
+    return true;
+  });
+}
+
+/**
+ * Filters indicators by quantile significance test
+ */
+function filterBySignificance(
+  indicators: Indicator[],
+  scopedGridCells: RichGridCell[],
+  quantileValue: number
+): Indicator[] {
+  return indicators.filter(indicator => {
+    const values = getIndicatorValues(scopedGridCells, indicator.key);
+    return isIndicatorSignificant(values, quantileValue);
+  });
+}
+
+/**
+ * Builds distribution objects for each indicator
+ */
+function buildDistributions(
+  indicators: Indicator[],
+  scopedGridCells: RichGridCell[],
+  selectedCell: RichGridCell | null
+): DistributionsByDimension {
+  const distributions: DistributionsByDimension = {};
+
+  indicators.forEach(indicator => {
+    const values = getIndicatorValues(scopedGridCells, indicator.key);
+    if (values.length === 0) return;
+
+    // Get selected value for marker
+    let selectedValue: number | undefined;
+    if (selectedCell) {
+      const val = selectedCell.residuals[indicator.key];
+      if (typeof val === 'number' && !isNaN(val)) {
+        selectedValue = val;
+      }
+    }
+
+    // Group by dimension
+    if (!distributions[indicator.dimension]) {
+      distributions[indicator.dimension] = [];
+    }
+
+    distributions[indicator.dimension].push({
+      indicator,
+      values,
+      selectedValue
+    });
+  });
+
+  return distributions;
+}
+
+/**
+ * Sorts distributions by predefined dimension order
+ */
+function sortDistributionsByDimension(
+  distributions: DistributionsByDimension
+): DistributionsByDimension {
+  const sorted: DistributionsByDimension = {};
+
+  DIMENSION_ORDER.forEach(dim => {
+    if (distributions[dim]) {
+      sorted[dim] = distributions[dim];
+    }
+  });
+
+  return sorted;
+}
+
+/**
+ * Hook to compute indicator distributions for violin plots
+ * Filters indicators by habitat, cumulative impacts, and significance
+ * Scopes distributions to selected cell's typology cluster
+ */
+export function useIndicatorDistributions(
+  gridCells: RichGridCell[],
+  indicators: Indicator[],
+  filterState: FilterState,
+  selectedCellId: number | null,
+  quantileValue: number,
+  typologyScale: 5 | 18 = 5
+): DistributionsByDimension {
+  return useMemo(() => {
+    if (!gridCells.length || !indicators.length) return {};
+
+    const selectedCell = selectedCellId
+      ? (gridCells.find(c => c.id === selectedCellId) || null)
+      : null;
+
+    // Scope to typology cluster
+    const scopedGridCells = getScopedGridCells(gridCells, selectedCell, typologyScale);
+
+    // Apply filters in sequence
+    let filteredIndicators = filterByHabitat(indicators, filterState, selectedCell);
+    filteredIndicators = filterCumulativeImpacts(filteredIndicators);
+
+    // Only apply significance test when cell is selected
+    if (selectedCell) {
+      filteredIndicators = filterBySignificance(filteredIndicators, scopedGridCells, quantileValue);
+    }
+
+    // Build and sort distributions
+    const distributions = buildDistributions(filteredIndicators, scopedGridCells, selectedCell);
+    return sortDistributionsByDimension(distributions);
+
+  }, [gridCells, indicators, filterState, selectedCellId, quantileValue, typologyScale]);
+}
