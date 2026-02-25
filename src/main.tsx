@@ -6,13 +6,13 @@ import './styles/globals.css'
 import App from './app/App'
 
 const POSTHOG_ENABLED = import.meta.env.VITE_PUBLIC_POSTHOG_ENABLED === 'true'
-const POSTHOG_TOKEN = import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN
+const POSTHOG_KEY = import.meta.env.VITE_PUBLIC_POSTHOG_KEY
 const POSTHOG_HOST = import.meta.env.VITE_PUBLIC_POSTHOG_HOST
 
-const isPostHogConfigured = Boolean(POSTHOG_ENABLED && POSTHOG_TOKEN && POSTHOG_HOST)
+const isPostHogConfigured = Boolean(POSTHOG_ENABLED && POSTHOG_KEY && POSTHOG_HOST)
 
 if (isPostHogConfigured) {
-  posthog.init(POSTHOG_TOKEN, {
+  posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     capture_pageview: true,
     autocapture: true,

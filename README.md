@@ -244,7 +244,7 @@ If any of these are missing or disabled, the application will run normally but t
 1. **Obtain API Key**: Find your Project API Key in the PostHog dashboard.
 2. **Local Setup**: Add the following to your `.env.local` file:
     ```bash
-    VITE_PUBLIC_POSTHOG_TOKEN=your_posthog_token
+    VITE_PUBLIC_POSTHOG_KEY=your_posthog_key
     VITE_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
     VITE_PUBLIC_POSTHOG_ENABLED=true
     ```
