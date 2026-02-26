@@ -41,8 +41,11 @@ function AppShell() {
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
+  // Derived selection object
+  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
   // Analytics hooks
-  useSelectionAnalytics(selectedCellId ? String(selectedCellId) : null);
+  useSelectionAnalytics(selectedCell);
   useFilterAnalytics(filterState);
 
   // 1. Filter grid cells based on UI controls
@@ -57,9 +60,6 @@ function AppShell() {
     filterState.quantile,
     typologyScaleNumber
   );
-
-  // Derived selection object
-  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
 
   // Event handlers
   const handleCellSelect = (id: number | null) => {
