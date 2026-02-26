@@ -1,3 +1,4 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 import { useEffect } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -29,9 +30,9 @@ export const useFilterAnalytics = (filterState: FilterState) => {
     // the potentially new object reference `filterState.habitats` on each render.
     const habitatsList = habitatsKey ? habitatsKey.split(',') : [];
     const habitatsState = {
-      mangroves: habitatsList.includes('mangroves'),
-      saltmarsh: habitatsList.includes('saltmarsh'),
-      seagrass: habitatsList.includes('seagrass'),
+      [Habitat.MANGROVES]: habitatsList.includes(Habitat.MANGROVES),
+      [Habitat.SALTMARSH]: habitatsList.includes(Habitat.SALTMARSH),
+      [Habitat.SEAGRASS]: habitatsList.includes(Habitat.SEAGRASS),
     };
 
     posthog?.capture('filter_changed', {

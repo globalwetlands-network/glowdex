@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 // Types
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { FilterState } from '../types/filter.types';
-import type { Indicator, DistributionsByDimension, HabitatId } from '../types/indicator.types';
+import type { Indicator, DistributionsByDimension } from '../types/indicator.types';
+import { Habitat } from '@/types/enums/habitat.enum';
 
 // Utils
 import { quantile } from 'd3-array';
@@ -70,21 +71,21 @@ function filterByHabitat(
   selectedCell: RichGridCell | null
 ): Indicator[] {
   const habitatPresence = selectedCell ? {
-    mangroves: selectedCell.mangroves === true,
-    saltmarsh: selectedCell.saltmarsh === true,
-    seagrass: selectedCell.seagrass === true,
+    [Habitat.MANGROVES]: selectedCell[Habitat.MANGROVES] === true,
+    [Habitat.SALTMARSH]: selectedCell[Habitat.SALTMARSH] === true,
+    [Habitat.SEAGRASS]: selectedCell[Habitat.SEAGRASS] === true,
   } : null;
 
   return indicators.filter(ind => {
     if (ind.habitat === 'all') return true;
 
     // Check UI filter (always required)
-    const habitatEnabled = filterState.habitats[ind.habitat];
+    const habitatEnabled = filterState.habitats[ind.habitat as Habitat];
     if (!habitatEnabled) return false;
 
     // If a cell is selected, also check habitat presence in that cell
     if (habitatPresence) {
-      return habitatPresence[ind.habitat as HabitatId] === true;
+      return habitatPresence[ind.habitat as Habitat] === true;
     }
 
     return true;

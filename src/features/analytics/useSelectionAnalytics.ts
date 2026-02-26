@@ -1,3 +1,4 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 import { useEffect } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { EnrichedGridCell } from '@/app/types/app.types';
@@ -17,9 +18,9 @@ export const useSelectionAnalytics = (selectedCell: EnrichedGridCell | null) => 
     if (!selectedCell) return;
 
     const habitats = [];
-    if (selectedCell.mangroves) habitats.push('mangroves');
-    if (selectedCell.saltmarsh) habitats.push('saltmarsh');
-    if (selectedCell.seagrass) habitats.push('seagrass');
+    if (selectedCell.mangroves) habitats.push(Habitat.MANGROVES);
+    if (selectedCell.saltmarsh) habitats.push(Habitat.SALTMARSH);
+    if (selectedCell.seagrass) habitats.push(Habitat.SEAGRASS);
 
     posthog?.capture('grid_cell_selected', {
       cell_id: String(selectedCell.id),
