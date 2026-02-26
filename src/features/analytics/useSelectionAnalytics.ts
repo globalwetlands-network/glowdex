@@ -22,12 +22,16 @@ export const useSelectionAnalytics = (selectedCell: EnrichedGridCell | null) => 
     if (selectedCell.saltmarsh) habitats.push(Habitat.SALTMARSH);
     if (selectedCell.seagrass) habitats.push(Habitat.SEAGRASS);
 
-    posthog?.capture('grid_cell_selected', {
-      cell_id: String(selectedCell.id),
-      country: selectedCell.country,
-      habitats: habitats,
-      typology_5: selectedCell.cluster5,
-      typology_18: selectedCell.cluster18
-    });
+    try {
+      posthog?.capture('grid_cell_selected', {
+        cell_id: String(selectedCell.id),
+        country: selectedCell.country,
+        habitats: habitats,
+        typology_5: selectedCell.cluster5,
+        typology_18: selectedCell.cluster18
+      });
+    } catch (error) {
+      console.error('Failed to capture grid_cell_selected event:', error);
+    }
   }, [selectedCell, posthog]);
 };

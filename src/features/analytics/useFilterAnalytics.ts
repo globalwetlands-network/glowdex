@@ -35,10 +35,19 @@ export const useFilterAnalytics = (filterState: FilterState) => {
       [Habitat.SEAGRASS]: habitatsList.includes(Habitat.SEAGRASS),
     };
 
-    posthog?.capture('filter_changed', {
-      habitats: habitatsState,
-      typologyScale,
-      quantile,
-    });
+    // Debounce the analytics event to prevent spamming when dragging sliders
+    const timeoutId = setTimeout(() => {
+      try {
+        posthog?.capture('filter_changed', {
+          habitats: habitatsState,
+          typologyScale,
+          quantile,
+        });
+      } catch (error) {
+        console.error('Failed to capture filter_changed event:', error);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
   }, [habitatsKey, typologyScale, quantile, posthog]);
 };
