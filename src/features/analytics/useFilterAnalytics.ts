@@ -2,13 +2,21 @@ import { useEffect } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 
+/**
+ * Hook to capture analytics events when the user changes map filters.
+ * 
+ * Tracks changes to habitats, typology scale, and quantile settings,
+ * and sends a 'filter_changed' event to PostHog.
+ * 
+ * @param filterState - The current state of all user-configurable filters.
+ */
 export const useFilterAnalytics = (filterState: FilterState) => {
   const posthog = usePostHog();
 
   // Depend on individual primitive values (or joined strings) to avoid deep object checking
   // and accidental refire loops
   const habitatsKey = Object.entries(filterState.habitats)
-    .filter(([_, isSelected]) => isSelected)
+    .filter(([, isSelected]) => isSelected)
     .map(([habitat]) => habitat)
     .sort()
     .join(',');
@@ -16,10 +24,20 @@ export const useFilterAnalytics = (filterState: FilterState) => {
   const quantile = filterState.quantile;
 
   useEffect(() => {
+    // Reconstruct the habitats object specifically for analytics tracking
+    // This allows us to track the correct values without needing to depend on
+    // the potentially new object reference `filterState.habitats` on each render.
+    const habitatsList = habitatsKey ? habitatsKey.split(',') : [];
+    const habitatsState = {
+      mangroves: habitatsList.includes('mangroves'),
+      saltmarsh: habitatsList.includes('saltmarsh'),
+      seagrass: habitatsList.includes('seagrass'),
+    };
+
     posthog?.capture('filter_changed', {
-      habitats: filterState.habitats,
-      typologyScale: filterState.typologyScale,
-      quantile: filterState.quantile,
+      habitats: habitatsState,
+      typologyScale,
+      quantile,
     });
   }, [habitatsKey, typologyScale, quantile, posthog]);
 };

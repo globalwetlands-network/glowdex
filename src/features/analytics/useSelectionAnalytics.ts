@@ -2,6 +2,14 @@ import { useEffect } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 
+/**
+ * Hook to capture analytics events when a grid cell is selected.
+ * 
+ * Tracks the selected cell's properties, including related habitats and typologies,
+ * and sends a 'grid_cell_selected' event to PostHog.
+ * 
+ * @param selectedCell - The currently selected, enriched grid cell, or null if no cell is selected.
+ */
 export const useSelectionAnalytics = (selectedCell: EnrichedGridCell | null) => {
   const posthog = usePostHog();
 
