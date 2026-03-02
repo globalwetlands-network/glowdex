@@ -26,7 +26,7 @@ export function AppLayout({
       <MobileTabNavigation activeTab={mobileActiveTab} onTabChange={onMobileTabChange} />
 
       {/* Desktop: Side Panel (Left) */}
-      <div className="hidden md:flex md:order-1">
+      <div className="hidden md:flex md:flex-[0.75] md:order-1 h-full min-w-0">
         {sidePanel}
       </div>
 
@@ -36,7 +36,7 @@ export function AppLayout({
       </div>
 
       {/* Desktop: Map Area (Right) */}
-      <div className="hidden md:flex md:flex-1 md:order-2 md:relative">
+      <div className="hidden md:flex md:flex-[1.25] md:order-2 md:relative h-full min-w-0">
         {mapArea}
       </div>
     </div>

@@ -8,6 +8,14 @@ export default defineConfig(({ command }) => {
   return {
     base: isBuild ? "/glowdex/" : "/",
     plugins: [react()],
+    server: {
+      proxy: {
+        "/api": {
+          target: "http://localhost:8080",
+          changeOrigin: true,
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
