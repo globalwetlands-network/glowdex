@@ -10,6 +10,7 @@ import { useSelection } from '@/context/SelectionContext';
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
+import { useGeolocationSelection } from '@/features/map/hooks/useGeolocationSelection';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -68,6 +69,9 @@ function AppShell() {
   const handleClearSelection = () => {
     setSelectedCellId(null);
   };
+
+  // Auto-select geolocation cell if nothing is selected yet
+  useGeolocationSelection(gridCells || [], geojson, selectedCellId, handleCellSelect);
 
   // Render map area
   const mapArea = isLoading ? (
