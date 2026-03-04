@@ -35,13 +35,13 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
 
   // Inject initial insight safely into messages state
   useEffect(() => {
-    if (initialInsight?.answer) {
+    if (initialInsight?.text) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([
         {
           id: `initial-${selectedCellId}`,
           role: 'assistant',
-          content: initialInsight.answer,
+          content: initialInsight.text,
         },
       ]);
     }
@@ -56,7 +56,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
         {
           id: `resp-${Date.now()}`,
           role: 'assistant',
-          content: data.answer,
+          content: data.text,
         },
       ]);
     },
@@ -191,8 +191,8 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
               maxLength={500}
               placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
               className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
-                  ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
-                  : 'border-gray-200 focus:ring-blue-500 focus:border-transparent'
+                ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
+                : 'border-gray-200 focus:ring-blue-500 focus:border-transparent'
                 }`}
             />
             {/* NOTE: askMutation.isPending being true disables this button, acting as temporary rate-limit protection until backend throttling is added */}

@@ -4,7 +4,7 @@ export interface InsightRequest {
 }
 
 export interface InsightResponse {
-  answer: string;
+  text: string;
   gridCellId: number;
 }
 
