@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, ChevronDown, ChevronRight, Filter } from 'lucide-react';
+import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2 } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -38,6 +38,9 @@ export function SidePanel({
   visibleCellCount,
 }: SidePanelProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isSelectionOpen, setIsSelectionOpen] = useState(true);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(true);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
 
   const handleQuantileChange = (quantile: number) => {
     onFilterChange({ ...filterState, quantile });
@@ -64,34 +67,73 @@ export function SidePanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Section: Selected Cell */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Selection
-            </h2>
-            {selectedCell && (
-              <button
-                onClick={onClearSelection}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <SelectionPanel
-            selectedCell={selectedCell}
-            typologies={typologies}
-            currentScale={filterState.typologyScale}
-          />
+          <button
+            onClick={() => setIsSelectionOpen(!isSelectionOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Selection
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              {selectedCell && (
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClearSelection();
+                  }}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
+                >
+                  Clear
+                </span>
+              )}
+              {isSelectionOpen ? (
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              )}
+            </div>
+          </button>
+
+          {isSelectionOpen && (
+            <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+              <SelectionPanel
+                selectedCell={selectedCell}
+                typologies={typologies}
+                currentScale={filterState.typologyScale}
+              />
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-100 my-4" />
 
         {/* Section: Contextual Chat */}
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            AI Assistant
-          </h2>
-          <ChatInterface selectedCellId={selectedCell?.id} />
+          <button
+            onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <Bot className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Analysis Assistant
+              </h2>
+            </div>
+            {isAssistantOpen ? (
+              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            )}
+          </button>
+
+          {isAssistantOpen && (
+            <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+              <ChatInterface selectedCellId={selectedCell?.id} />
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-100 my-4" />
@@ -126,23 +168,41 @@ export function SidePanel({
 
         {/* Section: Statistical Analysis */}
         <div className="space-y-6 pb-8">
-          <div className="space-y-3">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Statistical Analysis
-            </h2>
-            <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              Distributions By Indicator
-            </h3>
-            {isLoading ? (
-              <div className="h-32 bg-gray-50 rounded animate-pulse" />
+          <button
+            onClick={() => setIsAnalysisOpen(!isAnalysisOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <BarChart2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Statistical Analysis
+              </h2>
+            </div>
+            {isAnalysisOpen ? (
+              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
             ) : (
-              <GroupedViolinPlot distributions={distributions} isLoading={isLoading} />
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
             )}
-          </div>
+          </button>
+
+          {isAnalysisOpen && (
+            <div className="space-y-6 pt-1 animate-in fade-in slide-in-from-top-1">
+              <div className="space-y-3">
+                <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Distributions By Indicator
+                </h3>
+                {isLoading ? (
+                  <div className="h-32 bg-gray-50 rounded animate-pulse" />
+                ) : (
+                  <GroupedViolinPlot distributions={distributions} isLoading={isLoading} />
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

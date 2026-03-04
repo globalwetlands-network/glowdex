@@ -102,11 +102,13 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
 
   if (!selectedCellId) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 text-gray-400 bg-gray-50 rounded-lg border border-gray-100 p-6 text-center">
-        <Bot className="w-8 h-8 mb-3 opacity-20" />
-        <p className="text-sm font-medium">No Location Selected</p>
-        <p className="text-xs uppercase tracking-wider mt-1 opacity-60">
-          Select a grid cell on the map to begin contextual analysis
+      <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50 rounded-lg border border-gray-100 p-6 text-center shadow-inner">
+        <div className="bg-gray-100 p-3 rounded-full mb-3">
+          <Bot className="w-8 h-8 opacity-40 text-gray-600" />
+        </div>
+        <p className="text-sm font-semibold text-gray-700">No Location Selected</p>
+        <p className="text-xs mt-2 opacity-80 max-w-[200px]">
+          Click on a grid cell on the map to view detailed contextual analysis.
         </p>
       </div>
     );
@@ -123,10 +125,10 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
           <Bot className="w-4 h-4 text-blue-700" />
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
-            Spatial Intelligence
+          <h3 className="text-sm font-bold text-gray-900 tracking-wide">
+            Analysis Assistant
           </h3>
-          <p className="text-[10px] text-gray-500">
+          <p className="text-xs text-gray-500 font-medium mt-0.5">
             Cell ID: {selectedCellId}
           </p>
         </div>
@@ -168,11 +170,11 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
             <div className="shrink-0 rounded-full p-1.5 mt-0.5 bg-blue-100 text-blue-600">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             </div>
-            <div className="bg-white border border-gray-100 rounded-xl rounded-tl-none px-4 py-3 shadow-sm">
-              <div className="flex space-x-1 border-gray-200">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="bg-white border border-gray-100 rounded-xl rounded-tl-none px-4 py-3 shadow-sm w-3/4 max-w-[80%]">
+              <div className="space-y-2">
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-full"></div>
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-5/6"></div>
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-4/6"></div>
               </div>
             </div>
           </div>
@@ -191,15 +193,15 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
               maxLength={500}
               placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
               className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
-                ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
-                : 'border-gray-200 focus:ring-blue-500 focus:border-transparent'
+                  ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
+                  : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
                 }`}
             />
             {/* NOTE: askMutation.isPending being true disables this button, acting as temporary rate-limit protection until backend throttling is added */}
             <button
               type="submit"
               disabled={isLoading || !inputValue.trim() || !selectedCellId || isOverLimit}
-              className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:hover:text-gray-400 transition-colors"
+              className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 focus:text-blue-600 hover:bg-blue-50 focus:bg-blue-50 rounded-md disabled:opacity-50 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <Send className="w-4 h-4" />
             </button>
