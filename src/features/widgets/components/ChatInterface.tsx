@@ -48,14 +48,20 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
     }
   }, [initialInsight, selectedCellId]);
 
-  // Mutation for follow-up questions — sends full conversation history for context
+  // Keep this in sync with MAX_HISTORY_MESSAGES on the backend
+  const MAX_HISTORY_MESSAGES = 2;
+
+  // Mutation for follow-up questions — sends trimmed conversation history for context
   const askMutation = useMutation({
     mutationFn: (question: string) => {
-      // Build messages array: existing history + new user question
+      // Build messages: existing history + new user question, trimmed to the
+      // backend window so we never send an unbounded payload
       const history = messages.map(({ role, content }) => ({ role, content }));
+      const allMessages = [...history, { role: 'user' as const, content: question }];
+      const trimmed = allMessages.slice(-MAX_HISTORY_MESSAGES);
       return fetchInsight({
         gridCellId: selectedCellId!,
-        messages: [...history, { role: 'user', content: question }],
+        messages: trimmed,
       });
     },
     onSuccess: (data) => {
