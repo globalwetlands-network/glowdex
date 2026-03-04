@@ -22,7 +22,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages([]);
-     
+
     setInputValue('');
   }, [selectedCellId]);
 
@@ -81,7 +81,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || !selectedCellId || askMutation.isPending) return;
+    if (!inputValue.trim() || !selectedCellId || askMutation.isPending || inputValue.length > 500) return;
 
     const question = inputValue.trim();
     setInputValue('');
@@ -113,6 +113,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
   }
 
   const isLoading = isInitialLoading || askMutation.isPending;
+  const isOverLimit = inputValue.length > 500;
 
   return (
     <div className="flex flex-col h-[400px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -180,22 +181,32 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
 
       {/* Input Area */}
       <div className="p-3 bg-white border-t border-gray-200 shrink-0">
-        <form onSubmit={handleSubmit} className="relative flex items-center">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            disabled={isLoading || !selectedCellId}
-            placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
-            className="w-full pl-4 pr-12 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !inputValue.trim() || !selectedCellId}
-            className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:hover:text-gray-400 transition-colors"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+        <form onSubmit={handleSubmit} className="relative flex flex-col">
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={isLoading || !selectedCellId}
+              maxLength={500}
+              placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
+              className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
+                  ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
+                  : 'border-gray-200 focus:ring-blue-500 focus:border-transparent'
+                }`}
+            />
+            {/* NOTE: askMutation.isPending being true disables this button, acting as temporary rate-limit protection until backend throttling is added */}
+            <button
+              type="submit"
+              disabled={isLoading || !inputValue.trim() || !selectedCellId || isOverLimit}
+              className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:hover:text-gray-400 transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+          <div className={`text-right mt-1 text-xs ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+            {inputValue.length} / 500
+          </div>
         </form>
       </div>
     </div>
