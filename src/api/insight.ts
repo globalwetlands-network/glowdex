@@ -1,6 +1,14 @@
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface InsightRequest {
   gridCellId: number;
+  /** Legacy single-turn question. Prefer messages[] for multi-turn conversations. */
   question?: string;
+  /** Multi-turn conversation history including the current user message as the last entry. */
+  messages?: ConversationMessage[];
 }
 
 export interface InsightResponse {
@@ -9,15 +17,20 @@ export interface InsightResponse {
 }
 
 /**
- * Fetch insights from the AI backend for a specific grid cell
+ * Fetch insights from the AI backend for a specific grid cell.
+ * Supports both single-turn (question) and multi-turn (messages[]) modes.
  */
-export async function fetchInsight({ gridCellId, question }: InsightRequest): Promise<InsightResponse> {
+export async function fetchInsight({
+  gridCellId,
+  question,
+  messages,
+}: InsightRequest): Promise<InsightResponse> {
   const response = await fetch('/api/ai/insight', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ gridCellId, question }),
+    body: JSON.stringify({ gridCellId, question, messages }),
   });
 
   if (!response.ok) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { fetchInsight } from '@/api/insight';
 
 interface Message {
@@ -47,9 +48,16 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
     }
   }, [initialInsight, selectedCellId]);
 
-  // Mutation for follow-up questions
+  // Mutation for follow-up questions — sends full conversation history for context
   const askMutation = useMutation({
-    mutationFn: (question: string) => fetchInsight({ gridCellId: selectedCellId!, question }),
+    mutationFn: (question: string) => {
+      // Build messages array: existing history + new user question
+      const history = messages.map(({ role, content }) => ({ role, content }));
+      return fetchInsight({
+        gridCellId: selectedCellId!,
+        messages: [...history, { role: 'user', content: question }],
+      });
+    },
     onSuccess: (data) => {
       setMessages((prev) => [
         ...prev,
@@ -66,10 +74,10 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
         {
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: "Sorry, I encountered an error fetching the context. Please try again.",
+          content: 'Sorry, I encountered an error fetching the context. Please try again.',
         },
       ]);
-    }
+    },
   });
 
   // Scroll to bottom when messages count changes
@@ -160,7 +168,11 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
               ? 'bg-gray-800 text-white text-base rounded-tr-none'
               : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none prose prose-sm max-w-none'
               }`}>
-              {msg.content}
+              {msg.role === 'assistant' ? (
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}
@@ -193,8 +205,8 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
               maxLength={500}
               placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
               className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
-                  ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
-                  : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
+                ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
+                : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
                 }`}
             />
             {/* NOTE: askMutation.isPending being true disables this button, acting as temporary rate-limit protection until backend throttling is added */}
