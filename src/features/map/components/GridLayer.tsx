@@ -70,7 +70,12 @@ export function GridLayer({
     const colorExpression = createColorExpression(typologies, typologyScale);
 
     return {
-      'fill-color': colorExpression,
+      'fill-color': [
+        'case',
+        ['==', ['get', 'isFiltered'], true],
+        colorExpression,
+        'rgba(0,0,0,0)'
+      ],
       'fill-outline-color': 'rgba(0,0,0,0.1)',
     } as FillLayerSpecification['paint'];
   }, [typologies, typologyScale]);

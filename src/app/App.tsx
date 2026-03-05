@@ -78,7 +78,8 @@ function AppShell() {
     <LoadingState />
   ) : (
     <Map
-      gridCells={filteredGridCells}
+      allGridCells={gridCells || []}
+      filteredGridCells={filteredGridCells}
       geojson={geojson!}
       typologies={typologies!}
       selectedCellId={selectedCellId}
