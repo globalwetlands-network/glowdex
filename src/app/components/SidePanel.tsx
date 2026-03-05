@@ -57,7 +57,7 @@ export function SidePanel({
           <div>
             <h1 className="text-lg font-bold text-gray-900 leading-tight">GLOWdex</h1>
             <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
-              Analysis Panel
+              Mangrove Ecosystem Analysis
             </p>
           </div>
         </div>

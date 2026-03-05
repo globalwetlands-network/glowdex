@@ -24,7 +24,7 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
     );
   }
 
-  const { id, country, cluster5, cluster18, mangroves, saltmarsh, seagrass, lat, lng } = selectedCell;
+  const { id, country, cluster5, cluster18, mangroves, lat, lng } = selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
   const clusterInfo = typologies[currentScale][clusterId];
 
@@ -80,13 +80,7 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
           {mangroves && (
             <span className="px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-medium">Mangroves</span>
           )}
-          {saltmarsh && (
-            <span className="px-2 py-1 bg-orange-100 text-orange-700 border border-orange-200 rounded-full text-xs font-medium">Saltmarsh</span>
-          )}
-          {seagrass && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-xs font-medium">Seagrass</span>
-          )}
-          {!mangroves && !saltmarsh && !seagrass && (
+          {!mangroves && (
             <span className="text-gray-400 italic text-xs">None recorded</span>
           )}
         </div>

@@ -11,8 +11,8 @@ export interface FilterState {
 export const INITIAL_FILTER_STATE: FilterState = {
   habitats: {
     mangroves: true,
-    saltmarsh: true,
-    seagrass: true,
+    saltmarsh: false,
+    seagrass: false,
   },
   typologyScale: 'scale5',
   quantile: 0.25,

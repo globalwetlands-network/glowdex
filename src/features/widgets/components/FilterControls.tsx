@@ -1,4 +1,4 @@
-import { Sprout, Droplets, Waves } from 'lucide-react';
+import { Sprout } from 'lucide-react';
 import type { FilterState } from '../types/filter.types';
 
 interface FilterControlsProps {
@@ -69,30 +69,6 @@ export function FilterControls({ filterState, onFilterChange }: FilterControlsPr
             <span>Mangroves</span>
           </div>
           <div className={`w-3 h-3 rounded-full ${filterState.habitats.mangroves ? 'bg-green-500' : 'bg-gray-300'}`} />
-        </button>
-
-        <button
-          onClick={() => toggleHabitat('saltmarsh')}
-          className={`w-full flex items-center justify-between p-2.5 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 ${filterState.habitats.saltmarsh ? 'bg-orange-100 text-orange-800 hover:bg-orange-200/70' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            }`}
-        >
-          <div className="flex items-center space-x-2">
-            <Droplets className="w-4 h-4" />
-            <span>Saltmarsh</span>
-          </div>
-          <div className={`w-3 h-3 rounded-full ${filterState.habitats.saltmarsh ? 'bg-orange-500' : 'bg-gray-300'}`} />
-        </button>
-
-        <button
-          onClick={() => toggleHabitat('seagrass')}
-          className={`w-full flex items-center justify-between p-2.5 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${filterState.habitats.seagrass ? 'bg-blue-100 text-blue-800 hover:bg-blue-200/70' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            }`}
-        >
-          <div className="flex items-center space-x-2">
-            <Waves className="w-4 h-4" />
-            <span>Seagrass</span>
-          </div>
-          <div className={`w-3 h-3 rounded-full ${filterState.habitats.seagrass ? 'bg-blue-500' : 'bg-gray-300'}`} />
         </button>
       </div>
     </div>

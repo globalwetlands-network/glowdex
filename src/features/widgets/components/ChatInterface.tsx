@@ -140,7 +140,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
         </div>
         <div>
           <h3 className="text-sm font-bold text-gray-900 tracking-wide">
-            Analysis Assistant
+            Mangrove Analysis Assistant
           </h3>
           <p className="text-xs text-gray-500 font-medium mt-0.5">
             Cell ID: {selectedCellId}
