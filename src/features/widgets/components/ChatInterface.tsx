@@ -49,7 +49,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
   }, [initialInsight, selectedCellId]);
 
   // Keep this in sync with MAX_HISTORY_MESSAGES on the backend
-  const MAX_HISTORY_MESSAGES = 2;
+  const MAX_HISTORY_MESSAGES = 4;
 
   // Mutation for follow-up questions — sends trimmed conversation history for context
   const askMutation = useMutation({
