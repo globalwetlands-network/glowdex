@@ -120,7 +120,7 @@ export function ChatInterface({
   // Handle external prompts (e.g. from chart insights)
   useEffect(() => {
     if (externalPrompt && selectedCellId && !askMutation.isPending) {
-      // Append user message immediately
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages((prev) => [
         ...prev,
         {

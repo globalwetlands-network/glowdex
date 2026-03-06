@@ -25,7 +25,9 @@ export async function fetchStatistics(
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
-    } catch { }
+    } catch {
+      // Ignore JSON parse errors for non-JSON or malformed responses
+    }
     throw new Error(errorMessage);
   }
 
