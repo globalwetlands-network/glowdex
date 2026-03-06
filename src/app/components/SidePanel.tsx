@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight } from '@/api/insight';
-import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2 } from 'lucide-react';
+import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2, AlertTriangle } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -209,26 +209,42 @@ export function SidePanel({
 
           {isAnalysisOpen && (
             <div className="space-y-6 pt-1 animate-in fade-in slide-in-from-top-1">
-              <div className="space-y-3">
-                <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
-              </div>
+              {selectedCell && !selectedCell.mangroves ? (
+                <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-amber-50/50 border border-amber-100 rounded-lg">
+                  <div className="bg-amber-100 p-2 rounded-full mb-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">
+                    No mangrove habitat recorded
+                  </p>
+                  <p className="text-xs text-gray-500 max-w-[220px]">
+                    Statistical comparisons are only available for mangrove locations.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
+                  </div>
 
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Distributions By Indicator
-                </h3>
-                {isLoading ? (
-                  <div className="h-32 bg-gray-50 rounded animate-pulse" />
-                ) : (
-                  <GroupedViolinPlot
-                    distributions={distributions}
-                    isLoading={isLoading}
-                    selectedCellId={selectedCell?.id ?? null}
-                    statisticalSummaries={initialInsight?.statistics?.summaries}
-                    onAskAI={setExternalPrompt}
-                  />
-                )}
-              </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Distributions By Indicator
+                    </h3>
+                    {isLoading ? (
+                      <div className="h-32 bg-gray-50 rounded animate-pulse" />
+                    ) : (
+                      <GroupedViolinPlot
+                        distributions={distributions}
+                        isLoading={isLoading}
+                        selectedCellId={selectedCell?.id ?? null}
+                        statisticalSummaries={initialInsight?.statistics?.summaries}
+                        onAskAI={setExternalPrompt}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
