@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchInsight } from '@/api/insight';
+import { fetchInsight, fetchStatistics } from '@/api/insight';
 import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2, AlertTriangle } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
@@ -50,6 +50,13 @@ export function SidePanel({
     queryKey: ['insight', { gridCellId: selectedCell?.id }],
     queryFn: () => fetchInsight({ gridCellId: selectedCell!.id }),
     enabled: !!selectedCell?.id,
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ['statistics', { gridCellId: selectedCell?.id }],
+    queryFn: () => fetchStatistics(selectedCell!.id),
+    enabled: !!selectedCell?.id,
+    staleTime: Infinity,
   });
 
   const handleQuantileChange = (quantile: number) => {
@@ -238,7 +245,7 @@ export function SidePanel({
                         distributions={distributions}
                         isLoading={isLoading}
                         selectedCellId={selectedCell?.id ?? null}
-                        statisticalSummaries={initialInsight?.statistics?.summaries}
+                        statisticalSummaries={statsData?.statistics?.summaries}
                         onAskAI={setExternalPrompt}
                       />
                     )}
