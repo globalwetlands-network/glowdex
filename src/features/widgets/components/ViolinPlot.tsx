@@ -1,6 +1,6 @@
 import Plot from 'react-plotly.js';
 import type { IndicatorDistribution } from '../types/indicator.types';
-import type { AIStatisticalIndicatorSummary } from '@/api/insight';
+import type { AIStatisticalIndicatorSummary } from '@/api';
 import { ChartAIInsights } from './ChartAIInsights';
 
 interface GroupedViolinPlotProps {

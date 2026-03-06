@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { fetchInsight } from '@/api/insight';
+import { fetchInsight } from '@/api';
 
 interface Message {
   id: string;

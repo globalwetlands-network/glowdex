@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchInsight, fetchStatistics } from '@/api/insight';
+import { fetchInsight, fetchStatistics } from '@/api';
 import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2, AlertTriangle } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
@@ -53,7 +53,7 @@ export function SidePanel({
   });
 
   const { data: statsData } = useQuery({
-    queryKey: ['statistics', { gridCellId: selectedCell?.id }],
+    queryKey: ['statistics', selectedCell?.id],
     queryFn: () => fetchStatistics(selectedCell!.id),
     enabled: !!selectedCell?.id,
     staleTime: Infinity,
