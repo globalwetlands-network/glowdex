@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchInsight } from '@/api/insight';
 import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2 } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
@@ -41,6 +43,14 @@ export function SidePanel({
   const [isSelectionOpen, setIsSelectionOpen] = useState(true);
   const [isAssistantOpen, setIsAssistantOpen] = useState(true);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
+
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
+
+  const { data: initialInsight, isLoading: isInsightLoading, error: initialError } = useQuery({
+    queryKey: ['insight', { gridCellId: selectedCell?.id }],
+    queryFn: () => fetchInsight({ gridCellId: selectedCell!.id }),
+    enabled: !!selectedCell?.id,
+  });
 
   const handleQuantileChange = (quantile: number) => {
     onFilterChange({ ...filterState, quantile });
@@ -131,7 +141,19 @@ export function SidePanel({
 
           {isAssistantOpen && (
             <div className="pt-1 animate-in fade-in slide-in-from-top-1">
-              <ChatInterface selectedCellId={selectedCell?.id} />
+              {isInsightLoading && !initialInsight ? (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                  <span className="animate-pulse">Loading assistant...</span>
+                </div>
+              ) : (
+                <ChatInterface
+                  selectedCellId={selectedCell?.id}
+                  initialText={initialInsight?.text}
+                  initialError={initialError}
+                  externalPrompt={externalPrompt}
+                  onPromptHandled={() => setExternalPrompt(null)}
+                />
+              )}
             </div>
           )}
         </div>
@@ -198,7 +220,13 @@ export function SidePanel({
                 {isLoading ? (
                   <div className="h-32 bg-gray-50 rounded animate-pulse" />
                 ) : (
-                  <GroupedViolinPlot distributions={distributions} isLoading={isLoading} />
+                  <GroupedViolinPlot
+                    distributions={distributions}
+                    isLoading={isLoading}
+                    selectedCellId={selectedCell?.id ?? null}
+                    statisticalSummaries={initialInsight?.statistics?.summaries}
+                    onAskAI={setExternalPrompt}
+                  />
                 )}
               </div>
             </div>

@@ -12,8 +12,29 @@ export interface InsightRequest {
 }
 
 export interface InsightResponse {
-  text: string;
   gridCellId: number;
+  text: string;
+  statistics?: AIStatisticalContextV1;
+  meta: {
+    latencyMs: number;
+    totalTokensUsed: number;
+  };
+}
+
+export interface AIStatisticalIndicatorSummary {
+  indicator: string;
+  groupingLabel: string;
+  cellValue: number;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  percentile: number;
+}
+
+export interface AIStatisticalContextV1 {
+  summaries: AIStatisticalIndicatorSummary[];
 }
 
 /**
@@ -43,6 +64,8 @@ export async function fetchInsight({
     }
     throw new Error(errorMessage);
   }
+
+  return response.json();
 
   return response.json();
 }

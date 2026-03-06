@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { fetchInsight } from '@/api/insight';
@@ -12,9 +12,19 @@ interface Message {
 
 interface ChatInterfaceProps {
   selectedCellId?: number | null;
+  initialText?: string | null;
+  initialError?: Error | null;
+  externalPrompt?: string | null;
+  onPromptHandled?: () => void;
 }
 
-export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
+export function ChatInterface({
+  selectedCellId,
+  initialText,
+  initialError,
+  externalPrompt,
+  onPromptHandled
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -27,26 +37,19 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
     setInputValue('');
   }, [selectedCellId]);
 
-  // Initial summary query (cached per gridCellId)
-  const { data: initialInsight, isLoading: isInitialLoading, error: initialError } = useQuery({
-    queryKey: ['insight', { gridCellId: selectedCellId }],
-    queryFn: () => fetchInsight({ gridCellId: selectedCellId! }),
-    enabled: !!selectedCellId,
-  });
-
   // Inject initial insight safely into messages state
   useEffect(() => {
-    if (initialInsight?.text) {
+    if (initialText) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([
         {
           id: `initial-${selectedCellId}`,
           role: 'assistant',
-          content: initialInsight.text,
+          content: initialText,
         },
       ]);
     }
-  }, [initialInsight, selectedCellId]);
+  }, [initialText, selectedCellId]);
 
   // Keep this in sync with MAX_HISTORY_MESSAGES on the backend
   const MAX_HISTORY_MESSAGES = 4;
@@ -114,6 +117,24 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
     askMutation.mutate(question);
   };
 
+  // Handle external prompts (e.g. from chart insights)
+  useEffect(() => {
+    if (externalPrompt && selectedCellId && !askMutation.isPending) {
+      // Append user message immediately
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `user-${Date.now()}`,
+          role: 'user',
+          content: externalPrompt,
+        },
+      ]);
+
+      askMutation.mutate(externalPrompt);
+      if (onPromptHandled) onPromptHandled();
+    }
+  }, [externalPrompt, selectedCellId, askMutation, onPromptHandled]);
+
   if (!selectedCellId) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50 rounded-lg border border-gray-100 p-6 text-center shadow-inner">
@@ -128,7 +149,7 @@ export function ChatInterface({ selectedCellId }: ChatInterfaceProps) {
     );
   }
 
-  const isLoading = isInitialLoading || askMutation.isPending;
+  const isLoading = askMutation.isPending;
   const isOverLimit = inputValue.length > 500;
 
   return (
