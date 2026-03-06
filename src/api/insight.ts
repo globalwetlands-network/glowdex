@@ -8,13 +8,21 @@ export async function fetchInsight({
   gridCellId,
   question,
   messages,
+  contextId,
 }: InsightRequest): Promise<InsightResponse> {
+  const body: Record<string, any> = { gridCellId, question, messages };
+
+  // Only pass contextId if it's not the default to keep the request clean
+  if (contextId && contextId !== 'default') {
+    body.contextId = contextId;
+  }
+
   const response = await fetch('/api/ai/insight', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ gridCellId, question, messages }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {

@@ -9,6 +9,7 @@ export interface InsightRequest {
   question?: string;
   /** Multi-turn conversation history including the current user message as the last entry. */
   messages?: ConversationMessage[];
+  contextId?: string;
 }
 
 export interface InsightResponse {
