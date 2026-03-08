@@ -34,8 +34,6 @@ function AppShell() {
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
-
-
   // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
 
@@ -83,7 +81,8 @@ function AppShell() {
     <LoadingState />
   ) : (
     <Map
-      gridCells={filteredGridCells}
+      allGridCells={gridCells || []}
+      filteredGridCells={filteredGridCells}
       geojson={geojson!}
       typologies={typologies!}
       selectedCellId={selectedCellId}
