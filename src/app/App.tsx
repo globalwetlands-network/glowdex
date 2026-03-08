@@ -7,6 +7,7 @@ import { useFilter } from '@/context/FilterContext';
 import { useSelection } from '@/context/SelectionContext';
 
 // Feature Hooks & Components
+import { useFilterAnalytics, useSelectionAnalytics } from '@/features/analytics';
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
@@ -41,6 +42,13 @@ function AppShell() {
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
+  // Derived selection object
+  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
+  // Analytics hooks
+  useSelectionAnalytics(selectedCell);
+  useFilterAnalytics(filterState);
+
   // 1. Filter grid cells based on UI controls
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
 
@@ -53,9 +61,6 @@ function AppShell() {
     filterState.quantile,
     typologyScaleNumber
   );
-
-  // Derived selection object
-  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
 
   // Event handlers
   const handleCellSelect = (id: number | null) => {
