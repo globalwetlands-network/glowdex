@@ -5,12 +5,20 @@ import type { Message } from './useChatMessages';
 
 const MAX_HISTORY_MESSAGES = 4;
 
+/** Options for the useAskMutation hook. */
 interface UseAskMutationOptions {
+  /** The currently selected grid cell ID. */
   selectedCellId: number | null | undefined;
+  /** The current conversation history. */
   messages: Message[];
+  /** State setter to update the conversation history. */
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
+/**
+ * Hook to manage the AI question mutation and handle user input.
+ * Sends a windowed conversation history to the backend for context-aware responses.
+ */
 export function useAskMutation({
   selectedCellId,
   messages,
