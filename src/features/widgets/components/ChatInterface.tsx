@@ -1,14 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { fetchInsight } from '@/api';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
+import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
+import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
 
 interface ChatInterfaceProps {
   selectedCellId?: number | null;
@@ -23,117 +19,42 @@ export function ChatInterface({
   initialText,
   initialError,
   externalPrompt,
-  onPromptHandled
+  onPromptHandled,
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Reset state when cell changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMessages([]);
+  const { messages, setMessages } = useChatMessages(selectedCellId, initialText);
 
-    setInputValue('');
-  }, [selectedCellId]);
-
-  // Inject initial insight safely into messages state
-  useEffect(() => {
-    if (initialText) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMessages([
-        {
-          id: `initial-${selectedCellId}`,
-          role: 'assistant',
-          content: initialText,
-        },
-      ]);
-    }
-  }, [initialText, selectedCellId]);
-
-  // Keep this in sync with MAX_HISTORY_MESSAGES on the backend
-  const MAX_HISTORY_MESSAGES = 4;
-
-  // Mutation for follow-up questions — sends trimmed conversation history for context
-  const askMutation = useMutation({
-    mutationFn: (question: string) => {
-      // Build messages: existing history + new user question, trimmed to the
-      // backend window so we never send an unbounded payload
-      const history = messages.map(({ role, content }) => ({ role, content }));
-      const allMessages = [...history, { role: 'user' as const, content: question }];
-      const trimmed = allMessages.slice(-MAX_HISTORY_MESSAGES);
-      return fetchInsight({
-        gridCellId: selectedCellId!,
-        messages: trimmed,
-      });
-    },
-    onSuccess: (data) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `resp-${Date.now()}`,
-          role: 'assistant',
-          content: data.text,
-        },
-      ]);
-    },
-    onError: () => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `err-${Date.now()}`,
-          role: 'assistant',
-          content: 'Sorry, I encountered an error fetching the context. Please try again.',
-        },
-      ]);
-    },
+  const { askMutation, handleAsk } = useAskMutation({
+    selectedCellId,
+    messages,
+    setMessages,
   });
 
-  // Scroll to bottom when messages count changes
+  const scrollRef = useAutoScroll(messages.length);
+
+  /**
+   * Handle externally injected prompts (e.g. chart insight click).
+   */
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    if (!externalPrompt || !selectedCellId || askMutation.isPending) return;
+
+    handleAsk(externalPrompt);
+    onPromptHandled?.();
+  }, [externalPrompt, selectedCellId, askMutation.isPending, handleAsk, onPromptHandled]);
+
+  const isLoading = askMutation.isPending;
+  const isOverLimit = inputValue.length > 500;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || !selectedCellId || askMutation.isPending || inputValue.length > 500) return;
+
+    if (!inputValue.trim() || !selectedCellId || isLoading || isOverLimit) return;
 
     const question = inputValue.trim();
     setInputValue('');
-
-    // Append user message immediately
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: question,
-      },
-    ]);
-
-    // Send mutation
-    askMutation.mutate(question);
+    handleAsk(question);
   };
-
-  // Handle external prompts (e.g. from chart insights)
-  useEffect(() => {
-    if (externalPrompt && selectedCellId && !askMutation.isPending) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `user-${Date.now()}`,
-          role: 'user',
-          content: externalPrompt,
-        },
-      ]);
-
-      askMutation.mutate(externalPrompt);
-      if (onPromptHandled) onPromptHandled();
-    }
-  }, [externalPrompt, selectedCellId, askMutation, onPromptHandled]);
 
   if (!selectedCellId) {
     return (
@@ -148,9 +69,6 @@ export function ChatInterface({
       </div>
     );
   }
-
-  const isLoading = askMutation.isPending;
-  const isOverLimit = inputValue.length > 500;
 
   return (
     <div className="flex flex-col h-[400px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -169,7 +87,7 @@ export function ChatInterface({
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-gray-50/50"
@@ -177,7 +95,10 @@ export function ChatInterface({
         {initialError && (
           <div className="flex items-start space-x-2 text-red-600 bg-red-50 p-3 rounded-md text-sm border border-red-100">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-            <p>Failed to load initial context for this area. It might lack data or the service is temporarily unavailable.</p>
+            <p>
+              Failed to load initial context for this area. It might lack data or the service is
+              temporarily unavailable.
+            </p>
           </div>
         )}
 
@@ -187,14 +108,25 @@ export function ChatInterface({
             className={`flex items-start space-x-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse space-x-reverse' : ''
               }`}
           >
-            <div className={`shrink-0 rounded-full p-1.5 mt-0.5 ${msg.role === 'user' ? 'bg-gray-800 text-white' : 'bg-blue-600 text-white'
-              }`}>
-              {msg.role === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+            <div
+              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${msg.role === 'user'
+                ? 'bg-gray-800 text-white'
+                : 'bg-blue-600 text-white'
+                }`}
+            >
+              {msg.role === 'user' ? (
+                <User className="w-3.5 h-3.5" />
+              ) : (
+                <Bot className="w-3.5 h-3.5" />
+              )}
             </div>
-            <div className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${msg.role === 'user'
-              ? 'bg-gray-800 text-white text-base rounded-tr-none'
-              : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none prose prose-sm max-w-none'
-              }`}>
+
+            <div
+              className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${msg.role === 'user'
+                ? 'bg-gray-800 text-white text-base rounded-tr-none'
+                : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none prose prose-sm max-w-none'
+                }`}
+            >
               {msg.role === 'assistant' ? (
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
               ) : (
@@ -209,18 +141,19 @@ export function ChatInterface({
             <div className="shrink-0 rounded-full p-1.5 mt-0.5 bg-blue-100 text-blue-600">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             </div>
+
             <div className="bg-white border border-gray-100 rounded-xl rounded-tl-none px-4 py-3 shadow-sm w-3/4 max-w-[80%]">
               <div className="space-y-2">
-                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-full"></div>
-                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-5/6"></div>
-                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-4/6"></div>
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-full" />
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-5/6" />
+                <div className="h-2.5 bg-gray-200 rounded-full animate-pulse w-4/6" />
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Area */}
+      {/* Input */}
       <div className="p-3 bg-white border-t border-gray-200 shrink-0">
         <form onSubmit={handleSubmit} className="relative flex flex-col">
           <div className="relative flex items-center">
@@ -230,13 +163,13 @@ export function ChatInterface({
               onChange={(e) => setInputValue(e.target.value)}
               disabled={isLoading || !selectedCellId}
               maxLength={500}
-              placeholder={isLoading ? "Analyzing..." : "Ask a follow-up question..."}
+              placeholder={isLoading ? 'Analyzing...' : 'Ask a follow-up question...'}
               className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
                 ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
                 : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
                 }`}
             />
-            {/* NOTE: askMutation.isPending being true disables this button, acting as temporary rate-limit protection until backend throttling is added */}
+
             <button
               type="submit"
               disabled={isLoading || !inputValue.trim() || !selectedCellId || isOverLimit}
@@ -245,7 +178,11 @@ export function ChatInterface({
               <Send className="w-4 h-4" />
             </button>
           </div>
-          <div className={`text-right mt-1 text-xs ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+
+          <div
+            className={`text-right mt-1 text-xs ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'
+              }`}
+          >
             {inputValue.length} / 500
           </div>
         </form>
