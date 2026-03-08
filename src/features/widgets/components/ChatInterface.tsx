@@ -109,9 +109,7 @@ export function ChatInterface({
               }`}
           >
             <div
-              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${msg.role === 'user'
-                ? 'bg-gray-800 text-white'
-                : 'bg-blue-600 text-white'
+              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${msg.role === 'user' ? 'bg-gray-800 text-white' : 'bg-blue-600 text-white'
                 }`}
             >
               {msg.role === 'user' ? (
@@ -123,8 +121,8 @@ export function ChatInterface({
 
             <div
               className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${msg.role === 'user'
-                ? 'bg-gray-800 text-white text-base rounded-tr-none'
-                : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none prose prose-sm max-w-none'
+                  ? 'bg-gray-800 text-white text-base rounded-tr-none'
+                  : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none prose prose-sm max-w-none'
                 }`}
             >
               {msg.role === 'assistant' ? (
@@ -153,7 +151,7 @@ export function ChatInterface({
         )}
       </div>
 
-      {/* Input */}
+      {/* Input Area */}
       <div className="p-3 bg-white border-t border-gray-200 shrink-0">
         <form onSubmit={handleSubmit} className="relative flex flex-col">
           <div className="relative flex items-center">
@@ -165,8 +163,8 @@ export function ChatInterface({
               maxLength={500}
               placeholder={isLoading ? 'Analyzing...' : 'Ask a follow-up question...'}
               className={`w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${isOverLimit
-                ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
-                : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
+                  ? 'border-red-500 focus:ring-red-500 text-red-900 bg-red-50'
+                  : 'border-gray-200 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:bg-white'
                 }`}
             />
 

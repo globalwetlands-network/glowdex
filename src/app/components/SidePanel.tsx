@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight, fetchStatistics } from '@/api';
-import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2, AlertTriangle } from 'lucide-react';
+import {
+  Layers,
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  MapPin,
+  Bot,
+  BarChart2,
+  AlertTriangle,
+} from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -46,7 +55,11 @@ export function SidePanel({
 
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
-  const { data: initialInsight, isLoading: isInsightLoading, error: initialError } = useQuery({
+  const {
+    data: initialInsight,
+    isLoading: isInsightLoading,
+    error: initialError,
+  } = useQuery({
     queryKey: ['insight', { gridCellId: selectedCell?.id }],
     queryFn: () => fetchInsight({ gridCellId: selectedCell!.id }),
     enabled: !!selectedCell?.id,
@@ -156,7 +169,7 @@ export function SidePanel({
                 <ChatInterface
                   selectedCellId={selectedCell?.id}
                   initialText={initialInsight?.text}
-                  initialError={initialError}
+                  initialError={(initialError as Error) || null}
                   externalPrompt={externalPrompt}
                   onPromptHandled={() => setExternalPrompt(null)}
                 />
