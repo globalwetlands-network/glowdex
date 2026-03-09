@@ -1,10 +1,10 @@
-export type HabitatId = 'mangroves' | 'saltmarsh' | 'seagrass';
+import { Habitat } from '@/types/enums/habitat.enum';
 
 export interface Indicator {
   key: string;
   label: string;
   dimension: string;
-  habitat: HabitatId | 'all';
+  habitat: Habitat | 'all';
   direction: 1 | -1;
   description?: string;
 }

@@ -1,5 +1,6 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 import { fetchAsset } from '@/utils/fetchUtils';
-import type { Indicator, HabitatId } from '@/features/widgets/types/indicator.types';
+import type { Indicator } from '@/features/widgets/types/indicator.types';
 
 // Types for raw JSON structure
 interface IndicatorRaw {
@@ -11,10 +12,10 @@ interface IndicatorRaw {
   description: string;
 }
 
-const HABITAT_MAP: Record<string, HabitatId | 'all'> = {
-  mg: 'mangroves',
-  sm: 'saltmarsh',
-  sg: 'seagrass',
+const HABITAT_MAP: Record<string, Habitat | 'all'> = {
+  mg: Habitat.MANGROVES,
+  sm: Habitat.SALTMARSH,
+  sg: Habitat.SEAGRASS,
   all: 'all'
 };
 
