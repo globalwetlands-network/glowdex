@@ -158,8 +158,6 @@ export function SidePanel({
                   selectedCellId={selectedCell?.id}
                   initialText={initialInsight?.text}
                   initialError={initialError}
-                  externalPrompt={externalPrompt}
-                  onPromptHandled={() => setExternalPrompt(null)}
                 />
               )}
             </div>
