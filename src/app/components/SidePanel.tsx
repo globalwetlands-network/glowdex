@@ -44,7 +44,6 @@ export function SidePanel({
   const [isAssistantOpen, setIsAssistantOpen] = useState(true);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
 
-  const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
 
   const { data: initialInsight, isLoading: isInsightLoading, error: initialError } = useQuery({
     queryKey: ['insight', { gridCellId: selectedCell?.id }],
@@ -245,7 +244,7 @@ export function SidePanel({
                         isLoading={isLoading}
                         selectedCellId={selectedCell?.id ?? null}
                         statisticalSummaries={statsData?.statistics?.summaries}
-                        onAskAI={setExternalPrompt}
+                        onAskAI={undefined} // TODO: implement this feature after demo
                       />
                     )}
                   </div>
