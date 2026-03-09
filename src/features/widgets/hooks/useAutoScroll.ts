@@ -1,18 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 /**
- * Hook to automatically scroll an element to the bottom when a dependency changes.
- * @param dep - The dependency to watch (usually the length of the messages array).
- * @returns A ref to be attached to the scrollable container.
+ * Scrolls container to bottom when dependency changes.
  */
 export function useAutoScroll(dep: unknown) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (!ref.current) return;
+
+    ref.current.scrollTop = ref.current.scrollHeight;
   }, [dep]);
 
-  return scrollRef;
+  return ref;
 }

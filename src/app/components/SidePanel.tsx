@@ -154,6 +154,7 @@ export function SidePanel({
                 </div>
               ) : (
                 <ChatInterface
+                  key={selectedCell?.id ?? 'empty'}
                   selectedCellId={selectedCell?.id}
                   initialText={initialInsight?.text}
                   initialError={initialError}

@@ -1,17 +1,13 @@
-import { useCallback } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { fetchInsight } from '@/api';
-import type { Message } from './useChatMessages';
+import { useCallback } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { fetchInsight } from "@/api";
+import type { Message } from "./useChatMessages";
 
 const MAX_HISTORY_MESSAGES = 4;
 
-/** Options for the useAskMutation hook. */
-interface UseAskMutationOptions {
-  /** The currently selected grid cell ID. */
+interface Options {
   selectedCellId: number | null | undefined;
-  /** The current conversation history. */
-  messages: Message[];
-  /** State setter to update the conversation history. */
+  conversationMessages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
@@ -21,22 +17,29 @@ interface UseAskMutationOptions {
  */
 export function useAskMutation({
   selectedCellId,
-  messages,
+  conversationMessages,
   setMessages,
-}: UseAskMutationOptions) {
+}: Options) {
   const askMutation = useMutation({
     mutationFn: (question: string) => {
       if (!selectedCellId) {
-        return Promise.reject(new Error('No cell selected'));
+        return Promise.reject(new Error("No cell selected"));
       }
 
-      const history = messages.map(({ role, content }) => ({ role, content }));
-      const allMessages = [...history, { role: 'user' as const, content: question }];
-      const trimmed = allMessages.slice(-MAX_HISTORY_MESSAGES);
+      const [initialMessage, ...rest] = conversationMessages;
+
+      const trimmedHistory = [
+        initialMessage,
+        ...rest.slice(-(MAX_HISTORY_MESSAGES - 1)),
+        { role: "user" as const, content: question },
+      ];
 
       return fetchInsight({
         gridCellId: selectedCellId,
-        messages: trimmed,
+        messages: trimmedHistory.map(({ role, content }) => ({
+          role,
+          content,
+        })),
       });
     },
 
@@ -44,8 +47,8 @@ export function useAskMutation({
       setMessages((prev) => [
         ...prev,
         {
-          id: `resp-${Date.now()}`,
-          role: 'assistant',
+          id: `resp-${crypto.randomUUID()}`,
+          role: "assistant",
           content: data.text,
         },
       ]);
@@ -55,9 +58,10 @@ export function useAskMutation({
       setMessages((prev) => [
         ...prev,
         {
-          id: `err-${Date.now()}`,
-          role: 'assistant',
-          content: 'Sorry, I encountered an error fetching the context. Please try again.',
+          id: `err-${crypto.randomUUID()}`,
+          role: "assistant",
+          content:
+            "Sorry, I encountered an error fetching the context. Please try again.",
         },
       ]);
     },
@@ -65,18 +69,20 @@ export function useAskMutation({
 
   const handleAsk = useCallback(
     (question: string) => {
+      if (askMutation.isPending) return;
+
       setMessages((prev) => [
         ...prev,
         {
-          id: `user-${Date.now()}`,
-          role: 'user',
+          id: `user-${crypto.randomUUID()}`,
+          role: "user",
           content: question,
         },
       ]);
 
       askMutation.mutate(question);
     },
-    [askMutation, setMessages],
+    [askMutation, setMessages]
   );
 
   return { askMutation, handleAsk };
