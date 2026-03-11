@@ -1,23 +1,28 @@
-export interface InsightRequest {
-  gridCellId: number;
-  question?: string;
-}
-
-export interface InsightResponse {
-  text: string;
-  gridCellId: number;
-}
+import type { InsightRequest, InsightResponse } from './types';
 
 /**
- * Fetch insights from the AI backend for a specific grid cell
+ * Fetch insights from the AI backend for a specific grid cell.
+ * Supports both single-turn (question) and multi-turn (messages[]) modes.
  */
-export async function fetchInsight({ gridCellId, question }: InsightRequest): Promise<InsightResponse> {
+export async function fetchInsight({
+  gridCellId,
+  question,
+  messages,
+  contextId,
+}: InsightRequest): Promise<InsightResponse> {
+  const body: Record<string, unknown> = { gridCellId, question, messages };
+
+  // Only pass contextId if it's not the default to keep the request clean
+  if (contextId && contextId !== 'default') {
+    body.contextId = contextId;
+  }
+
   const response = await fetch('/api/ai/insight', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ gridCellId, question }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
