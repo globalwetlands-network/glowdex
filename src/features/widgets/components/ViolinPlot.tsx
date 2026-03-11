@@ -57,13 +57,7 @@ export function GroupedViolinPlot({
   );
 }
 
-const KEY_TO_BACKEND_LABEL: Record<string, string> = {
-  mang_fish_dens: 'Mangrove Fish Density',
-  mang_inv_dens: 'Mangrove Invertebrate Density',
-  mang_agb: 'Mangrove Mean AGB',
-  mang_soc: 'Mangrove Mean SOC',
-  mang_spp_thr: 'Mangrove Species Threat Score',
-};
+// Removed fragile KEY_TO_BACKEND_LABEL mapping
 
 function SingleIndicatorRow({
   distribution,
@@ -78,8 +72,7 @@ function SingleIndicatorRow({
 }) {
   const { indicator, values, selectedValue } = distribution;
 
-  const backendLabel = KEY_TO_BACKEND_LABEL[indicator.key];
-  const match = statisticalSummaries?.find(s => s.indicator === backendLabel);
+  const match = statisticalSummaries?.find(s => s.key === indicator.key);
 
   const trace: Partial<Plotly.Data> = {
     type: 'violin',

@@ -12,6 +12,7 @@ import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGeolocationSelection } from '@/features/map/hooks/useGeolocationSelection';
+import { useStatistics } from '@/data/hooks/useStatistics';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -50,6 +51,9 @@ function AppShell() {
   // 1. Filter grid cells based on UI controls
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
 
+  // 1a. Fetch backend statistics for the selected cell (Single Source of Truth)
+  const { data: cellStats } = useStatistics(selectedCellId);
+
   // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
     filteredGridCells,
@@ -57,7 +61,8 @@ function AppShell() {
     filterState,
     selectedCellId,
     filterState.quantile,
-    typologyScaleNumber
+    typologyScaleNumber,
+    cellStats?.statistics
   );
 
   // Event handlers

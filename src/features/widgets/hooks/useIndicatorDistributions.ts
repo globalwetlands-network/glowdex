@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { FilterState } from '../types/filter.types';
 import type { Indicator, DistributionsByDimension } from '../types/indicator.types';
+import type { AIStatisticalContextV1 } from '@/api/types';
 import { Habitat } from '@/types/enums/habitat.enum';
 
 // Utils
@@ -124,20 +125,42 @@ function filterBySignificance(
 function buildDistributions(
   indicators: Indicator[],
   scopedGridCells: RichGridCell[],
-  selectedCell: RichGridCell | null
+  selectedCell: RichGridCell | null,
+  cellStats?: AIStatisticalContextV1
 ): DistributionsByDimension {
   const distributions: DistributionsByDimension = {};
 
-  indicators.forEach(indicator => {
-    const values = getIndicatorValues(scopedGridCells, indicator.key);
-    if (values.length === 0) return;
+  // Build lookup for API stats if available
+  const statsMap = new Map<string, { sampledDistribution: number[], cellValue: number }>();
+  if (cellStats) {
+    cellStats.summaries.forEach(s => {
+      statsMap.set(s.key, {
+        sampledDistribution: s.sampledDistribution,
+        cellValue: s.cellValue
+      });
+    });
+  }
 
-    // Get selected value for marker
+  indicators.forEach(indicator => {
+    // 1. Check if we have backend API stats for this indicator (Priority)
+    const apiStats = statsMap.get(indicator.key);
+
+    let values: number[];
     let selectedValue: number | undefined;
-    if (selectedCell) {
-      const val = selectedCell.residuals[indicator.key];
-      if (typeof val === 'number' && !isNaN(val)) {
-        selectedValue = val;
+
+    if (apiStats) {
+      values = apiStats.sampledDistribution;
+      selectedValue = apiStats.cellValue;
+    } else {
+      // 2. Fallback to local residuals (e.g. when no cell is selected or for legacy indicators)
+      values = getIndicatorValues(scopedGridCells, indicator.key);
+      if (values.length === 0) return;
+
+      if (selectedCell) {
+        const val = selectedCell.residuals[indicator.key];
+        if (typeof val === 'number' && !isNaN(val)) {
+          selectedValue = val;
+        }
       }
     }
 
@@ -184,7 +207,8 @@ export function useIndicatorDistributions(
   filterState: FilterState,
   selectedCellId: number | null,
   quantileValue: number,
-  typologyScale: 5 | 18 = 5
+  typologyScale: 5 | 18 = 5,
+  cellStats?: AIStatisticalContextV1
 ): DistributionsByDimension {
   return useMemo(() => {
     if (!gridCells.length || !indicators.length) return {};
@@ -200,14 +224,15 @@ export function useIndicatorDistributions(
     let filteredIndicators = filterByHabitat(indicators, filterState, selectedCell);
     filteredIndicators = filterCumulativeImpacts(filteredIndicators);
 
-    // Only apply significance test when cell is selected
-    if (selectedCell) {
+    // Only apply significance test when cell is selected (and we use local fallback)
+    // If we have API stats, we trust the backend's choice of indicators
+    if (selectedCell && !cellStats) {
       filteredIndicators = filterBySignificance(filteredIndicators, scopedGridCells, quantileValue);
     }
 
     // Build and sort distributions
-    const distributions = buildDistributions(filteredIndicators, scopedGridCells, selectedCell);
+    const distributions = buildDistributions(filteredIndicators, scopedGridCells, selectedCell, cellStats);
     return sortDistributionsByDimension(distributions);
 
-  }, [gridCells, indicators, filterState, selectedCellId, quantileValue, typologyScale]);
+  }, [gridCells, indicators, filterState, selectedCellId, quantileValue, typologyScale, cellStats]);
 }

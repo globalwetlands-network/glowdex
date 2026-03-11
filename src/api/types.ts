@@ -23,6 +23,7 @@ export interface InsightResponse {
 }
 
 export interface AIStatisticalIndicatorSummary {
+  key: string;
   indicator: string;
   groupingLabel: string;
   cellValue: number;
@@ -32,6 +33,7 @@ export interface AIStatisticalIndicatorSummary {
   q3: number;
   max: number;
   percentile: number;
+  sampledDistribution: number[];
 }
 
 export interface AIStatisticalContextV1 {
