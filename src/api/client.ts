@@ -20,10 +20,10 @@ export class ApiError extends Error {
  */
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = `${API_BASE_URL.replace(/\/$/, '')}${endpoint}`;
-  
+
   const headers = {
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...options.headers,
@@ -44,7 +44,7 @@ export async function apiClient<T>(
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
       let data;
-      
+
       try {
         data = await response.json();
         errorMessage = data.message || errorMessage;
@@ -58,11 +58,14 @@ export async function apiClient<T>(
     return response.json();
   } catch (error: unknown) {
     clearTimeout(id);
-    
+
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new ApiError(`Request timed out after ${DEFAULT_API_TIMEOUT}ms`, 408);
+      throw new ApiError(
+        `Request timed out after ${DEFAULT_API_TIMEOUT}ms`,
+        408,
+      );
     }
-    
+
     throw error;
   }
 }

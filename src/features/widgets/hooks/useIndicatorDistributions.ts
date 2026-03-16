@@ -4,7 +4,10 @@ import { useMemo } from 'react';
 // Types
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { FilterState } from '../types/filter.types';
-import type { Indicator, DistributionsByDimension } from '../types/indicator.types';
+import type {
+  Indicator,
+  DistributionsByDimension,
+} from '../types/indicator.types';
 import type { AIStatisticalContextV1 } from '@/api/types';
 import { Habitat } from '@/types/enums/habitat.enum';
 
@@ -12,7 +15,10 @@ import { Habitat } from '@/types/enums/habitat.enum';
 import { quantile } from 'd3-array';
 
 // Config
-import { LEGACY_CUMULATIVE_INDICATORS, DIMENSION_ORDER } from '../config/analysis.config';
+import {
+  LEGACY_CUMULATIVE_INDICATORS,
+  DIMENSION_ORDER,
+} from '../config/analysis.config';
 
 /**
  * Filters grid cells to only those in the selected cell's typology cluster
@@ -20,7 +26,7 @@ import { LEGACY_CUMULATIVE_INDICATORS, DIMENSION_ORDER } from '../config/analysi
 function getScopedGridCells(
   gridCells: RichGridCell[],
   selectedCell: RichGridCell | null,
-  typologyScale: 5 | 18
+  typologyScale: 5 | 18,
 ): RichGridCell[] {
   if (!selectedCell) return gridCells;
 
@@ -29,7 +35,7 @@ function getScopedGridCells(
 
   if (clusterValue === undefined) return gridCells;
 
-  return gridCells.filter(c => c[clusterKey] === clusterValue);
+  return gridCells.filter((c) => c[clusterKey] === clusterValue);
 }
 
 /**
@@ -37,10 +43,10 @@ function getScopedGridCells(
  */
 function getIndicatorValues(
   gridCells: RichGridCell[],
-  indicatorKey: string
+  indicatorKey: string,
 ): number[] {
   return gridCells
-    .map(cell => cell.residuals[indicatorKey])
+    .map((cell) => cell.residuals[indicatorKey])
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
 }
 
@@ -50,7 +56,7 @@ function getIndicatorValues(
  */
 function isIndicatorSignificant(
   values: number[],
-  quantileValue: number
+  quantileValue: number,
 ): boolean {
   if (values.length === 0) return false;
 
@@ -69,15 +75,17 @@ function isIndicatorSignificant(
 function filterByHabitat(
   indicators: Indicator[],
   filterState: FilterState,
-  selectedCell: RichGridCell | null
+  selectedCell: RichGridCell | null,
 ): Indicator[] {
-  const habitatPresence = selectedCell ? {
-    [Habitat.MANGROVES]: selectedCell[Habitat.MANGROVES] === true,
-    [Habitat.SALTMARSH]: selectedCell[Habitat.SALTMARSH] === true,
-    [Habitat.SEAGRASS]: selectedCell[Habitat.SEAGRASS] === true,
-  } : null;
+  const habitatPresence = selectedCell
+    ? {
+        [Habitat.MANGROVES]: selectedCell[Habitat.MANGROVES] === true,
+        [Habitat.SALTMARSH]: selectedCell[Habitat.SALTMARSH] === true,
+        [Habitat.SEAGRASS]: selectedCell[Habitat.SEAGRASS] === true,
+      }
+    : null;
 
-  return indicators.filter(ind => {
+  return indicators.filter((ind) => {
     if (ind.habitat === 'all') return true;
 
     // Check UI filter (always required)
@@ -97,7 +105,7 @@ function filterByHabitat(
  * Restricts cumulative impact indicators to approved set
  */
 function filterCumulativeImpacts(indicators: Indicator[]): Indicator[] {
-  return indicators.filter(ind => {
+  return indicators.filter((ind) => {
     if (ind.dimension === 'Cumulative Impacts') {
       return LEGACY_CUMULATIVE_INDICATORS.has(ind.key);
     }
@@ -111,9 +119,9 @@ function filterCumulativeImpacts(indicators: Indicator[]): Indicator[] {
 function filterBySignificance(
   indicators: Indicator[],
   scopedGridCells: RichGridCell[],
-  quantileValue: number
+  quantileValue: number,
 ): Indicator[] {
-  return indicators.filter(indicator => {
+  return indicators.filter((indicator) => {
     const values = getIndicatorValues(scopedGridCells, indicator.key);
     return isIndicatorSignificant(values, quantileValue);
   });
@@ -126,22 +134,25 @@ function buildDistributions(
   indicators: Indicator[],
   scopedGridCells: RichGridCell[],
   selectedCell: RichGridCell | null,
-  cellStats?: AIStatisticalContextV1
+  cellStats?: AIStatisticalContextV1,
 ): DistributionsByDimension {
   const distributions: DistributionsByDimension = {};
 
   // Build lookup for API stats if available
-  const statsMap = new Map<string, { sampledDistribution: number[], cellValue: number }>();
+  const statsMap = new Map<
+    string,
+    { sampledDistribution: number[]; cellValue: number }
+  >();
   if (cellStats) {
-    cellStats.summaries.forEach(s => {
+    cellStats.summaries.forEach((s) => {
       statsMap.set(s.key, {
         sampledDistribution: s.sampledDistribution,
-        cellValue: s.cellValue
+        cellValue: s.cellValue,
       });
     });
   }
 
-  indicators.forEach(indicator => {
+  indicators.forEach((indicator) => {
     // 1. Check if we have backend API stats for this indicator (Priority)
     const apiStats = statsMap.get(indicator.key);
 
@@ -172,7 +183,7 @@ function buildDistributions(
     distributions[indicator.dimension].push({
       indicator,
       values,
-      selectedValue
+      selectedValue,
     });
   });
 
@@ -183,11 +194,11 @@ function buildDistributions(
  * Sorts distributions by predefined dimension order
  */
 function sortDistributionsByDimension(
-  distributions: DistributionsByDimension
+  distributions: DistributionsByDimension,
 ): DistributionsByDimension {
   const sorted: DistributionsByDimension = {};
 
-  DIMENSION_ORDER.forEach(dim => {
+  DIMENSION_ORDER.forEach((dim) => {
     if (distributions[dim]) {
       sorted[dim] = distributions[dim];
     }
@@ -208,31 +219,55 @@ export function useIndicatorDistributions(
   selectedCellId: number | null,
   quantileValue: number,
   typologyScale: 5 | 18 = 5,
-  cellStats?: AIStatisticalContextV1
+  cellStats?: AIStatisticalContextV1,
 ): DistributionsByDimension {
   return useMemo(() => {
     if (!gridCells.length || !indicators.length) return {};
 
     const selectedCell = selectedCellId
-      ? (gridCells.find(c => c.id === selectedCellId) || null)
+      ? gridCells.find((c) => c.id === selectedCellId) || null
       : null;
 
     // Scope to typology cluster
-    const scopedGridCells = getScopedGridCells(gridCells, selectedCell, typologyScale);
+    const scopedGridCells = getScopedGridCells(
+      gridCells,
+      selectedCell,
+      typologyScale,
+    );
 
     // Apply filters in sequence
-    let filteredIndicators = filterByHabitat(indicators, filterState, selectedCell);
+    let filteredIndicators = filterByHabitat(
+      indicators,
+      filterState,
+      selectedCell,
+    );
     filteredIndicators = filterCumulativeImpacts(filteredIndicators);
 
     // Only apply significance test when cell is selected (and we use local fallback)
     // If we have API stats, we trust the backend's choice of indicators
     if (selectedCell && !cellStats) {
-      filteredIndicators = filterBySignificance(filteredIndicators, scopedGridCells, quantileValue);
+      filteredIndicators = filterBySignificance(
+        filteredIndicators,
+        scopedGridCells,
+        quantileValue,
+      );
     }
 
     // Build and sort distributions
-    const distributions = buildDistributions(filteredIndicators, scopedGridCells, selectedCell, cellStats);
+    const distributions = buildDistributions(
+      filteredIndicators,
+      scopedGridCells,
+      selectedCell,
+      cellStats,
+    );
     return sortDistributionsByDimension(distributions);
-
-  }, [gridCells, indicators, filterState, selectedCellId, quantileValue, typologyScale, cellStats]);
+  }, [
+    gridCells,
+    indicators,
+    filterState,
+    selectedCellId,
+    quantileValue,
+    typologyScale,
+    cellStats,
+  ]);
 }

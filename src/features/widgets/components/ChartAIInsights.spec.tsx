@@ -31,21 +31,27 @@ describe('ChartAIInsights', () => {
   });
 
   it('shows insight badge when value > q3', () => {
-    render(<ChartAIInsights {...defaultProps} value={90} q3={80} percentile={85} />);
+    render(
+      <ChartAIInsights {...defaultProps} value={90} q3={80} percentile={85} />,
+    );
     const badge = screen.getByTestId('insight-badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveTextContent('Value above the upper quartile');
   });
 
   it('shows warning badge when value < q1', () => {
-    render(<ChartAIInsights {...defaultProps} value={10} q1={20} percentile={10} />);
+    render(
+      <ChartAIInsights {...defaultProps} value={10} q1={20} percentile={10} />,
+    );
     const badge = screen.getByTestId('insight-badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveTextContent('Value below the lower quartile');
   });
 
   it('prioritizes percentile badge over q3 badge if both apply', () => {
-    render(<ChartAIInsights {...defaultProps} value={100} q3={80} percentile={99} />);
+    render(
+      <ChartAIInsights {...defaultProps} value={100} q3={80} percentile={99} />,
+    );
     const badge = screen.getByTestId('insight-badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveTextContent('99th percentile for this typology');
@@ -62,10 +68,16 @@ describe('ChartAIInsights', () => {
     expect(screen.getByTestId('ask-ai-dropdown')).toBeInTheDocument();
 
     // Click a preset
-    fireEvent.click(screen.getByText('What does the violin plot show about mangrove fish density in this location?'));
+    fireEvent.click(
+      screen.getByText(
+        'What does the violin plot show about mangrove fish density in this location?',
+      ),
+    );
 
     // Expect callback to be called with exact prompt
-    expect(defaultProps.onAskAI).toHaveBeenCalledWith('What does the violin plot show about mangrove fish density in this location?');
+    expect(defaultProps.onAskAI).toHaveBeenCalledWith(
+      'What does the violin plot show about mangrove fish density in this location?',
+    );
 
     // Dropdown closes after clicking
     expect(screen.queryByTestId('ask-ai-dropdown')).not.toBeInTheDocument();

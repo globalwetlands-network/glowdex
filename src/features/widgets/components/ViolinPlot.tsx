@@ -16,7 +16,7 @@ export function GroupedViolinPlot({
   isLoading,
   selectedCellId,
   statisticalSummaries,
-  onAskAI
+  onAskAI,
 }: GroupedViolinPlotProps) {
   if (isLoading) {
     return <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />;
@@ -34,7 +34,7 @@ export function GroupedViolinPlot({
 
   return (
     <div className="space-y-8">
-      {dimensions.map(dimension => (
+      {dimensions.map((dimension) => (
         <div key={dimension} className="space-y-4">
           <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">
             {dimension}
@@ -63,7 +63,7 @@ function SingleIndicatorRow({
   distribution,
   statisticalSummaries,
   selectedCellId,
-  onAskAI
+  onAskAI,
 }: {
   distribution: IndicatorDistribution;
   statisticalSummaries?: AIStatisticalIndicatorSummary[];
@@ -72,7 +72,7 @@ function SingleIndicatorRow({
 }) {
   const { indicator, values, selectedValue } = distribution;
 
-  const match = statisticalSummaries?.find(s => s.key === indicator.key);
+  const match = statisticalSummaries?.find((s) => s.key === indicator.key);
 
   const trace: Partial<Plotly.Data> = {
     type: 'violin',
@@ -117,9 +117,9 @@ function SingleIndicatorRow({
         line: {
           color: 'rgba(225,29,72,0.4)',
           width: 1,
-          dash: 'dot'
-        }
-      }
+          dash: 'dot',
+        },
+      },
     ];
   }
 
@@ -140,11 +140,11 @@ function SingleIndicatorRow({
         symbol: 'diamond',
         size: 10,
         color: '#E11D48',
-        line: { color: '#FFFFFF', width: 2 }
+        line: { color: '#FFFFFF', width: 2 },
       },
-      hovertemplate: "This location<br>%{x}<extra></extra>",
+      hovertemplate: 'This location<br>%{x}<extra></extra>',
       name: 'Selected',
-      showlegend: false
+      showlegend: false,
     } as Plotly.Data);
   }
 
@@ -155,7 +155,10 @@ function SingleIndicatorRow({
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-xs font-medium text-gray-600 truncate" title={indicator.label}>
+        <span
+          className="text-xs font-medium text-gray-600 truncate"
+          title={indicator.label}
+        >
           {indicator.label}
         </span>
         {selectedValue !== undefined && (
@@ -172,17 +175,20 @@ function SingleIndicatorRow({
           style={{ width: '100%', height: '80px' }}
           useResizeHandler={true}
         />
-        {match && match.cellValue !== undefined && selectedCellId && onAskAI && (
-          <ChartAIInsights
-            indicatorName={indicator.label}
-            value={match.cellValue}
-            percentile={match.percentile}
-            q1={match.q1}
-            q3={match.q3}
-            selectedCellId={selectedCellId}
-            onAskAI={onAskAI}
-          />
-        )}
+        {match &&
+          match.cellValue !== undefined &&
+          selectedCellId &&
+          onAskAI && (
+            <ChartAIInsights
+              indicatorName={indicator.label}
+              value={match.cellValue}
+              percentile={match.percentile}
+              q1={match.q1}
+              q3={match.q3}
+              selectedCellId={selectedCellId}
+              onAskAI={onAskAI}
+            />
+          )}
       </div>
     </div>
   );

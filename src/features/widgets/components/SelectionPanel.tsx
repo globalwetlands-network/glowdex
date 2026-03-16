@@ -9,28 +9,40 @@ interface SelectionPanelProps {
   currentScale: 'scale5' | 'scale18';
 }
 
-export function SelectionPanel({ selectedCell, typologies, currentScale }: SelectionPanelProps) {
+export function SelectionPanel({
+  selectedCell,
+  typologies,
+  currentScale,
+}: SelectionPanelProps) {
   if (!selectedCell) {
     return (
       <div className="bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-100 text-center h-48 flex flex-col justify-center items-center text-gray-500">
         <div className="bg-white p-3 rounded-full mb-3 shadow-sm border border-gray-100 hover:scale-105 transition-transform">
           <MapPin className="w-6 h-6 text-gray-400" />
         </div>
-        <p className="text-sm font-semibold text-gray-700">No Location Selected</p>
+        <p className="text-sm font-semibold text-gray-700">
+          No Location Selected
+        </p>
         <p className="text-xs mt-2 opacity-80 max-w-[200px]">
-          Click on a grid cell on the map to view detailed habitat and typology insights.
+          Click on a grid cell on the map to view detailed habitat and typology
+          insights.
         </p>
       </div>
     );
   }
 
-  const { id, country, cluster5, cluster18, mangroves, lat, lng } = selectedCell;
+  const { id, country, cluster5, cluster18, mangroves, lat, lng } =
+    selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
   const clusterInfo = typologies[currentScale][clusterId];
 
   // Format coordinates
   // Use centerCoords if available (from GeoJSON bbox), otherwise fallback to lat/lng
-  const centerCoords = (selectedCell as RichGridCell & { centerCoords?: { latitude: number; longitude: number } }).centerCoords;
+  const centerCoords = (
+    selectedCell as RichGridCell & {
+      centerCoords?: { latitude: number; longitude: number };
+    }
+  ).centerCoords;
   const coords = centerCoords || { latitude: lat || 0, longitude: lng || 0 };
   const coordinatesFormatted = formatCoordinate(coords);
 
@@ -38,7 +50,9 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4">
       {/* Country Name */}
       <div>
-        <h3 className="text-xl font-bold text-gray-900">{country || 'Unknown Country'}</h3>
+        <h3 className="text-xl font-bold text-gray-900">
+          {country || 'Unknown Country'}
+        </h3>
       </div>
 
       {/* Coordinates */}
@@ -64,7 +78,9 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
 
       {/* Feature 1: Color */}
       <div className="space-y-1">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Typology Color</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Typology Color
+        </p>
         <div className="flex items-center space-x-2">
           <div
             className="w-full h-6 rounded-md shadow-sm border border-gray-100"
@@ -75,10 +91,14 @@ export function SelectionPanel({ selectedCell, typologies, currentScale }: Selec
 
       {/* Feature 2: Habitats */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Habitats Present</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          Habitats Present
+        </p>
         <div className="flex flex-wrap gap-2">
           {mangroves && (
-            <span className="px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-medium">Mangroves</span>
+            <span className="px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-medium">
+              Mangroves
+            </span>
           )}
           {!mangroves && (
             <span className="text-gray-400 italic text-xs">None recorded</span>

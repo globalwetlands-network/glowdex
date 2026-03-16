@@ -16,14 +16,14 @@ const HABITAT_MAP: Record<string, Habitat | 'all'> = {
   mg: Habitat.MANGROVES,
   sm: Habitat.SALTMARSH,
   sg: Habitat.SEAGRASS,
-  all: 'all'
+  all: 'all',
 };
 
 const HABITAT_PREFIX_MAP: Record<string, string> = {
   mg: 'Mangrove',
   sm: 'Saltmarsh',
   sg: 'Seagrass',
-  all: ''
+  all: '',
 };
 
 /**
@@ -31,7 +31,7 @@ const HABITAT_PREFIX_MAP: Record<string, string> = {
  * Adds habitat prefixes to labels (e.g., "Fish density" -> "Mangrove Fish density")
  */
 function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
-  return raw.map(i => {
+  return raw.map((i) => {
     const habitatKey = i.habitat;
     const habitatLabel = HABITAT_MAP[habitatKey] || 'all';
     const prefix = HABITAT_PREFIX_MAP[habitatKey] || '';
@@ -44,17 +44,17 @@ function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
       dimension: i.dimension,
       habitat: habitatLabel,
       direction: i.direction as 1 | -1,
-      description: i.description
+      description: i.description,
     };
   });
 }
 
 /**
  * Loads indicator definitions and metadata
- * 
+ *
  * Fetches from /data/indicator-labels.json
  * Applies transformation to normalize habitat labels and prefixes.
- * 
+ *
  * @returns Promise resolving to array of Indicator objects
  */
 export async function loadIndicators(): Promise<Indicator[]> {
@@ -62,6 +62,6 @@ export async function loadIndicators(): Promise<Indicator[]> {
   if (!response.ok) {
     throw new Error(`Failed to load indicators: ${response.statusText}`);
   }
-  const raw = await response.json() as IndicatorRaw[];
+  const raw = (await response.json()) as IndicatorRaw[];
   return transformIndicators(raw);
 }

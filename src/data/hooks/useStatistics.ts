@@ -5,7 +5,10 @@ import type { StatisticsResponse } from '@/api/types';
 /**
  * Hook to fetch statistical distribution data for a specific grid cell
  */
-export function useStatistics(gridCellId: number | null, contextId: string = 'default') {
+export function useStatistics(
+  gridCellId: number | null,
+  contextId: string = 'default',
+) {
   const [data, setData] = useState<StatisticsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -26,7 +29,9 @@ export function useStatistics(gridCellId: number | null, contextId: string = 'de
         const result = await fetchStatistics(gridCellId!, contextId);
         setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to load statistics'));
+        setError(
+          err instanceof Error ? err : new Error('Failed to load statistics'),
+        );
         console.error('Error loading statistics:', err);
       } finally {
         setIsLoading(false);

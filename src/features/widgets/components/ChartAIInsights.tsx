@@ -53,10 +53,11 @@ export function ChartAIInsights({
       {badgeMsg && (
         <button
           onClick={() => setIsDropdownOpen(true)}
-          className={`mb-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-medium border text-left cursor-pointer transition-colors ${badgeType === 'warning'
-            ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
-            : 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
-            }`}
+          className={`mb-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-medium border text-left cursor-pointer transition-colors ${
+            badgeType === 'warning'
+              ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
+              : 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
+          }`}
           data-testid="insight-badge"
         >
           {badgeType === 'warning' ? (
@@ -75,7 +76,11 @@ export function ChartAIInsights({
           data-testid="ask-ai-button"
         >
           Ask AI about this chart
-          {isDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {isDropdownOpen ? (
+            <ChevronUp className="w-3 h-3" />
+          ) : (
+            <ChevronDown className="w-3 h-3" />
+          )}
         </button>
 
         {isDropdownOpen && (

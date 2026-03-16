@@ -24,10 +24,13 @@ describe('apiClient', () => {
     } as Response);
 
     const result = await apiClient('/test');
-    
-    expect(fetch).toHaveBeenCalledWith('/api/test', expect.objectContaining({
-      headers: {}
-    }));
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/test',
+      expect.objectContaining({
+        headers: {},
+      }),
+    );
     expect(result).toEqual(mockData);
   });
 
@@ -42,30 +45,35 @@ describe('apiClient', () => {
       body: JSON.stringify({ key: 'value' }),
     });
 
-    expect(fetch).toHaveBeenCalledWith('/api/post', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ key: 'value' }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/post',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ key: 'value' }),
+      }),
+    );
   });
 
   it('should throw ApiError on timeout', async () => {
-    vi.mocked(fetch).mockImplementation((_input: string | URL | Request, init?: RequestInit) => {
-      return new Promise((_, reject) => {
-        if (init?.signal) {
-          init.signal.addEventListener('abort', () => {
-            const error = new Error('The operation was aborted');
-            error.name = 'AbortError';
-            reject(error);
-          });
-        }
-      });
-    });
+    vi.mocked(fetch).mockImplementation(
+      (_input: string | URL | Request, init?: RequestInit) => {
+        return new Promise((_, reject) => {
+          if (init?.signal) {
+            init.signal.addEventListener('abort', () => {
+              const error = new Error('The operation was aborted');
+              error.name = 'AbortError';
+              reject(error);
+            });
+          }
+        });
+      },
+    );
 
     const promise = apiClient('/slow');
-    
+
     // Fast-forward time
     vi.advanceTimersByTime(150);
-    
+
     await expect(promise).rejects.toThrow('Request timed out after 100ms');
     await expect(promise).rejects.toHaveProperty('status', 408);
   });
@@ -91,6 +99,8 @@ describe('apiClient', () => {
       json: () => Promise.reject(new Error('No JSON')),
     } as Response);
 
-    await expect(apiClient('/fail')).rejects.toThrow('API Error: 500 Internal Server Error');
+    await expect(apiClient('/fail')).rejects.toThrow(
+      'API Error: 500 Internal Server Error',
+    );
   });
 });

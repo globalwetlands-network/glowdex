@@ -1,6 +1,4 @@
-
 # GLOWdex – Global Coastal Wetlands Index App
-
 
 ## 1. Project Overview
 
@@ -59,12 +57,12 @@ The application follows a **Thin Provider architecture**.
 Providers own state only.  
 Derived logic lives in consumers.
 
-| Provider            | Owns                                      | Does NOT Own                         |
-|---------------------|--------------------------------------------|--------------------------------------|
-| DataProvider        | Raw datasets + loading state               | Filtering or distributions           |
-| FilterProvider      | Filter state (habitats, scale, quantile)   | Filtering logic                      |
-| SelectionProvider   | Selected grid cell state                   | Enrichment logic                     |
-| AppShell            | Derived computation orchestration          | Raw state ownership                  |
+| Provider          | Owns                                     | Does NOT Own               |
+| ----------------- | ---------------------------------------- | -------------------------- |
+| DataProvider      | Raw datasets + loading state             | Filtering or distributions |
+| FilterProvider    | Filter state (habitats, scale, quantile) | Filtering logic            |
+| SelectionProvider | Selected grid cell state                 | Enrichment logic           |
+| AppShell          | Derived computation orchestration        | Raw state ownership        |
 
 ### Conceptual Diagram
 
@@ -86,9 +84,7 @@ Derived logic lives in consumers.
    └── [SidePanel] (Receives calculated distributions as props)
 ```
 
-
 Heavy computations are intentionally kept out of context to avoid unnecessary global re-renders.
-
 
 ## 3. How the App Works (User-Level)
 
@@ -109,6 +105,7 @@ Heavy computations are intentionally kept out of context to avoid unnecessary gl
 ---
 
 ## 4. Project Structure
+
 ```
 src/
 │
@@ -208,7 +205,6 @@ npm run dev
 
 Default: http://localhost:5173
 
-
 ### Build for Production
 
 ```bash
@@ -220,19 +216,17 @@ npm run build
 This project uses Mapbox GL JS and requires a valid access token.
 
 1.  **Get a Token**: Create an account at [Mapbox](https://www.mapbox.com/) and generate a public access token.
-    -   *Security Note: We strongly recommend restricting this token to your application's URL/origin in the Mapbox dashboard to prevent misuse.*
-
+    - _Security Note: We strongly recommend restricting this token to your application's URL/origin in the Mapbox dashboard to prevent misuse._
 
 2.  **Local Setup**: Create a `.env.local` file in the root directory:
     ```bash
     VITE_MAPBOX_TOKEN=pk.your_token_here
     ```
-    
 3.  **CI/CD (GitHub Actions)**:
-    -   Go to **Settings > Secrets and variables > Actions**.
-    -   Add a new repository secret named `VITE_MAPBOX_TOKEN`.
-    -   Paste your Mapbox token as the value.
-    -   *Note: The build process will fail without this token.*
+    - Go to **Settings > Secrets and variables > Actions**.
+    - Add a new repository secret named `VITE_MAPBOX_TOKEN`.
+    - Paste your Mapbox token as the value.
+    - _Note: The build process will fail without this token._
 
 ---
 
@@ -243,12 +237,12 @@ If any of these are missing or disabled, the application will run normally but t
 
 1. **Obtain API Key**: Find your Project API Key in the PostHog dashboard.
 2. **Local Setup**: Add the following to your `.env.local` file:
-    ```bash
-    VITE_PUBLIC_POSTHOG_KEY=your_posthog_key
-    VITE_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
-    VITE_PUBLIC_POSTHOG_ENABLED=true
-    ```
-    *Note: The `ENABLED` flag must be exactly the string `'true'`.*
+   ```bash
+   VITE_PUBLIC_POSTHOG_KEY=your_posthog_key
+   VITE_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+   VITE_PUBLIC_POSTHOG_ENABLED=true
+   ```
+   _Note: The `ENABLED` flag must be exactly the string `'true'`._
 
 ---
 
@@ -258,16 +252,18 @@ The application communicates with a backend API (by default on port 8080).
 
 1. **Local Proxy**: In development, `vite.config.ts` is configured to proxy requests starting with `/api` to `http://localhost:8080`.
 2. **Base URL Override**: You can override the API base URL using the `VITE_API_BASE_URL` environment variable.
-    ```bash
-    VITE_API_BASE_URL=/api
-    ```
-    If not provided, it defaults to `/api`, relying on the current origin or proxy.
+
+   ```bash
+   VITE_API_BASE_URL=/api
+   ```
+
+   If not provided, it defaults to `/api`, relying on the current origin or proxy.
 
 3. **Request Timeout**: Control the maximum duration for API requests using `VITE_API_TIMEOUT_MS`.
-    ```bash
-    VITE_API_TIMEOUT_MS=60000
-    ```
-    Useful for heavy AI operations. Defaults to 30 seconds.
+   ```bash
+   VITE_API_TIMEOUT_MS=60000
+   ```
+   Useful for heavy AI operations. Defaults to 30 seconds.
 
 ---
 
@@ -319,4 +315,4 @@ If using outputs from this application, please cite:
 
 ---
 
-*Maintained by the GLOWdex Engineering Team*
+_Maintained by the GLOWdex Engineering Team_

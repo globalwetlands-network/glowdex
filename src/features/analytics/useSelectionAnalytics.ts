@@ -5,13 +5,15 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 
 /**
  * Hook to capture analytics events when a grid cell is selected.
- * 
+ *
  * Tracks the selected cell's properties, including related habitats and typologies,
  * and sends a 'grid_cell_selected' event to PostHog.
- * 
+ *
  * @param selectedCell - The currently selected, enriched grid cell, or null if no cell is selected.
  */
-export const useSelectionAnalytics = (selectedCell: EnrichedGridCell | null) => {
+export const useSelectionAnalytics = (
+  selectedCell: EnrichedGridCell | null,
+) => {
   const posthog = usePostHog();
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export const useSelectionAnalytics = (selectedCell: EnrichedGridCell | null) => 
         country: selectedCell.country,
         habitats: habitats,
         typology_5: selectedCell.cluster5,
-        typology_18: selectedCell.cluster18
+        typology_18: selectedCell.cluster18,
       });
     } catch (error) {
       console.error('Failed to capture grid_cell_selected event:', error);

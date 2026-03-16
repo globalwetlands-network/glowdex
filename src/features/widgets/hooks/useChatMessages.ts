@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 /**
  * Represents a message in the chat conversation.
  */
 export interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
 }
 

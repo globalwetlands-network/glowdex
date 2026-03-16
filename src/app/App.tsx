@@ -7,7 +7,10 @@ import { useFilter } from '@/context/FilterContext';
 import { useSelection } from '@/context/SelectionContext';
 
 // Feature Hooks & Components
-import { useFilterAnalytics, useSelectionAnalytics } from '@/features/analytics';
+import {
+  useFilterAnalytics,
+  useSelectionAnalytics,
+} from '@/features/analytics';
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
@@ -31,7 +34,8 @@ import type { MobileTab } from './types/app.types';
  */
 function AppShell() {
   // Context consumption
-  const { gridCells, geojson, typologies, indicators, isLoading, error } = useData();
+  const { gridCells, geojson, typologies, indicators, isLoading, error } =
+    useData();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
@@ -62,7 +66,7 @@ function AppShell() {
     selectedCellId,
     filterState.quantile,
     typologyScaleNumber,
-    cellStats?.statistics
+    cellStats?.statistics,
   );
 
   // Event handlers
@@ -79,7 +83,12 @@ function AppShell() {
   };
 
   // Auto-select geolocation cell if nothing is selected yet
-  useGeolocationSelection(gridCells || [], geojson, selectedCellId, handleCellSelect);
+  useGeolocationSelection(
+    gridCells || [],
+    geojson,
+    selectedCellId,
+    handleCellSelect,
+  );
 
   // Render map area
   const mapArea = isLoading ? (
@@ -117,9 +126,7 @@ function AppShell() {
           <p className="font-medium text-gray-700">
             Unable to load scientific data.
           </p>
-          <p className="text-xs text-gray-400">
-            {error.message}
-          </p>
+          <p className="text-xs text-gray-400">{error.message}</p>
         </div>
       </div>
     );

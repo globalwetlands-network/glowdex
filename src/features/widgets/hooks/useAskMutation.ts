@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { fetchInsight } from "@/api";
-import type { Message } from "./useChatMessages";
+import { useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { fetchInsight } from '@/api';
+import type { Message } from './useChatMessages';
 
 const MAX_HISTORY_MESSAGES = 4;
 
@@ -23,7 +23,7 @@ export function useAskMutation({
   const askMutation = useMutation({
     mutationFn: (question: string) => {
       if (!selectedCellId) {
-        return Promise.reject(new Error("No cell selected"));
+        return Promise.reject(new Error('No cell selected'));
       }
 
       const [initialMessage, ...rest] = conversationMessages;
@@ -31,7 +31,7 @@ export function useAskMutation({
       const trimmedHistory = [
         initialMessage,
         ...rest.slice(-(MAX_HISTORY_MESSAGES - 1)),
-        { role: "user" as const, content: question },
+        { role: 'user' as const, content: question },
       ];
 
       return fetchInsight({
@@ -48,7 +48,7 @@ export function useAskMutation({
         ...prev,
         {
           id: `resp-${crypto.randomUUID()}`,
-          role: "assistant",
+          role: 'assistant',
           content: data.text,
         },
       ]);
@@ -59,9 +59,9 @@ export function useAskMutation({
         ...prev,
         {
           id: `err-${crypto.randomUUID()}`,
-          role: "assistant",
+          role: 'assistant',
           content:
-            "Sorry, I encountered an error fetching the context. Please try again.",
+            'Sorry, I encountered an error fetching the context. Please try again.',
         },
       ]);
     },
@@ -75,14 +75,14 @@ export function useAskMutation({
         ...prev,
         {
           id: `user-${crypto.randomUUID()}`,
-          role: "user",
+          role: 'user',
           content: question,
         },
       ]);
 
       askMutation.mutate(question);
     },
-    [askMutation, setMessages]
+    [askMutation, setMessages],
   );
 
   return { askMutation, handleAsk };

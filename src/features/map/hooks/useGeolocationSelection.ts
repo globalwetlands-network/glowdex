@@ -12,13 +12,18 @@ export function useGeolocationSelection(
   gridCells: RichGridCell[],
   geojson: GridGeoJSON | null,
   selectedCellId: number | null,
-  onSelect: (id: number) => void
+  onSelect: (id: number) => void,
 ) {
   const hasAttemptedRef = useRef(false);
 
   useEffect(() => {
     // Only run if we have cells and geojson, haven't attempted yet, and no cell is currently selected
-    if (!gridCells.length || !geojson?.features?.length || hasAttemptedRef.current || selectedCellId !== null) {
+    if (
+      !gridCells.length ||
+      !geojson?.features?.length ||
+      hasAttemptedRef.current ||
+      selectedCellId !== null
+    ) {
       return;
     }
 
@@ -33,7 +38,10 @@ export function useGeolocationSelection(
     }
 
     // Build a map of cell IDs to their actual coordinates derived from GeoJSON
-    const coordsMap = new Map<number, { latitude: number; longitude: number }>();
+    const coordsMap = new Map<
+      number,
+      { latitude: number; longitude: number }
+    >();
     for (const feature of geojson.features) {
       const id = feature.properties.ID;
       if (id !== undefined) {
@@ -55,7 +63,9 @@ export function useGeolocationSelection(
 
           if (coords) {
             const cellPoint = point([coords.longitude, coords.latitude]);
-            const dist = distance(userPoint, cellPoint, { units: 'kilometers' });
+            const dist = distance(userPoint, cellPoint, {
+              units: 'kilometers',
+            });
             if (dist < minDistance) {
               minDistance = dist;
               closestCell = cell;
@@ -71,15 +81,18 @@ export function useGeolocationSelection(
         }
       },
       (error) => {
-        console.warn('Geolocation failed or denied, falling back to default selection:', error.message);
+        console.warn(
+          'Geolocation failed or denied, falling back to default selection:',
+          error.message,
+        );
         if (gridCells.length > 0) {
           onSelect(gridCells[0].id);
         }
       },
       {
         timeout: 10000, // 10 seconds timeout
-        maximumAge: 5 * 60 * 1000 // Accept a 5 min old location
-      }
+        maximumAge: 5 * 60 * 1000, // Accept a 5 min old location
+      },
     );
   }, [gridCells, geojson, selectedCellId, onSelect]);
 }

@@ -28,4 +28,4 @@ export type HabitatPresence = {
   [Habitat.MANGROVES]: boolean;
   [Habitat.SALTMARSH]: boolean;
   [Habitat.SEAGRASS]: boolean;
-}
+};

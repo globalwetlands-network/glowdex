@@ -9,7 +9,6 @@ export async function fetchStatistics(
   gridCellId: number,
   contextId: string = 'default',
 ): Promise<StatisticsResponse> {
-
   const params = new URLSearchParams();
 
   if (contextId !== 'default') {

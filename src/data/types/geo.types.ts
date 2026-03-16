@@ -7,4 +7,7 @@ export interface GridFeatureProperties {
 }
 
 export type GridFeature = Feature<MultiPolygon, GridFeatureProperties>;
-export type GridGeoJSON = FeatureCollection<MultiPolygon, GridFeatureProperties>;
+export type GridGeoJSON = FeatureCollection<
+  MultiPolygon,
+  GridFeatureProperties
+>;

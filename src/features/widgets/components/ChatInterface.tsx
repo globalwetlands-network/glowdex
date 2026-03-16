@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Send, Bot, User, AlertCircle, Loader2 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { useState } from 'react';
+import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
-import { useChatMessages } from "@/features/widgets/hooks/useChatMessages";
-import { useAskMutation } from "@/features/widgets/hooks/useAskMutation";
-import { useAutoScroll } from "@/features/widgets/hooks/useAutoScroll";
+import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
+import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
+import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
 
 interface ChatInterfaceProps {
   selectedCellId?: number | null;
@@ -17,7 +17,7 @@ export function ChatInterface({
   initialText,
   initialError,
 }: ChatInterfaceProps) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
 
   const { messages, setMessages } = useChatMessages();
 
@@ -28,10 +28,10 @@ export function ChatInterface({
   const initialMessage =
     selectedCellId && initialText
       ? {
-        id: `initial-${selectedCellId}`,
-        role: "assistant" as const,
-        content: initialText,
-      }
+          id: `initial-${selectedCellId}`,
+          role: 'assistant' as const,
+          content: initialText,
+        }
       : null;
 
   /**
@@ -64,7 +64,7 @@ export function ChatInterface({
     }
 
     const question = inputValue.trim();
-    setInputValue("");
+    setInputValue('');
 
     handleAsk(question);
   };
@@ -99,9 +99,7 @@ export function ChatInterface({
           <h3 className="text-sm font-bold text-gray-900">
             Mangrove Analysis Assistant
           </h3>
-          <p className="text-xs text-gray-500">
-            Cell ID: {selectedCellId}
-          </p>
+          <p className="text-xs text-gray-500">Cell ID: {selectedCellId}</p>
         </div>
       </div>
 
@@ -122,18 +120,20 @@ export function ChatInterface({
         {conversation.map((msg) => (
           <div
             key={msg.id}
-            className={`flex items-start space-x-3 max-w-[90%] ${msg.role === "user"
-              ? "ml-auto flex-row-reverse space-x-reverse"
-              : ""
-              }`}
+            className={`flex items-start space-x-3 max-w-[90%] ${
+              msg.role === 'user'
+                ? 'ml-auto flex-row-reverse space-x-reverse'
+                : ''
+            }`}
           >
             <div
-              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${msg.role === "user"
-                ? "bg-gray-800 text-white"
-                : "bg-blue-600 text-white"
-                }`}
+              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${
+                msg.role === 'user'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-blue-600 text-white'
+              }`}
             >
-              {msg.role === "user" ? (
+              {msg.role === 'user' ? (
                 <User className="w-3.5 h-3.5" />
               ) : (
                 <Bot className="w-3.5 h-3.5" />
@@ -141,12 +141,13 @@ export function ChatInterface({
             </div>
 
             <div
-              className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${msg.role === "user"
-                ? "bg-gray-800 text-white"
-                : "bg-white border border-gray-100 text-gray-700 prose prose-sm"
-                }`}
+              className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${
+                msg.role === 'user'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white border border-gray-100 text-gray-700 prose prose-sm'
+              }`}
             >
-              {msg.role === "assistant" ? (
+              {msg.role === 'assistant' ? (
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
               ) : (
                 msg.content

@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight, fetchStatistics } from '@/api';
-import { Layers, ChevronDown, ChevronRight, Filter, MapPin, Bot, BarChart2, AlertTriangle } from 'lucide-react';
+import {
+  Layers,
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  MapPin,
+  Bot,
+  BarChart2,
+  AlertTriangle,
+} from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -44,8 +53,11 @@ export function SidePanel({
   const [isAssistantOpen, setIsAssistantOpen] = useState(true);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
 
-
-  const { data: initialInsight, isLoading: isInsightLoading, error: initialError } = useQuery({
+  const {
+    data: initialInsight,
+    isLoading: isInsightLoading,
+    error: initialError,
+  } = useQuery({
     queryKey: ['insight', { gridCellId: selectedCell?.id }],
     queryFn: () => fetchInsight({ gridCellId: selectedCell!.id }),
     enabled: !!selectedCell?.id,
@@ -71,7 +83,9 @@ export function SidePanel({
             <Layers size={18} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">GLOWdex</h1>
+            <h1 className="text-lg font-bold text-gray-900 leading-tight">
+              GLOWdex
+            </h1>
             <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
               Mangrove Ecosystem Analysis
             </p>
@@ -186,7 +200,10 @@ export function SidePanel({
 
           {isFiltersOpen && (
             <div className="pt-2 animate-in fade-in slide-in-from-top-1">
-              <FilterControls filterState={filterState} onFilterChange={onFilterChange} />
+              <FilterControls
+                filterState={filterState}
+                onFilterChange={onFilterChange}
+              />
             </div>
           )}
         </div>
@@ -223,13 +240,17 @@ export function SidePanel({
                     No mangrove habitat recorded
                   </p>
                   <p className="text-xs text-gray-500 max-w-[220px]">
-                    Statistical comparisons are only available for mangrove locations.
+                    Statistical comparisons are only available for mangrove
+                    locations.
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="space-y-3">
-                    <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
+                    <QuantileSlider
+                      value={filterState.quantile}
+                      onChange={handleQuantileChange}
+                    />
                   </div>
 
                   <div className="space-y-3">
