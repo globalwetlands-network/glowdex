@@ -16,6 +16,9 @@ export function useStatistics(gridCellId: number | null, contextId: string = 'de
       return;
     }
 
+    /**
+     * Internal async loader for statistics
+     */
     async function load() {
       setIsLoading(true);
       setError(null);

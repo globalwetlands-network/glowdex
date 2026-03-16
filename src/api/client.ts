@@ -5,9 +5,9 @@ import { API_BASE_URL, DEFAULT_API_TIMEOUT } from './config';
  */
 export class ApiError extends Error {
   public status?: number;
-  public data?: any;
+  public data?: unknown;
 
-  constructor(message: string, status?: number, data?: any) {
+  constructor(message: string, status?: number, data?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -56,10 +56,10 @@ export async function apiClient<T>(
     }
 
     return response.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     clearTimeout(id);
     
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError(`Request timed out after ${DEFAULT_API_TIMEOUT}ms`, 408);
     }
     

@@ -18,10 +18,10 @@ describe('apiClient', () => {
 
   it('should make a GET request and return JSON', async () => {
     const mockData = { hello: 'world' };
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockData),
-    });
+    } as Response);
 
     const result = await apiClient('/test');
     
@@ -32,10 +32,10 @@ describe('apiClient', () => {
   });
 
   it('should handle POST requests with a body', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ success: true }),
-    });
+    } as Response);
 
     await apiClient('/post', {
       method: 'POST',
@@ -49,9 +49,9 @@ describe('apiClient', () => {
   });
 
   it('should throw ApiError on timeout', async () => {
-    (fetch as any).mockImplementation((_url: string, init: RequestInit) => {
+    vi.mocked(fetch).mockImplementation((_input: string | URL | Request, init?: RequestInit) => {
       return new Promise((_, reject) => {
-        if (init.signal) {
+        if (init?.signal) {
           init.signal.addEventListener('abort', () => {
             const error = new Error('The operation was aborted');
             error.name = 'AbortError';
@@ -71,12 +71,12 @@ describe('apiClient', () => {
   });
 
   it('should throw ApiError on failure', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 404,
       statusText: 'Not Found',
       json: () => Promise.resolve({ message: 'Resource not found' }),
-    });
+    } as Response);
 
     const promise = apiClient('/fail');
     await expect(promise).rejects.toThrow(ApiError);
@@ -84,12 +84,12 @@ describe('apiClient', () => {
   });
 
   it('should fallback to status text if JSON error message is missing', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
       json: () => Promise.reject(new Error('No JSON')),
-    });
+    } as Response);
 
     await expect(apiClient('/fail')).rejects.toThrow('API Error: 500 Internal Server Error');
   });
