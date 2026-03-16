@@ -140,7 +140,7 @@ function SingleIndicatorRow({
         symbol: 'diamond',
         size: 10,
         color: '#E11D48',
-        line: { color: '#white', width: 2 }
+        line: { color: '#FFFFFF', width: 2 }
       },
       hovertemplate: "This location<br>%{x}<extra></extra>",
       name: 'Selected',
