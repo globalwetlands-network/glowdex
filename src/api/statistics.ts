@@ -1,4 +1,5 @@
 import type { StatisticsResponse } from './types';
+import { apiClient } from './client';
 
 /**
  * Fetch deterministic statistical summaries for a specific grid cell.
@@ -16,20 +17,7 @@ export async function fetchStatistics(
   }
 
   const query = params.toString();
-  const url = `/api/statistics/${gridCellId}${query ? `?${query}` : ''}`;
+  const endpoint = `/statistics/${gridCellId}${query ? `?${query}` : ''}`;
 
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    let errorMessage = 'Failed to fetch statistics';
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorMessage;
-    } catch {
-      // Ignore JSON parse errors for non-JSON or malformed responses
-    }
-    throw new Error(errorMessage);
-  }
-
-  return response.json();
+  return apiClient<StatisticsResponse>(endpoint);
 }

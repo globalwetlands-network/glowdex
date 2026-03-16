@@ -252,6 +252,25 @@ If any of these are missing or disabled, the application will run normally but t
 
 ---
 
+### API Configuration
+
+The application communicates with a backend API (by default on port 8080).
+
+1. **Local Proxy**: In development, `vite.config.ts` is configured to proxy requests starting with `/api` to `http://localhost:8080`.
+2. **Base URL Override**: You can override the API base URL using the `VITE_API_BASE_URL` environment variable.
+    ```bash
+    VITE_API_BASE_URL=/api
+    ```
+    If not provided, it defaults to `/api`, relying on the current origin or proxy.
+
+3. **Request Timeout**: Control the maximum duration for API requests using `VITE_API_TIMEOUT_MS`.
+    ```bash
+    VITE_API_TIMEOUT_MS=60000
+    ```
+    Useful for heavy AI operations. Defaults to 30 seconds.
+
+---
+
 ## 8. Contributing & Feature Development
 
 ### New Features
