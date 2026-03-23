@@ -4,7 +4,7 @@ import type { MobilePanelState } from '../types/app.types';
 
 /**
  * Manages mobile panel state
- * 
+ *
  * @returns Mobile panel state and control functions
  */
 export function useMobilePanel(): MobilePanelState {
@@ -12,7 +12,7 @@ export function useMobilePanel(): MobilePanelState {
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
-  const toggle = useCallback(() => setIsOpen(prev => !prev), []);
+  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
 
   return { isOpen, open, close, toggle };
 }

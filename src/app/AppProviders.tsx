@@ -18,12 +18,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <DataProvider>
         <FilterProvider>
-          <SelectionProvider>
-            {children}
-          </SelectionProvider>
+          <SelectionProvider>{children}</SelectionProvider>
         </FilterProvider>
       </DataProvider>
     </QueryClientProvider>
   );
 }
-

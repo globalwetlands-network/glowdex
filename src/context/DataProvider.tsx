@@ -32,12 +32,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     indicatorData.indicators,
     indicatorData.dimensions,
     indicatorData.isLoading,
-    indicatorData.error
+    indicatorData.error,
   ]);
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

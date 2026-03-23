@@ -21,12 +21,12 @@ type MapboxExpression = unknown[];
  */
 function createColorExpression(
   typologies: TypologyMap,
-  typologyScale: 'scale5' | 'scale18'
+  typologyScale: 'scale5' | 'scale18',
 ): MapboxExpression {
   const scale = typologies[typologyScale];
   const matchExpression: MapboxExpression = ['match', ['get', 'cluster']];
 
-  Object.values(scale).forEach(cluster => {
+  Object.values(scale).forEach((cluster) => {
     matchExpression.push(cluster.id);
     matchExpression.push(cluster.fillColor);
   });
@@ -42,7 +42,7 @@ function createColorExpression(
  */
 function createHighlightFilter(
   hoveredCellId: number | null,
-  selectedCellId: number | null
+  selectedCellId: number | null,
 ): MapboxExpression {
   const ids: number[] = [];
   if (hoveredCellId) ids.push(hoveredCellId);
@@ -64,13 +64,18 @@ export function GridLayer({
   typologies,
   hoveredCellId,
   selectedCellId,
-  typologyScale = 'scale5'
+  typologyScale = 'scale5',
 }: GridLayerProps) {
   const fillPaint: FillLayerSpecification['paint'] = useMemo(() => {
     const colorExpression = createColorExpression(typologies, typologyScale);
 
     return {
-      'fill-color': colorExpression,
+      'fill-color': [
+        'case',
+        ['==', ['get', 'isFiltered'], true],
+        colorExpression,
+        'rgba(0,0,0,0)',
+      ],
       'fill-outline-color': 'rgba(0,0,0,0.1)',
     } as FillLayerSpecification['paint'];
   }, [typologies, typologyScale]);
@@ -81,8 +86,12 @@ export function GridLayer({
   };
 
   const highlightFilter = useMemo(
-    () => createHighlightFilter(hoveredCellId, selectedCellId) as LineLayerSpecification['filter'],
-    [hoveredCellId, selectedCellId]
+    () =>
+      createHighlightFilter(
+        hoveredCellId,
+        selectedCellId,
+      ) as LineLayerSpecification['filter'],
+    [hoveredCellId, selectedCellId],
   );
 
   return (

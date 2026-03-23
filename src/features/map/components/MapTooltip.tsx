@@ -23,7 +23,8 @@ function MapTooltip({ x, y, cell, typologyScale = 'scale5' }: MapTooltipProps) {
       <div className="text-gray-600">{cell.country}</div>
       {clusterId !== undefined && (
         <div className="text-xs text-gray-500 mt-1">
-          {label}: <span className="font-medium text-gray-700">{clusterId}</span>
+          {label}:{' '}
+          <span className="font-medium text-gray-700">{clusterId}</span>
         </div>
       )}
     </div>

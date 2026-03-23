@@ -9,7 +9,9 @@ interface UseMapInteractionProps {
  * Normalizes cell ID from feature properties
  * Handles both string and number IDs, prioritizing 'ID' over 'id'
  */
-function normalizeCellId(properties: Record<string, unknown> | null | undefined): number | null {
+function normalizeCellId(
+  properties: Record<string, unknown> | null | undefined,
+): number | null {
   if (!properties) return null;
 
   const rawId = properties.ID !== undefined ? properties.ID : properties.id;
@@ -22,9 +24,13 @@ function normalizeCellId(properties: Record<string, unknown> | null | undefined)
  * Hook for managing map hover and click interactions
  * Tracks hovered cell, hover position, and handles cell selection
  */
-export function useMapInteraction({ onCellSelect }: UseMapInteractionProps = {}) {
+export function useMapInteraction({
+  onCellSelect,
+}: UseMapInteractionProps = {}) {
   const [hoveredCellId, setHoveredCellId] = useState<number | null>(null);
-  const [hoverInfo, setHoverInfo] = useState<{ x: number; y: number } | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   const onHover = useCallback((event: MapMouseEvent) => {
     const { features, point } = event;
@@ -39,19 +45,22 @@ export function useMapInteraction({ onCellSelect }: UseMapInteractionProps = {})
     }
   }, []);
 
-  const onClick = useCallback((event: MapMouseEvent) => {
-    const { features } = event;
-    const clickedFeature = features && features[0];
+  const onClick = useCallback(
+    (event: MapMouseEvent) => {
+      const { features } = event;
+      const clickedFeature = features && features[0];
 
-    const cellId = normalizeCellId(clickedFeature?.properties);
+      const cellId = normalizeCellId(clickedFeature?.properties);
 
-    if (cellId !== null) {
-      onCellSelect?.(cellId);
-    } else {
-      // Clicked background - deselect
-      onCellSelect?.(null);
-    }
-  }, [onCellSelect]);
+      if (cellId !== null) {
+        onCellSelect?.(cellId);
+      } else {
+        // Clicked background - deselect
+        onCellSelect?.(null);
+      }
+    },
+    [onCellSelect],
+  );
 
   return {
     hoveredCellId,

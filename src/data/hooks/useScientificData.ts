@@ -22,18 +22,18 @@ interface ScientificData {
 
 /**
  * Loads and processes all scientific data for the application
- * 
+ *
  * Orchestrates the complete data loading pipeline:
  * 1. Fetches raw data from static assets (CSV/GeoJSON)
  * 2. Derives typology cluster definitions
  * 3. Joins grid items with clusters and residuals
- * 
+ *
  * @returns Promise resolving to complete scientific dataset
- * 
+ *
  * @remarks Fetches data in parallel to minimize load time.
- * 
+ *
  * @throws Error if any data loading or transformation fails
- * 
+ *
  */
 async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
   // Load all raw data sources in parallel
@@ -57,22 +57,22 @@ async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
 
 /**
  * React hook to load and manage all scientific data for the application
- * 
+ *
  * Loads the complete dataset on component mount:
  * - Grid cell metadata (country, ISO codes)
  * - Indicator residual values
  * - Typology cluster assignments (5-scale and 18-scale)
  * - GeoJSON geometries for map visualization
  * - Habitat presence flags (mangroves, saltmarsh, seagrass)
- * 
+ *
  * @returns Scientific data object with loading state
- * 
+ *
  * @remarks Data loading is logged to console with timing information.
  *          Check browser console for load time and cell count.
- * 
+ *
  * @remarks On error, loading state is set to false to prevent UI hanging.
  *          Error details are logged to console.
- * 
+ *
  * ```
  */
 export function useScientificData(): ScientificData {
@@ -102,7 +102,7 @@ export function useScientificData(): ScientificData {
         console.error('Failed to load scientific data:', error);
 
         // Stop loading state to prevent UI from hanging indefinitely
-        setData(prev => ({ ...prev, isLoading: false }));
+        setData((prev) => ({ ...prev, isLoading: false }));
       }
     }
 

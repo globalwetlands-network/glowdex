@@ -2,7 +2,10 @@ import { createContext, useContext } from 'react';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
-import type { Indicator, IndicatorDimension } from '@/features/widgets/types/indicator.types';
+import type {
+  Indicator,
+  IndicatorDimension,
+} from '@/features/widgets/types/indicator.types';
 
 export interface DataContextValue {
   gridCells: RichGridCell[];
@@ -14,7 +17,9 @@ export interface DataContextValue {
   error: Error | null;
 }
 
-export const DataContext = createContext<DataContextValue | undefined>(undefined);
+export const DataContext = createContext<DataContextValue | undefined>(
+  undefined,
+);
 
 export function useData() {
   const context = useContext(DataContext);

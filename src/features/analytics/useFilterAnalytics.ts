@@ -5,10 +5,10 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
 
 /**
  * Hook to capture analytics events when the user changes map filters.
- * 
+ *
  * Tracks changes to habitats, typology scale, and quantile settings,
  * and sends a 'filter_changed' event to PostHog.
- * 
+ *
  * @param filterState - The current state of all user-configurable filters.
  */
 export const useFilterAnalytics = (filterState: FilterState) => {

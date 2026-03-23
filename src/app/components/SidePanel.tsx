@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { Layers, ChevronDown, ChevronRight, Filter } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchInsight, fetchStatistics } from '@/api';
+import {
+  Layers,
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  MapPin,
+  Bot,
+  BarChart2,
+  AlertTriangle,
+} from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -38,6 +49,26 @@ export function SidePanel({
   visibleCellCount,
 }: SidePanelProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isSelectionOpen, setIsSelectionOpen] = useState(true);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(true);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(true);
+
+  const {
+    data: initialInsight,
+    isLoading: isInsightLoading,
+    error: initialError,
+  } = useQuery({
+    queryKey: ['insight', { gridCellId: selectedCell?.id }],
+    queryFn: () => fetchInsight({ gridCellId: selectedCell!.id }),
+    enabled: !!selectedCell?.id,
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ['statistics', selectedCell?.id],
+    queryFn: () => fetchStatistics(selectedCell!.id),
+    enabled: !!selectedCell?.id,
+    staleTime: Infinity,
+  });
 
   const handleQuantileChange = (quantile: number) => {
     onFilterChange({ ...filterState, quantile });
@@ -52,9 +83,11 @@ export function SidePanel({
             <Layers size={18} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">GLOWdex</h1>
+            <h1 className="text-lg font-bold text-gray-900 leading-tight">
+              GLOWdex
+            </h1>
             <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
-              Analysis Panel
+              Mangrove Ecosystem Analysis
             </p>
           </div>
         </div>
@@ -64,34 +97,84 @@ export function SidePanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Section: Selected Cell */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Selection
-            </h2>
-            {selectedCell && (
-              <button
-                onClick={onClearSelection}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <SelectionPanel
-            selectedCell={selectedCell}
-            typologies={typologies}
-            currentScale={filterState.typologyScale}
-          />
+          <button
+            onClick={() => setIsSelectionOpen(!isSelectionOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Selection
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              {selectedCell && (
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClearSelection();
+                  }}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
+                >
+                  Clear
+                </span>
+              )}
+              {isSelectionOpen ? (
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              )}
+            </div>
+          </button>
+
+          {isSelectionOpen && (
+            <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+              <SelectionPanel
+                selectedCell={selectedCell}
+                typologies={typologies}
+                currentScale={filterState.typologyScale}
+              />
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-100 my-4" />
 
         {/* Section: Contextual Chat */}
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            AI Assistant
-          </h2>
-          <ChatInterface selectedCellId={selectedCell?.id} />
+          <button
+            onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <Bot className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Analysis Assistant
+              </h2>
+            </div>
+            {isAssistantOpen ? (
+              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            )}
+          </button>
+
+          {isAssistantOpen && (
+            <div className="pt-1 animate-in fade-in slide-in-from-top-1">
+              {isInsightLoading && !initialInsight ? (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                  <span className="animate-pulse">Loading assistant...</span>
+                </div>
+              ) : (
+                <ChatInterface
+                  key={selectedCell?.id ?? 'empty'}
+                  selectedCellId={selectedCell?.id}
+                  initialText={initialInsight?.text}
+                  initialError={initialError}
+                />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-100 my-4" />
@@ -117,7 +200,10 @@ export function SidePanel({
 
           {isFiltersOpen && (
             <div className="pt-2 animate-in fade-in slide-in-from-top-1">
-              <FilterControls filterState={filterState} onFilterChange={onFilterChange} />
+              <FilterControls
+                filterState={filterState}
+                onFilterChange={onFilterChange}
+              />
             </div>
           )}
         </div>
@@ -126,23 +212,67 @@ export function SidePanel({
 
         {/* Section: Statistical Analysis */}
         <div className="space-y-6 pb-8">
-          <div className="space-y-3">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Statistical Analysis
-            </h2>
-            <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              Distributions By Indicator
-            </h3>
-            {isLoading ? (
-              <div className="h-32 bg-gray-50 rounded animate-pulse" />
+          <button
+            onClick={() => setIsAnalysisOpen(!isAnalysisOpen)}
+            className="flex items-center justify-between w-full focus:outline-none group"
+          >
+            <div className="flex items-center space-x-2">
+              <BarChart2 className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">
+                Statistical Analysis
+              </h2>
+            </div>
+            {isAnalysisOpen ? (
+              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
             ) : (
-              <GroupedViolinPlot distributions={distributions} isLoading={isLoading} />
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
             )}
-          </div>
+          </button>
+
+          {isAnalysisOpen && (
+            <div className="space-y-6 pt-1 animate-in fade-in slide-in-from-top-1">
+              {selectedCell && !selectedCell.mangroves ? (
+                <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-amber-50/50 border border-amber-100 rounded-lg">
+                  <div className="bg-amber-100 p-2 rounded-full mb-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">
+                    No mangrove habitat recorded
+                  </p>
+                  <p className="text-xs text-gray-500 max-w-[220px]">
+                    Statistical comparisons are only available for mangrove
+                    locations.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    <QuantileSlider
+                      value={filterState.quantile}
+                      onChange={handleQuantileChange}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Distributions By Indicator
+                    </h3>
+                    {isLoading ? (
+                      <div className="h-32 bg-gray-50 rounded animate-pulse" />
+                    ) : (
+                      <GroupedViolinPlot
+                        distributions={distributions}
+                        isLoading={isLoading}
+                        selectedCellId={selectedCell?.id ?? null}
+                        statisticalSummaries={statsData?.statistics?.summaries}
+                        onAskAI={undefined} // TODO: implement this feature after demo
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

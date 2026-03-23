@@ -9,7 +9,7 @@ import { getFeatureCenterCoords } from '@/utils/geoUtils';
 
 /**
  * Retrieves and enriches the selected grid cell with center coordinates
- * 
+ *
  * @param selectedCellId - ID of the currently selected cell
  * @param gridCells - Array of all grid cells
  * @param geojson - GeoJSON data for coordinate calculation
@@ -18,20 +18,22 @@ import { getFeatureCenterCoords } from '@/utils/geoUtils';
 export function useSelectedCell(
   selectedCellId: number | null,
   gridCells: RichGridCell[] | null,
-  geojson: GridGeoJSON | null
+  geojson: GridGeoJSON | null,
 ): EnrichedGridCell | null {
   return useMemo(() => {
     if (!selectedCellId || !gridCells || !geojson) {
       return null;
     }
 
-    const cell = gridCells.find(c => c.id === selectedCellId);
+    const cell = gridCells.find((c) => c.id === selectedCellId);
     if (!cell) {
       return null;
     }
 
     // Find matching GeoJSON feature and calculate centerCoords (legacy approach)
-    const feature = geojson.features.find(f => f.properties.ID === selectedCellId);
+    const feature = geojson.features.find(
+      (f) => f.properties.ID === selectedCellId,
+    );
     if (!feature) {
       return cell as EnrichedGridCell;
     }

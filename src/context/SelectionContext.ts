@@ -7,7 +7,9 @@ export interface SelectionContextValue {
   setHoveredCellId: (id: number | null) => void;
 }
 
-export const SelectionContext = createContext<SelectionContextValue | undefined>(undefined);
+export const SelectionContext = createContext<
+  SelectionContextValue | undefined
+>(undefined);
 
 export function useSelection() {
   const context = useContext(SelectionContext);

@@ -41,5 +41,4 @@ export interface RichGridCell extends GridItem {
   [Habitat.MANGROVES]: boolean;
   [Habitat.SALTMARSH]: boolean;
   [Habitat.SEAGRASS]: boolean;
-
 }
