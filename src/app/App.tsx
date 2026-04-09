@@ -114,6 +114,7 @@ function AppShell() {
       onClearSelection={handleClearSelection}
       typologies={typologies || { scale5: {}, scale18: {} }}
       distributions={distributions}
+      statisticalSummaries={cellStats?.statistics?.summaries}
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
     />
