@@ -4,9 +4,11 @@ import MapGL, { NavigationControl } from 'react-map-gl';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
+import type { SpeciesDistribution } from '@/data/speciesSpotlight';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
+import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -19,6 +21,8 @@ interface MapProps {
   selectedCellId: number | null;
   onCellSelect: (id: number | null) => void;
   typologyScale?: 'scale5' | 'scale18';
+  activeSpeciesDistribution: SpeciesDistribution | null;
+  speciesLayerEnabled: boolean;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -88,6 +92,8 @@ export function GridMap({
   selectedCellId,
   typologyScale = 'scale5',
   onCellSelect,
+  activeSpeciesDistribution,
+  speciesLayerEnabled,
 }: MapProps) {
   const filteredGeoJson = useMemo(
     () =>
@@ -137,6 +143,13 @@ export function GridMap({
           selectedCellId={selectedCellId}
           typologyScale={typologyScale}
         />
+
+        {activeSpeciesDistribution && (
+          <SpeciesDistributionLayer
+            distribution={activeSpeciesDistribution}
+            enabled={speciesLayerEnabled}
+          />
+        )}
 
         {hoverInfo && hoveredCell && (
           <MapTooltip

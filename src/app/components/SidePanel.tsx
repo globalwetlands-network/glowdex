@@ -1,15 +1,17 @@
-import { Layers, Filter, MapPin, Bot, BarChart2 } from 'lucide-react';
+import { Layers, Filter, MapPin, Bot, BarChart2, Bird } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
+import type { SpeciesDistribution } from '@/data/speciesSpotlight';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { StatisticalAnalysisWidget } from './StatisticalAnalysisWidget';
+import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
 interface SidePanelProps {
@@ -22,6 +24,10 @@ interface SidePanelProps {
   statisticalSummaries?: AIStatisticalIndicatorSummary[];
   isLoading: boolean;
   visibleCellCount: number;
+  onSpeciesLayerToggle: (
+    distribution: SpeciesDistribution,
+    enabled: boolean,
+  ) => void;
 }
 
 /**
@@ -38,6 +44,7 @@ export function SidePanel({
   statisticalSummaries,
   isLoading,
   visibleCellCount,
+  onSpeciesLayerToggle,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -62,6 +69,19 @@ export function SidePanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Section: Selected Cell */}
         <div>
+          {/* Section: Species Spotlight */}
+          <div className="pb-8">
+            <CollapsibleSection
+              title="Species Spotlight"
+              icon={Bird}
+              defaultOpen={true}
+            >
+              <SpeciesSpotlightWidget
+                onSpeciesLayerToggle={onSpeciesLayerToggle}
+              />
+            </CollapsibleSection>
+          </div>
+
           <CollapsibleSection
             title="Selection"
             icon={MapPin}
@@ -121,7 +141,7 @@ export function SidePanel({
         <div className="border-t border-gray-100 my-4" />
 
         {/* Section: Statistical Analysis */}
-        <div className="pb-8">
+        <div>
           <CollapsibleSection
             title="Statistical Analysis"
             icon={BarChart2}
@@ -137,6 +157,8 @@ export function SidePanel({
             />
           </CollapsibleSection>
         </div>
+
+        <div className="border-t border-gray-100 my-4" />
       </div>
 
       {/* Footer info */}
