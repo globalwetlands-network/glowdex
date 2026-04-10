@@ -51,10 +51,10 @@ const katalaData: SpeciesSpotlightData = {
   summaryText:
     'The Katala is Critically Endangered. Only **430–750** mature individuals remain in the wild, mostly in **Palawan** and the Sulu Archipelago. Mangrove destruction is among the leading drivers of its decline.',
   populationSegments: [
-    { label: 'Rasa Island (core)', value: 300, color: '#00827F' },
-    { label: 'Other Palawan sites', value: 200, color: '#4CAF82' },
-    { label: 'Sulu Archipelago', value: 100, color: '#8BC4A0' },
-    { label: 'Other sites', value: 150, color: '#D9E8E3' },
+    { label: 'Rasa Island (core)', value: 300, color: '#0d9488' },
+    { label: 'Other Palawan sites', value: 200, color: '#f87171' },
+    { label: 'Sulu Archipelago', value: 100, color: '#fbbf24' },
+    { label: 'Other sites', value: 150, color: '#d1d5db' },
   ],
   distribution: {
     type: 'geojson',
