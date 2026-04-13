@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
-import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
+import {
+  SPECIES_SPOTLIGHT_DATA,
+  CONSERVATION_STATUS_INFO,
+} from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesTab } from './SpeciesTab';
 import { SpeciesInfoPanel } from './SpeciesInfoPanel';
@@ -14,21 +17,6 @@ interface SpeciesSpotlightWidgetProps {
     enabled: boolean,
   ) => void;
 }
-
-/**
- * Tailwind CSS classes for IUCN Red List status pill badges.
- * Used to colour-code conservation status labels in the UI.
- * Colours follow the IUCN's own visual convention (red → green scale).
- * https://www.iucnredlist.org/about/categories-and-criteria
- */
-const STATUS_PILL_COLORS: Record<string, string> = {
-  CR: 'bg-red-100 text-red-700 border-red-200', // Critically Endangered
-  EN: 'bg-orange-100 text-orange-700 border-orange-200', // Endangered
-  VU: 'bg-amber-100 text-amber-700 border-amber-200', // Vulnerable
-  NT: 'bg-yellow-100 text-yellow-700 border-yellow-200', // Near Threatened
-  LC: 'bg-green-100 text-green-700 border-green-200', // Least Concern
-  DD: 'bg-gray-100 text-gray-700 border-gray-200', // Data Deficient
-};
 
 export function SpeciesSpotlightWidget({
   species = SPECIES_SPOTLIGHT_DATA,
@@ -66,7 +54,8 @@ export function SpeciesSpotlightWidget({
       <div className="flex gap-1.5 flex-wrap">
         {species.map((sp, idx) => {
           const isActive = idx === activeIndex;
-          const statusColor = STATUS_PILL_COLORS[sp.conservationStatus] ?? '';
+          const statusColor =
+            CONSERVATION_STATUS_INFO[sp.conservationStatus]?.badgeClasses ?? '';
 
           return (
             <button

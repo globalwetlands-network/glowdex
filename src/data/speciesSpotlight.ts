@@ -1,4 +1,85 @@
-export type ConservationStatus = 'CR' | 'EN' | 'VU' | 'NT' | 'LC' | 'DD';
+/**
+ * IUCN Red List Conservation Status codes.
+ * https://www.iucnredlist.org/about/categories-and-criteria
+ */
+export type ConservationStatus =
+  | 'EX'
+  | 'EW'
+  | 'CR'
+  | 'EN'
+  | 'VU'
+  | 'NT'
+  | 'LC'
+  | 'DD'
+  | 'NE';
+
+/**
+ * Styling and label information for each IUCN conservation status.
+ * Colors follow the IUCN's visual convention (red → green scale).
+ */
+export interface ConservationStatusInfo {
+  /** Full human-readable label (e.g., "Critically Endangered") */
+  label: string;
+  /** Tailwind text color class */
+  textColor: string;
+  /** Tailwind background + border classes for badges */
+  badgeClasses: string;
+}
+
+/**
+ * Conservation status metadata keyed by status code.
+ * Single source of truth for all status-related styling and labels.
+ */
+export const CONSERVATION_STATUS_INFO: Record<
+  ConservationStatus,
+  ConservationStatusInfo
+> = {
+  CR: {
+    label: 'Critically Endangered',
+    textColor: 'text-red-700',
+    badgeClasses: 'bg-red-100 text-red-700 border-red-200',
+  },
+  EN: {
+    label: 'Endangered',
+    textColor: 'text-orange-700',
+    badgeClasses: 'bg-orange-100 text-orange-700 border-orange-200',
+  },
+  VU: {
+    label: 'Vulnerable',
+    textColor: 'text-amber-700',
+    badgeClasses: 'bg-amber-100 text-amber-700 border-amber-200',
+  },
+  NT: {
+    label: 'Near Threatened',
+    textColor: 'text-yellow-700',
+    badgeClasses: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  },
+  LC: {
+    label: 'Least Concern',
+    textColor: 'text-green-700',
+    badgeClasses: 'bg-green-100 text-green-700 border-green-200',
+  },
+  DD: {
+    label: 'Data Deficient',
+    textColor: 'text-gray-700',
+    badgeClasses: 'bg-gray-100 text-gray-700 border-gray-200',
+  },
+  EX: {
+    label: 'Extinct',
+    textColor: 'text-gray-900',
+    badgeClasses: 'bg-gray-900 text-white border-gray-900',
+  },
+  EW: {
+    label: 'Extinct in the Wild',
+    textColor: 'text-gray-800',
+    badgeClasses: 'bg-gray-800 text-white border-gray-800',
+  },
+  NE: {
+    label: 'Not Evaluated',
+    textColor: 'text-gray-500',
+    badgeClasses: 'bg-gray-50 text-gray-500 border-gray-200',
+  },
+};
 
 export interface SpeciesSpotlightData {
   id: string;
@@ -33,33 +114,36 @@ const katalaData: SpeciesSpotlightData = {
 const fiddlerCrabData: SpeciesSpotlightData = {
   id: 'fiddler-crab',
   commonName: 'Fiddler Crab',
-  scientificName: 'Uca spp.',
-  conservationStatus: 'VU',
+  localName: 'Inverted Fiddler Crab',
+  scientificName: 'Cranuca inversa',
+  conservationStatus: 'LC',
   iucnUrl: 'https://www.iucnredlist.org',
-  summaryText: '',
-  dataApplicability: '',
-  dataSource: '',
-  learnMoreUrl: '',
-  mapTipText: '',
+  summaryText:
+    'The Inverted Fiddler Crab is a key bioindicator of mangrove and estuarine health along the South African coast. Its burrowing aerates sediment and supports nutrient cycling across **KwaZulu-Natal** and **Eastern Cape** coastlines.',
+  dataApplicability: 'Regional',
+  dataSource: 'GBIF, GLOWdex South Africa',
+  learnMoreUrl: 'https://www.fiddlercrab.info/u_inversa.html',
+  mapTipText: 'Show Fiddler Crab observation locations',
   stub: true,
 };
 
-const proboscisMonkeyData: SpeciesSpotlightData = {
-  id: 'proboscis-monkey',
-  commonName: 'Proboscis Monkey',
-  scientificName: 'Nasalis larvatus',
-  conservationStatus: 'EN',
-  iucnUrl: 'https://www.iucnredlist.org',
-  summaryText: '',
-  dataApplicability: '',
-  dataSource: '',
-  learnMoreUrl: '',
-  mapTipText: '',
+const estuaryStingrayData: SpeciesSpotlightData = {
+  id: 'estuary-stingray',
+  commonName: 'Estuary Stingray',
+  scientificName: 'Hemitrygon fluviorum',
+  conservationStatus: 'NT',
+  iucnUrl: 'https://www.iucnredlist.org/species/161693/a984951',
+  summaryText:
+    'The Estuary Stingray is Near Threatened and endemic to coastal river systems of eastern **Australia**. It is highly sensitive to estuarine habitat degradation and altered freshwater flows from land use change.',
+  dataApplicability: 'Regional',
+  dataSource: 'GBIF, IUCN Red List',
+  learnMoreUrl: 'https://www.iucnredlist.org',
+  mapTipText: 'Show Estuary Stingray observation locations',
   stub: true,
 };
 
 export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [
   katalaData,
   fiddlerCrabData,
-  proboscisMonkeyData,
+  estuaryStingrayData,
 ];

@@ -1,7 +1,7 @@
 import { ExternalLink } from 'lucide-react';
-import type {
-  SpeciesSpotlightData,
-  ConservationStatus,
+import {
+  CONSERVATION_STATUS_INFO,
+  type SpeciesSpotlightData,
 } from '@/data/speciesSpotlight';
 
 interface SpeciesInfoPanelProps {
@@ -9,44 +9,8 @@ interface SpeciesInfoPanelProps {
   open: boolean;
 }
 
-const STATUS_LABELS: Record<
-  ConservationStatus,
-  { label: string; color: string; bg: string }
-> = {
-  CR: {
-    label: 'Critically Endangered',
-    color: 'text-red-700',
-    bg: 'bg-red-100 border-red-200',
-  },
-  EN: {
-    label: 'Endangered',
-    color: 'text-orange-700',
-    bg: 'bg-orange-100 border-orange-200',
-  },
-  VU: {
-    label: 'Vulnerable',
-    color: 'text-amber-700',
-    bg: 'bg-amber-100 border-amber-200',
-  },
-  NT: {
-    label: 'Near Threatened',
-    color: 'text-yellow-700',
-    bg: 'bg-yellow-100 border-yellow-200',
-  },
-  LC: {
-    label: 'Least Concern',
-    color: 'text-green-700',
-    bg: 'bg-green-100 border-green-200',
-  },
-  DD: {
-    label: 'Data Deficient',
-    color: 'text-gray-700',
-    bg: 'bg-gray-100 border-gray-200',
-  },
-};
-
 export function SpeciesInfoPanel({ species, open }: SpeciesInfoPanelProps) {
-  const status = STATUS_LABELS[species.conservationStatus];
+  const status = CONSERVATION_STATUS_INFO[species.conservationStatus];
 
   return (
     <div
@@ -74,7 +38,7 @@ export function SpeciesInfoPanel({ species, open }: SpeciesInfoPanelProps) {
         {/* IUCN Badge */}
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${status.bg} ${status.color}`}
+            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${status.badgeClasses}`}
           >
             {species.conservationStatus} — {status.label}
           </span>
