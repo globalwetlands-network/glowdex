@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
-import type {
-  SpeciesSpotlightData,
-  SpeciesDistribution,
-} from '@/data/speciesSpotlight';
+import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesTab } from './SpeciesTab';
@@ -12,9 +9,9 @@ import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 interface SpeciesSpotlightWidgetProps {
   species?: SpeciesSpotlightData[];
   onSpeciesLayerToggle: (
-    distribution: SpeciesDistribution,
-    enabled: boolean,
+    speciesId: string,
     observations: ObservationPoint[],
+    enabled: boolean,
   ) => void;
 }
 

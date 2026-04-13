@@ -4,7 +4,6 @@ import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
-import type { SpeciesDistribution } from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
@@ -26,9 +25,9 @@ interface SidePanelProps {
   isLoading: boolean;
   visibleCellCount: number;
   onSpeciesLayerToggle: (
-    distribution: SpeciesDistribution,
-    enabled: boolean,
+    speciesId: string,
     observations: ObservationPoint[],
+    enabled: boolean,
   ) => void;
 }
 

@@ -1,8 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type {
-  SpeciesSpotlightData,
-  SpeciesDistribution,
-} from '@/data/speciesSpotlight';
+import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesMapTip } from './SpeciesMapTip';
@@ -11,9 +8,9 @@ import { Clock } from 'lucide-react';
 interface SpeciesTabProps {
   species: SpeciesSpotlightData;
   onLayerToggle: (
-    distribution: SpeciesDistribution,
-    enabled: boolean,
+    speciesId: string,
     observations: ObservationPoint[],
+    enabled: boolean,
   ) => void;
 }
 
@@ -77,7 +74,7 @@ export function SpeciesTab({ species, onLayerToggle }: SpeciesTabProps) {
   const handleToggleLayer = () => {
     const nextEnabled = !layerEnabled;
     setLayerEnabled(nextEnabled);
-    onLayerToggle(species.distribution, nextEnabled, data?.observations ?? []);
+    onLayerToggle(species.id, data?.observations ?? [], nextEnabled);
   };
 
   // Stub state

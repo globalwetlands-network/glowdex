@@ -4,7 +4,6 @@ import MapGL, { NavigationControl } from 'react-map-gl';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
-import type { SpeciesDistribution } from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
@@ -22,9 +21,9 @@ interface MapProps {
   selectedCellId: number | null;
   onCellSelect: (id: number | null) => void;
   typologyScale?: 'scale5' | 'scale18';
-  activeSpeciesDistribution: SpeciesDistribution | null;
+  activeObservations: ObservationPoint[];
+  activeSpeciesId: string;
   speciesLayerEnabled: boolean;
-  activeObservations?: ObservationPoint[];
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -94,13 +93,10 @@ export function GridMap({
   selectedCellId,
   typologyScale = 'scale5',
   onCellSelect,
-  activeSpeciesDistribution,
-  speciesLayerEnabled,
   activeObservations,
+  activeSpeciesId,
+  speciesLayerEnabled,
 }: MapProps) {
-  // TODO: Render observation pins on map when activeObservations has data
-  void activeObservations;
-
   const filteredGeoJson = useMemo(
     () =>
       enrichGeoJsonFeatures(
@@ -150,9 +146,10 @@ export function GridMap({
           typologyScale={typologyScale}
         />
 
-        {activeSpeciesDistribution && (
+        {activeObservations.length > 0 && (
           <SpeciesDistributionLayer
-            distribution={activeSpeciesDistribution}
+            observations={activeObservations}
+            speciesId={activeSpeciesId}
             enabled={speciesLayerEnabled}
           />
         )}
