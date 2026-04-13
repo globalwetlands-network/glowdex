@@ -1,4 +1,4 @@
-import { API_BASE_URL, DEFAULT_API_TIMEOUT } from './config';
+import { API_BASE_URL, API_KEY, DEFAULT_API_TIMEOUT } from './config';
 
 /**
  * Enhanced error class for API failures
@@ -25,6 +25,7 @@ export async function apiClient<T>(
   const url = `${API_BASE_URL.replace(/\/$/, '')}${endpoint}`;
 
   const headers = {
+    'x-api-key': API_KEY,
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...options.headers,
   };
