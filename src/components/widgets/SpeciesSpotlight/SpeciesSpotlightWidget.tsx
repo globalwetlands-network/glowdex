@@ -5,6 +5,7 @@ import type {
   SpeciesDistribution,
 } from '@/data/speciesSpotlight';
 import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
+import type { ObservationPoint } from '@/api/species';
 import { SpeciesTab } from './SpeciesTab';
 import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 
@@ -13,16 +14,23 @@ interface SpeciesSpotlightWidgetProps {
   onSpeciesLayerToggle: (
     distribution: SpeciesDistribution,
     enabled: boolean,
+    observations: ObservationPoint[],
   ) => void;
 }
 
+/**
+ * Tailwind CSS classes for IUCN Red List status pill badges.
+ * Used to colour-code conservation status labels in the UI.
+ * Colours follow the IUCN's own visual convention (red → green scale).
+ * https://www.iucnredlist.org/about/categories-and-criteria
+ */
 const STATUS_PILL_COLORS: Record<string, string> = {
-  CR: 'bg-red-100 text-red-700 border-red-200',
-  EN: 'bg-orange-100 text-orange-700 border-orange-200',
-  VU: 'bg-amber-100 text-amber-700 border-amber-200',
-  NT: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  LC: 'bg-green-100 text-green-700 border-green-200',
-  DD: 'bg-gray-100 text-gray-700 border-gray-200',
+  CR: 'bg-red-100 text-red-700 border-red-200', // Critically Endangered
+  EN: 'bg-orange-100 text-orange-700 border-orange-200', // Endangered
+  VU: 'bg-amber-100 text-amber-700 border-amber-200', // Vulnerable
+  NT: 'bg-yellow-100 text-yellow-700 border-yellow-200', // Near Threatened
+  LC: 'bg-green-100 text-green-700 border-green-200', // Least Concern
+  DD: 'bg-gray-100 text-gray-700 border-gray-200', // Data Deficient
 };
 
 export function SpeciesSpotlightWidget({

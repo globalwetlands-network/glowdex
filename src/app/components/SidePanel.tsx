@@ -5,6 +5,7 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
 import type { SpeciesDistribution } from '@/data/speciesSpotlight';
+import type { ObservationPoint } from '@/api/species';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
@@ -27,6 +28,7 @@ interface SidePanelProps {
   onSpeciesLayerToggle: (
     distribution: SpeciesDistribution,
     enabled: boolean,
+    observations: ObservationPoint[],
   ) => void;
 }
 

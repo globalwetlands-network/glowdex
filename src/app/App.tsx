@@ -8,6 +8,7 @@ import { useSelection } from '@/context/SelectionContext';
 
 // Types
 import type { SpeciesDistribution } from '@/data/speciesSpotlight';
+import type { ObservationPoint } from '@/api/species';
 
 // Feature Hooks & Components
 import {
@@ -49,11 +50,19 @@ function AppShell() {
   const [activeSpeciesDistribution, setActiveSpeciesDistribution] =
     useState<SpeciesDistribution | null>(null);
   const [speciesLayerEnabled, setSpeciesLayerEnabled] = useState(false);
+  const [activeObservations, setActiveObservations] = useState<
+    ObservationPoint[]
+  >([]);
 
   const handleSpeciesLayerToggle = useCallback(
-    (distribution: SpeciesDistribution, enabled: boolean) => {
+    (
+      distribution: SpeciesDistribution,
+      enabled: boolean,
+      observations: ObservationPoint[],
+    ) => {
       setActiveSpeciesDistribution(distribution);
       setSpeciesLayerEnabled(enabled);
+      setActiveObservations(observations);
     },
     [],
   );
@@ -120,6 +129,7 @@ function AppShell() {
       onCellSelect={handleCellSelect}
       activeSpeciesDistribution={activeSpeciesDistribution}
       speciesLayerEnabled={speciesLayerEnabled}
+      activeObservations={activeObservations}
     />
   );
 
