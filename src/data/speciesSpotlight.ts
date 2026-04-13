@@ -119,12 +119,11 @@ const fiddlerCrabData: SpeciesSpotlightData = {
   conservationStatus: 'LC',
   iucnUrl: 'https://www.iucnredlist.org',
   summaryText:
-    'The Inverted Fiddler Crab is a key bioindicator of mangrove and estuarine health along the South African coast. Its burrowing aerates sediment and supports nutrient cycling across **KwaZulu-Natal** and **Eastern Cape** coastlines.',
+    'The Inverted Fiddler Crab inhabits mangroves across the **Indo-Pacific** and East Africa. It was recently recorded by the **GLOWdex South Africa** team — a notable sighting at the southern edge of its known range.',
   dataApplicability: 'Regional',
   dataSource: 'GBIF, GLOWdex South Africa',
   learnMoreUrl: 'https://www.fiddlercrab.info/u_inversa.html',
   mapTipText: 'Show Fiddler Crab observation locations',
-  stub: true,
 };
 
 const estuaryStingrayData: SpeciesSpotlightData = {
@@ -139,7 +138,6 @@ const estuaryStingrayData: SpeciesSpotlightData = {
   dataSource: 'GBIF, IUCN Red List',
   learnMoreUrl: 'https://www.iucnredlist.org',
   mapTipText: 'Show Estuary Stingray observation locations',
-  stub: true,
 };
 
 export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [

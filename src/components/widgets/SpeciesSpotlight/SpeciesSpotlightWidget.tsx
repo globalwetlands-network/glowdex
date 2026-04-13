@@ -24,6 +24,17 @@ export function SpeciesSpotlightWidget({
 }: SpeciesSpotlightWidgetProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [layerEnabled, setLayerEnabled] = useState(false);
+
+  const handleTabChange = (idx: number) => {
+    if (idx !== activeIndex) {
+      if (layerEnabled) {
+        onSpeciesLayerToggle(activeSpecies.id, [], false);
+      }
+      setLayerEnabled(false);
+      setActiveIndex(idx);
+    }
+  };
 
   const activeSpecies = species[activeIndex];
 
@@ -60,7 +71,7 @@ export function SpeciesSpotlightWidget({
           return (
             <button
               key={sp.id}
-              onClick={() => setActiveIndex(idx)}
+              onClick={() => handleTabChange(idx)}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${
                 isActive
                   ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
@@ -89,7 +100,11 @@ export function SpeciesSpotlightWidget({
       {/* Active tab content */}
       <SpeciesTab
         species={activeSpecies}
-        onLayerToggle={onSpeciesLayerToggle}
+        layerEnabled={layerEnabled}
+        onLayerToggle={(speciesId, observations, enabled) => {
+          setLayerEnabled(enabled);
+          onSpeciesLayerToggle(speciesId, observations, enabled);
+        }}
       />
     </div>
   );

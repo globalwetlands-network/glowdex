@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
 import type { ObservationPoint } from '@/api/species';
@@ -7,6 +7,7 @@ import { Clock } from 'lucide-react';
 
 interface SpeciesTabProps {
   species: SpeciesSpotlightData;
+  layerEnabled: boolean;
   onLayerToggle: (
     speciesId: string,
     observations: ObservationPoint[],
@@ -63,9 +64,11 @@ function SkeletonCards() {
   );
 }
 
-export function SpeciesTab({ species, onLayerToggle }: SpeciesTabProps) {
-  const [layerEnabled, setLayerEnabled] = useState(false);
-
+export function SpeciesTab({
+  species,
+  layerEnabled,
+  onLayerToggle,
+}: SpeciesTabProps) {
   // Only fetch if not a stub
   const { data, isLoading, isError } = useSpeciesObservations(
     species.stub ? '' : species.id,
@@ -73,7 +76,6 @@ export function SpeciesTab({ species, onLayerToggle }: SpeciesTabProps) {
 
   const handleToggleLayer = () => {
     const nextEnabled = !layerEnabled;
-    setLayerEnabled(nextEnabled);
     onLayerToggle(species.id, data?.observations ?? [], nextEnabled);
   };
 
