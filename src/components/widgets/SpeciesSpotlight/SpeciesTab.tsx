@@ -96,6 +96,32 @@ export function SpeciesTab({
 
   return (
     <div className="space-y-4 pt-1">
+      {/* Species image */}
+      {species.imageUrl && (
+        <div className="relative w-full rounded-xl overflow-hidden bg-gray-50">
+          <img
+            src={species.imageUrl}
+            alt={species.commonName}
+            className="w-full h-48 object-contain"
+          />
+          {species.imageCredit && species.imageCreditUrl && (
+            <a
+              href={species.imageCreditUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-1.5 right-2 text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {species.imageCredit}
+            </a>
+          )}
+          {species.imageCredit && !species.imageCreditUrl && (
+            <span className="absolute bottom-1.5 right-2 text-[9px] text-gray-400">
+              {species.imageCredit}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Summary text */}
       <p className="text-sm text-gray-700 leading-relaxed">
         {parseBold(species.summaryText)}
