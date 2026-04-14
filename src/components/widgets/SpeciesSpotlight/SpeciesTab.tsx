@@ -174,8 +174,8 @@ export function SpeciesTab({
         <>
           <div className="flex gap-2">
             <StatCard
-              value={data.totalObservations.toLocaleString()}
-              label="Observations recorded"
+              value={data.recentObservations.toLocaleString()}
+              label="Observations (last 10 years)"
             />
             <StatCard
               value={formatLastObserved(data.lastObserved)}
@@ -186,6 +186,11 @@ export function SpeciesTab({
               label="Primary range"
             />
           </div>
+
+          {/* Total GBIF records */}
+          <p className="text-[10px] text-gray-400 -mt-2">
+            {data.totalObservations.toLocaleString()} total GBIF records
+          </p>
 
           {/* Map tip */}
           {species.mapTipText && (
