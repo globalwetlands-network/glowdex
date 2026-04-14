@@ -7,7 +7,6 @@ import {
 } from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesTab } from './SpeciesTab';
-import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 
 interface SpeciesSpotlightWidgetProps {
   species?: SpeciesSpotlightData[];
@@ -94,9 +93,6 @@ export function SpeciesSpotlightWidget({
         })}
       </div>
 
-      {/* Info panel (expandable) */}
-      <SpeciesInfoPanel species={activeSpecies} open={infoOpen} />
-
       {/* Active tab content */}
       <SpeciesTab
         species={activeSpecies}
@@ -105,6 +101,8 @@ export function SpeciesSpotlightWidget({
           setLayerEnabled(enabled);
           onSpeciesLayerToggle(speciesId, observations, enabled);
         }}
+        infoOpen={infoOpen}
+        setInfoOpen={setInfoOpen}
       />
     </div>
   );

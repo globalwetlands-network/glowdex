@@ -85,6 +85,12 @@ export const CONSERVATION_STATUS_INFO: Record<
   },
 };
 
+export interface SpeciesPopulationSegment {
+  label: string;
+  value: number;
+  color: string;
+}
+
 export interface SpeciesSpotlightData {
   id: string;
   commonName: string;
@@ -101,6 +107,8 @@ export interface SpeciesSpotlightData {
   imageUrl?: string;
   imageCredit?: string;
   imageCreditUrl?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
 }
 
 const katalaData: SpeciesSpotlightData = {
@@ -120,6 +128,8 @@ const katalaData: SpeciesSpotlightData = {
   imageCredit: '© matthewkwan, CC BY-ND',
   imageCreditUrl:
     'https://www.inaturalist.org/taxa/116758-Cacatua-haematuropygia',
+  sourceUrl: 'https://www.iucnredlist.org/species/22684795/117578604',
+  sourceLabel: 'IUCN Red List',
 };
 
 const fiddlerCrabData: SpeciesSpotlightData = {
@@ -138,6 +148,8 @@ const fiddlerCrabData: SpeciesSpotlightData = {
   imageUrl: fiddlerCrabImg,
   imageCredit: '(c) Nelson Miranda – all rights reserved',
   imageCreditUrl: 'https://www.inaturalist.org/taxa/739157-Cranuca-inversa',
+  sourceUrl: 'https://www.fiddlercrab.info/u_inversa.html',
+  sourceLabel: 'Fiddler Crab Info',
 };
 
 const estuaryStingrayData: SpeciesSpotlightData = {
@@ -156,6 +168,8 @@ const estuaryStingrayData: SpeciesSpotlightData = {
   imageCredit: '© jmfinoz, CC BY-NC',
   imageCreditUrl:
     'https://www.inaturalist.org/taxa/623842-Hemitrygon-fluviorum/browse_photos',
+  sourceUrl: 'https://www.iucnredlist.org/species/161693/984951',
+  sourceLabel: 'IUCN Red List',
 };
 
 export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [

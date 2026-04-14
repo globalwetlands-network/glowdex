@@ -21,6 +21,10 @@ export interface SpeciesObservationsResponse {
   regionSummary: RegionSummary[];
   observations: ObservationPoint[];
   cachedAt: string;
+  partner: string;
+  region: string;
+  learnMoreUrl: string;
+  conservationStatus: string;
 }
 
 export async function fetchSpeciesObservations(

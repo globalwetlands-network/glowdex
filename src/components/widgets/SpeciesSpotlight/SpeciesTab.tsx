@@ -3,6 +3,7 @@ import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesMapTip } from './SpeciesMapTip';
+import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 import { Clock } from 'lucide-react';
 
 interface SpeciesTabProps {
@@ -13,6 +14,8 @@ interface SpeciesTabProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
+  infoOpen: boolean;
+  setInfoOpen: (open: boolean) => void;
 }
 
 /**
@@ -68,6 +71,7 @@ export function SpeciesTab({
   species,
   layerEnabled,
   onLayerToggle,
+  infoOpen,
 }: SpeciesTabProps) {
   // Only fetch if not a stub
   const { data, isLoading, isError } = useSpeciesObservations(
@@ -126,6 +130,24 @@ export function SpeciesTab({
       <p className="text-sm text-gray-700 leading-relaxed">
         {parseBold(species.summaryText)}
       </p>
+
+      {/* Source attribution */}
+      {species.sourceUrl && species.sourceLabel && (
+        <p className="text-[10px] text-gray-400 -mt-2">
+          Source:{' '}
+          <a
+            href={species.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600 transition-colors"
+          >
+            {species.sourceLabel}
+          </a>
+        </p>
+      )}
+
+      {/* Info panel (expandable) */}
+      <SpeciesInfoPanel species={species} open={infoOpen} data={data} />
 
       {/* Loading state */}
       {isLoading && <SkeletonCards />}
