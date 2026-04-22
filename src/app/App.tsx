@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
 import { useData } from '@/context/DataContext';
 import { useFilter } from '@/context/FilterContext';
 import { useSelection } from '@/context/SelectionContext';
+
+// Types
+import type { SpeciesDistribution } from '@/data/speciesSpotlight';
 
 // Feature Hooks & Components
 import {
@@ -41,6 +44,19 @@ function AppShell() {
 
   // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
+
+  // Species layer state
+  const [activeSpeciesDistribution, setActiveSpeciesDistribution] =
+    useState<SpeciesDistribution | null>(null);
+  const [speciesLayerEnabled, setSpeciesLayerEnabled] = useState(false);
+
+  const handleSpeciesLayerToggle = useCallback(
+    (distribution: SpeciesDistribution, enabled: boolean) => {
+      setActiveSpeciesDistribution(distribution);
+      setSpeciesLayerEnabled(enabled);
+    },
+    [],
+  );
 
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
@@ -102,6 +118,8 @@ function AppShell() {
       selectedCellId={selectedCellId}
       typologyScale={filterState.typologyScale}
       onCellSelect={handleCellSelect}
+      activeSpeciesDistribution={activeSpeciesDistribution}
+      speciesLayerEnabled={speciesLayerEnabled}
     />
   );
 
@@ -117,6 +135,7 @@ function AppShell() {
       statisticalSummaries={cellStats?.statistics?.summaries}
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
+      onSpeciesLayerToggle={handleSpeciesLayerToggle}
     />
   );
 
