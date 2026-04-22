@@ -3,6 +3,7 @@ import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
 import type { ObservationPoint } from '@/api/species';
 import { SpeciesMapTip } from './SpeciesMapTip';
+import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 import { Clock } from 'lucide-react';
 
 interface SpeciesTabProps {
@@ -13,6 +14,8 @@ interface SpeciesTabProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
+  infoOpen: boolean;
+  setInfoOpen: (open: boolean) => void;
 }
 
 /**
@@ -68,6 +71,7 @@ export function SpeciesTab({
   species,
   layerEnabled,
   onLayerToggle,
+  infoOpen,
 }: SpeciesTabProps) {
   // Only fetch if not a stub
   const { data, isLoading, isError } = useSpeciesObservations(
@@ -96,10 +100,54 @@ export function SpeciesTab({
 
   return (
     <div className="space-y-4 pt-1">
+      {/* Species image */}
+      {species.imageUrl && (
+        <div className="relative w-full rounded-xl overflow-hidden bg-gray-50">
+          <img
+            src={species.imageUrl}
+            alt={species.commonName}
+            className="w-full h-48 object-contain"
+          />
+          {species.imageCredit && species.imageCreditUrl && (
+            <a
+              href={species.imageCreditUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-1.5 right-2 text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {species.imageCredit}
+            </a>
+          )}
+          {species.imageCredit && !species.imageCreditUrl && (
+            <span className="absolute bottom-1.5 right-2 text-[9px] text-gray-400">
+              {species.imageCredit}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Summary text */}
       <p className="text-sm text-gray-700 leading-relaxed">
         {parseBold(species.summaryText)}
       </p>
+
+      {/* Source attribution */}
+      {species.sourceUrl && species.sourceLabel && (
+        <p className="text-[10px] text-gray-400 -mt-2">
+          Source:{' '}
+          <a
+            href={species.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600 transition-colors"
+          >
+            {species.sourceLabel}
+          </a>
+        </p>
+      )}
+
+      {/* Info panel (expandable) */}
+      <SpeciesInfoPanel species={species} open={infoOpen} data={data} />
 
       {/* Loading state */}
       {isLoading && <SkeletonCards />}
@@ -126,8 +174,8 @@ export function SpeciesTab({
         <>
           <div className="flex gap-2">
             <StatCard
-              value={data.totalObservations.toLocaleString()}
-              label="Observations recorded"
+              value={data.recentObservations.toLocaleString()}
+              label="Observations (last 10 years)"
             />
             <StatCard
               value={formatLastObserved(data.lastObserved)}
@@ -138,6 +186,11 @@ export function SpeciesTab({
               label="Primary range"
             />
           </div>
+
+          {/* Total GBIF records */}
+          <p className="text-[10px] text-gray-400 -mt-2">
+            {data.totalObservations.toLocaleString()} total GBIF records
+          </p>
 
           {/* Map tip */}
           {species.mapTipText && (

@@ -17,10 +17,15 @@ export interface RegionSummary {
 export interface SpeciesObservationsResponse {
   speciesId: string;
   totalObservations: number;
+  recentObservations: number;
   lastObserved: string | null;
   regionSummary: RegionSummary[];
   observations: ObservationPoint[];
   cachedAt: string;
+  partner: string;
+  region: string;
+  learnMoreUrl: string;
+  conservationStatus: string;
 }
 
 export async function fetchSpeciesObservations(
