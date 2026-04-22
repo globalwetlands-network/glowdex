@@ -4,11 +4,21 @@ interface SpeciesMapTipProps {
   text: string;
   enabled: boolean;
   onToggle: () => void;
+  disabled?: boolean;
 }
 
-export function SpeciesMapTip({ text, enabled, onToggle }: SpeciesMapTipProps) {
+export function SpeciesMapTip({
+  text,
+  enabled,
+  onToggle,
+  disabled = false,
+}: SpeciesMapTipProps) {
   return (
-    <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-center justify-between gap-3">
+    <div
+      className={`bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-center justify-between gap-3 ${
+        disabled ? 'opacity-50' : ''
+      }`}
+    >
       <div className="flex items-center gap-2 min-w-0">
         <Map className="w-4 h-4 text-teal-600 shrink-0" />
         <div className="min-w-0">
@@ -20,9 +30,10 @@ export function SpeciesMapTip({ text, enabled, onToggle }: SpeciesMapTipProps) {
       </div>
       <button
         onClick={onToggle}
-        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ${
-          enabled ? 'bg-teal-600' : 'bg-gray-300'
-        }`}
+        disabled={disabled}
+        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ${
+          disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+        } ${enabled ? 'bg-teal-600' : 'bg-gray-300'}`}
         role="switch"
         aria-checked={enabled}
         aria-label="Toggle species distribution layer"

@@ -7,7 +7,7 @@ import { useFilter } from '@/context/FilterContext';
 import { useSelection } from '@/context/SelectionContext';
 
 // Types
-import type { SpeciesDistribution } from '@/data/speciesSpotlight';
+import type { ObservationPoint } from '@/api/species';
 
 // Feature Hooks & Components
 import {
@@ -46,13 +46,16 @@ function AppShell() {
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
 
   // Species layer state
-  const [activeSpeciesDistribution, setActiveSpeciesDistribution] =
-    useState<SpeciesDistribution | null>(null);
+  const [activeSpeciesId, setActiveSpeciesId] = useState('');
   const [speciesLayerEnabled, setSpeciesLayerEnabled] = useState(false);
+  const [activeObservations, setActiveObservations] = useState<
+    ObservationPoint[]
+  >([]);
 
   const handleSpeciesLayerToggle = useCallback(
-    (distribution: SpeciesDistribution, enabled: boolean) => {
-      setActiveSpeciesDistribution(distribution);
+    (speciesId: string, observations: ObservationPoint[], enabled: boolean) => {
+      setActiveSpeciesId(speciesId);
+      setActiveObservations(observations);
       setSpeciesLayerEnabled(enabled);
     },
     [],
@@ -118,7 +121,8 @@ function AppShell() {
       selectedCellId={selectedCellId}
       typologyScale={filterState.typologyScale}
       onCellSelect={handleCellSelect}
-      activeSpeciesDistribution={activeSpeciesDistribution}
+      activeObservations={activeObservations}
+      activeSpeciesId={activeSpeciesId}
       speciesLayerEnabled={speciesLayerEnabled}
     />
   );

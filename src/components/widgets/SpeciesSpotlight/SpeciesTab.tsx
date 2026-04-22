@@ -1,15 +1,18 @@
-import { useState, type ReactNode } from 'react';
-import type {
-  SpeciesSpotlightData,
-  SpeciesDistribution,
-} from '@/data/speciesSpotlight';
-import { SpeciesDonutChart } from './SpeciesDonutChart';
+import { type ReactNode } from 'react';
+import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
+import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
+import type { ObservationPoint } from '@/api/species';
 import { SpeciesMapTip } from './SpeciesMapTip';
 import { Clock } from 'lucide-react';
 
 interface SpeciesTabProps {
   species: SpeciesSpotlightData;
-  onLayerToggle: (distribution: SpeciesDistribution, enabled: boolean) => void;
+  layerEnabled: boolean;
+  onLayerToggle: (
+    speciesId: string,
+    observations: ObservationPoint[],
+    enabled: boolean,
+  ) => void;
 }
 
 /**
@@ -22,13 +25,58 @@ function parseBold(text: string): ReactNode[] {
   );
 }
 
-export function SpeciesTab({ species, onLayerToggle }: SpeciesTabProps) {
-  const [layerEnabled, setLayerEnabled] = useState(false);
+/**
+ * Formats a date string as "MMM YYYY" (e.g., "Jan 2024")
+ */
+function formatLastObserved(dateStr: string | null): string {
+  if (!dateStr) return 'Unknown';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Unknown';
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return 'Unknown';
+  }
+}
+
+function StatCard({ value, label }: { value: string | number; label: string }) {
+  return (
+    <div className="flex-1 bg-teal-50 border border-teal-100 rounded-lg p-3">
+      <div className="text-lg font-bold text-gray-800">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
+    </div>
+  );
+}
+
+function SkeletonCards() {
+  return (
+    <div className="flex gap-2">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="flex-1 bg-gray-100 rounded-lg h-16 animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
+export function SpeciesTab({
+  species,
+  layerEnabled,
+  onLayerToggle,
+}: SpeciesTabProps) {
+  // Only fetch if not a stub
+  const { data, isLoading, isError } = useSpeciesObservations(
+    species.stub ? '' : species.id,
+  );
 
   const handleToggleLayer = () => {
     const nextEnabled = !layerEnabled;
-    setLayerEnabled(nextEnabled);
-    onLayerToggle(species.distribution, nextEnabled);
+    onLayerToggle(species.id, data?.observations ?? [], nextEnabled);
   };
 
   // Stub state
@@ -53,39 +101,53 @@ export function SpeciesTab({ species, onLayerToggle }: SpeciesTabProps) {
         {parseBold(species.summaryText)}
       </p>
 
-      {/* Chart + Legend row */}
-      <div className="flex items-start gap-4">
-        <div className="shrink-0">
-          <SpeciesDonutChart segments={species.populationSegments} />
-        </div>
+      {/* Loading state */}
+      {isLoading && <SkeletonCards />}
 
-        {/* Legend */}
-        <div className="space-y-2 pt-2">
-          {species.populationSegments.map((segment) => (
-            <div
-              key={segment.label}
-              className="flex items-center gap-2 text-xs"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: segment.color }}
-              />
-              <span className="text-gray-600">{segment.label}</span>
-              <span className="text-gray-400 font-medium ml-auto tabular-nums">
-                {segment.value.toLocaleString()}
-              </span>
-            </div>
-          ))}
+      {/* Error state */}
+      {isError && !isLoading && (
+        <div className="space-y-2">
+          <p className="text-sm text-gray-400">
+            Could not load observation data.
+          </p>
+          {species.mapTipText && (
+            <SpeciesMapTip
+              text={species.mapTipText}
+              enabled={false}
+              onToggle={() => {}}
+              disabled
+            />
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Map tip */}
-      {species.mapTipText && (
-        <SpeciesMapTip
-          text={species.mapTipText}
-          enabled={layerEnabled}
-          onToggle={handleToggleLayer}
-        />
+      {/* Data loaded: stat cards */}
+      {data && !isLoading && !isError && (
+        <>
+          <div className="flex gap-2">
+            <StatCard
+              value={data.totalObservations.toLocaleString()}
+              label="Observations recorded"
+            />
+            <StatCard
+              value={formatLastObserved(data.lastObserved)}
+              label="Last recorded sighting"
+            />
+            <StatCard
+              value={data.regionSummary[0]?.label ?? '—'}
+              label="Primary range"
+            />
+          </div>
+
+          {/* Map tip */}
+          {species.mapTipText && (
+            <SpeciesMapTip
+              text={species.mapTipText}
+              enabled={layerEnabled}
+              onToggle={handleToggleLayer}
+            />
+          )}
+        </>
       )}
 
       {/* Data applicability footer */}
