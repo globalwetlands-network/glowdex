@@ -140,7 +140,6 @@ function AppShell() {
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
       onSpeciesLayerToggle={handleSpeciesLayerToggle}
-      onSpeciesLayerToggle={handleSpeciesLayerToggle}
     />
   );
 

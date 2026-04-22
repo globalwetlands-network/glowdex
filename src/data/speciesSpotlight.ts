@@ -81,6 +81,12 @@ export const CONSERVATION_STATUS_INFO: Record<
   },
 };
 
+export interface SpeciesPopulationSegment {
+  label: string;
+  value: number;
+  color: string;
+}
+
 export interface SpeciesSpotlightData {
   id: string;
   commonName: string;
