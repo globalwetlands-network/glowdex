@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
@@ -139,6 +140,7 @@ function AppShell() {
       statisticalSummaries={cellStats?.statistics?.summaries}
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
+      onSpeciesLayerToggle={handleSpeciesLayerToggle}
       onSpeciesLayerToggle={handleSpeciesLayerToggle}
     />
   );

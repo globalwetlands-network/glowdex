@@ -143,28 +143,30 @@ export function SidePanel({
 
         {/* Section: Statistical Analysis */}
         <div>
-          <CollapsibleSection
-            title="Statistical Analysis"
-            icon={BarChart2}
-            defaultOpen={true}
-          >
-            <StatisticalAnalysisWidget
-              selectedCell={selectedCell}
-              filterState={filterState}
-              onFilterChange={onFilterChange}
-              distributions={distributions}
-              statisticalSummaries={statisticalSummaries}
-              isLoading={isLoading}
-            />
-          </CollapsibleSection>
+          <div>
+            <CollapsibleSection
+              title="Statistical Analysis"
+              icon={BarChart2}
+              defaultOpen={true}
+            >
+              <StatisticalAnalysisWidget
+                selectedCell={selectedCell}
+                filterState={filterState}
+                onFilterChange={onFilterChange}
+                distributions={distributions}
+                statisticalSummaries={statisticalSummaries}
+                isLoading={isLoading}
+              />
+            </CollapsibleSection>
+          </div>
+
+          <div className="border-t border-gray-100 my-4" />
         </div>
 
-        <div className="border-t border-gray-100 my-4" />
-      </div>
-
-      {/* Footer info */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-        {visibleCellCount.toLocaleString()} Grid Cells Visible
+        {/* Footer info */}
+        <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
+          {visibleCellCount.toLocaleString()} Grid Cells Visible
+        </div>
       </div>
     </div>
   );
