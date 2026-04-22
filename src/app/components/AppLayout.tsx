@@ -23,10 +23,13 @@ export function AppLayout({
   return (
     <div className="h-screen w-screen flex flex-col md:flex-row overflow-hidden bg-gray-100">
       {/* Mobile Tab Navigation (only visible on mobile) */}
-      <MobileTabNavigation activeTab={mobileActiveTab} onTabChange={onMobileTabChange} />
+      <MobileTabNavigation
+        activeTab={mobileActiveTab}
+        onTabChange={onMobileTabChange}
+      />
 
       {/* Desktop: Side Panel (Left) */}
-      <div className="hidden md:flex md:order-1">
+      <div className="hidden md:flex md:flex-[0.75] md:order-1 h-full min-w-0">
         {sidePanel}
       </div>
 
@@ -36,7 +39,7 @@ export function AppLayout({
       </div>
 
       {/* Desktop: Map Area (Right) */}
-      <div className="hidden md:flex md:flex-1 md:order-2 md:relative">
+      <div className="hidden md:flex md:flex-[1.25] md:order-2 md:relative h-full min-w-0">
         {mapArea}
       </div>
     </div>

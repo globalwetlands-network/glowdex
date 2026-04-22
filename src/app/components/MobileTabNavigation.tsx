@@ -10,7 +10,10 @@ interface MobileTabNavigationProps {
  * Mobile tab navigation component
  * Allows users to switch between Analysis panel and Map view
  */
-export function MobileTabNavigation({ activeTab, onTabChange }: MobileTabNavigationProps) {
+export function MobileTabNavigation({
+  activeTab,
+  onTabChange,
+}: MobileTabNavigationProps) {
   return (
     <div className="md:hidden bg-white border-b border-gray-200 flex">
       {/* Analysis Tab */}
@@ -19,9 +22,10 @@ export function MobileTabNavigation({ activeTab, onTabChange }: MobileTabNavigat
         className={`
           flex-1 flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm
           transition-colors relative
-          ${activeTab === 'panel'
-            ? 'text-blue-600 bg-blue-50'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          ${
+            activeTab === 'panel'
+              ? 'text-blue-600 bg-blue-50'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
           }
         `}
         aria-label="View analysis panel"
@@ -41,9 +45,10 @@ export function MobileTabNavigation({ activeTab, onTabChange }: MobileTabNavigat
         className={`
           flex-1 flex items-center justify-center gap-2 py-3 px-4 font-medium text-sm
           transition-colors relative
-          ${activeTab === 'map'
-            ? 'text-blue-600 bg-blue-50'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          ${
+            activeTab === 'map'
+              ? 'text-blue-600 bg-blue-50'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
           }
         `}
         aria-label="View map"

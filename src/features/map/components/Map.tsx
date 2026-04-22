@@ -4,20 +4,26 @@ import MapGL, { NavigationControl } from 'react-map-gl';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
+import type { ObservationPoint } from '@/api/species';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
+import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapProps {
-  gridCells: RichGridCell[];
+  allGridCells: RichGridCell[];
+  filteredGridCells: RichGridCell[];
   geojson: GridGeoJSON;
   typologies: TypologyMap;
   selectedCellId: number | null;
   onCellSelect: (id: number | null) => void;
   typologyScale?: 'scale5' | 'scale18';
+  activeObservations: ObservationPoint[];
+  activeSpeciesId: string;
+  speciesLayerEnabled: boolean;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -34,35 +40,43 @@ const INITIAL_VIEW_STATE = {
  */
 function enrichGeoJsonFeatures(
   geojson: GridGeoJSON,
-  gridCells: RichGridCell[],
-  typologyScale: 'scale5' | 'scale18'
+  allGridCells: RichGridCell[],
+  filteredGridCells: RichGridCell[],
+  typologyScale: 'scale5' | 'scale18',
 ): GridGeoJSON {
-  if (!gridCells.length) {
+  if (!allGridCells.length) {
     return { ...geojson, features: [] };
   }
 
   // Create lookup map for O(1) cell access
-  const cellMap = new Map<number, RichGridCell>(
-    gridCells.map(c => [c.id, c])
+  const allCellMap = new Map<number, RichGridCell>(
+    allGridCells.map((c) => [c.id, c]),
   );
 
-  // Filter and enrich features with cluster data
-  const enrichedFeatures = geojson.features.reduce((acc, feature) => {
-    const id = feature.properties.ID;
-    const cell = cellMap.get(id);
+  const filteredCellSet = new Set<number>(filteredGridCells.map((c) => c.id));
 
-    if (cell) {
-      const cluster = typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18;
-      acc.push({
-        ...feature,
-        properties: {
-          ...feature.properties,
-          cluster: cluster || 0
-        }
-      });
-    }
-    return acc;
-  }, [] as typeof geojson.features);
+  // Filter and enrich features with cluster data
+  const enrichedFeatures = geojson.features.reduce(
+    (acc, feature) => {
+      const id = feature.properties.ID;
+      const cell = allCellMap.get(id);
+
+      if (cell) {
+        const cluster =
+          typologyScale === 'scale5' ? cell.cluster5 : cell.cluster18;
+        acc.push({
+          ...feature,
+          properties: {
+            ...feature.properties,
+            cluster: cluster || 0,
+            isFiltered: filteredCellSet.has(id),
+          },
+        });
+      }
+      return acc;
+    },
+    [] as typeof geojson.features,
+  );
 
   return { ...geojson, features: enrichedFeatures };
 }
@@ -72,16 +86,26 @@ function enrichGeoJsonFeatures(
  * Supports hover interactions, cell selection, and typology visualization
  */
 export function GridMap({
-  gridCells,
+  allGridCells,
+  filteredGridCells,
   geojson,
   typologies,
   selectedCellId,
   typologyScale = 'scale5',
   onCellSelect,
+  activeObservations,
+  activeSpeciesId,
+  speciesLayerEnabled,
 }: MapProps) {
   const filteredGeoJson = useMemo(
-    () => enrichGeoJsonFeatures(geojson, gridCells, typologyScale),
-    [geojson, gridCells, typologyScale]
+    () =>
+      enrichGeoJsonFeatures(
+        geojson,
+        allGridCells,
+        filteredGridCells,
+        typologyScale,
+      ),
+    [geojson, allGridCells, filteredGridCells, typologyScale],
   );
 
   const { hoveredCellId, hoverInfo, onHover, onClick } = useMapInteraction({
@@ -89,13 +113,14 @@ export function GridMap({
   });
 
   const hoveredCell = hoveredCellId
-    ? gridCells.find(c => c.id === hoveredCellId)
+    ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-        Mapbox token not configured. Please ensure a valid Mapbox access token is provided.
+        Mapbox token not configured. Please ensure a valid Mapbox access token
+        is provided.
       </div>
     );
   }
@@ -120,6 +145,14 @@ export function GridMap({
           selectedCellId={selectedCellId}
           typologyScale={typologyScale}
         />
+
+        {activeObservations.length > 0 && (
+          <SpeciesDistributionLayer
+            observations={activeObservations}
+            speciesId={activeSpeciesId}
+            enabled={speciesLayerEnabled}
+          />
+        )}
 
         {hoverInfo && hoveredCell && (
           <MapTooltip

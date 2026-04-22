@@ -10,7 +10,7 @@ import type { FilterState } from '../types/filter.types';
  */
 function matchesHabitatFilter(
   cell: RichGridCell,
-  habitats: FilterState['habitats']
+  habitats: FilterState['habitats'],
 ): boolean {
   return (
     (habitats.mangroves && cell.mangroves) ||
@@ -25,11 +25,11 @@ function matchesHabitatFilter(
  */
 export function useFilteredGridCells(
   gridCells: RichGridCell[],
-  filterState: FilterState
+  filterState: FilterState,
 ): RichGridCell[] {
   return useMemo(() => {
-    return gridCells.filter(cell =>
-      matchesHabitatFilter(cell, filterState.habitats)
+    return gridCells.filter((cell) =>
+      matchesHabitatFilter(cell, filterState.habitats),
     );
   }, [gridCells, filterState]);
 }

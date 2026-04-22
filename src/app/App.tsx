@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
@@ -6,10 +6,19 @@ import { useData } from '@/context/DataContext';
 import { useFilter } from '@/context/FilterContext';
 import { useSelection } from '@/context/SelectionContext';
 
+// Types
+import type { ObservationPoint } from '@/api/species';
+
 // Feature Hooks & Components
+import {
+  useFilterAnalytics,
+  useSelectionAnalytics,
+} from '@/features/analytics';
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
+import { useGeolocationSelection } from '@/features/map/hooks/useGeolocationSelection';
+import { useStatistics } from '@/data/hooks/useStatistics';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -28,20 +37,45 @@ import type { MobileTab } from './types/app.types';
  */
 function AppShell() {
   // Context consumption
-  const { gridCells, geojson, typologies, indicators, isLoading, error } = useData();
+  const { gridCells, geojson, typologies, indicators, isLoading, error } =
+    useData();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
-
-
 
   // Local UI state (layout only)
   const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
 
+  // Species layer state
+  const [activeSpeciesId, setActiveSpeciesId] = useState('');
+  const [speciesLayerEnabled, setSpeciesLayerEnabled] = useState(false);
+  const [activeObservations, setActiveObservations] = useState<
+    ObservationPoint[]
+  >([]);
+
+  const handleSpeciesLayerToggle = useCallback(
+    (speciesId: string, observations: ObservationPoint[], enabled: boolean) => {
+      setActiveSpeciesId(speciesId);
+      setActiveObservations(observations);
+      setSpeciesLayerEnabled(enabled);
+    },
+    [],
+  );
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
+  // Derived selection object
+  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
+  // Analytics hooks
+  useSelectionAnalytics(selectedCell);
+  useFilterAnalytics(filterState);
+
   // 1. Filter grid cells based on UI controls
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
+
+  // 1a. Fetch backend statistics for the selected cell (Single Source of Truth)
+  const { data: cellStats } = useStatistics(selectedCellId);
 
   // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
@@ -50,11 +84,9 @@ function AppShell() {
     filterState,
     selectedCellId,
     filterState.quantile,
-    typologyScaleNumber
+    typologyScaleNumber,
+    cellStats?.statistics,
   );
-
-  // Derived selection object
-  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
 
   // Event handlers
   const handleCellSelect = (id: number | null) => {
@@ -69,17 +101,29 @@ function AppShell() {
     setSelectedCellId(null);
   };
 
+  // Auto-select geolocation cell if nothing is selected yet
+  useGeolocationSelection(
+    gridCells || [],
+    geojson,
+    selectedCellId,
+    handleCellSelect,
+  );
+
   // Render map area
   const mapArea = isLoading ? (
     <LoadingState />
   ) : (
     <Map
-      gridCells={filteredGridCells}
+      allGridCells={gridCells || []}
+      filteredGridCells={filteredGridCells}
       geojson={geojson!}
       typologies={typologies!}
       selectedCellId={selectedCellId}
       typologyScale={filterState.typologyScale}
       onCellSelect={handleCellSelect}
+      activeObservations={activeObservations}
+      activeSpeciesId={activeSpeciesId}
+      speciesLayerEnabled={speciesLayerEnabled}
     />
   );
 
@@ -92,8 +136,10 @@ function AppShell() {
       onClearSelection={handleClearSelection}
       typologies={typologies || { scale5: {}, scale18: {} }}
       distributions={distributions}
+      statisticalSummaries={cellStats?.statistics?.summaries}
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
+      onSpeciesLayerToggle={handleSpeciesLayerToggle}
     />
   );
 
@@ -104,9 +150,7 @@ function AppShell() {
           <p className="font-medium text-gray-700">
             Unable to load scientific data.
           </p>
-          <p className="text-xs text-gray-400">
-            {error.message}
-          </p>
+          <p className="text-xs text-gray-400">{error.message}</p>
         </div>
       </div>
     );
