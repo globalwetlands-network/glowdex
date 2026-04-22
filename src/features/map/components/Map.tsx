@@ -9,7 +9,6 @@ import type { ObservationPoint } from '@/api/species';
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
-import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
