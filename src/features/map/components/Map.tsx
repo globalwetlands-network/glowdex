@@ -29,9 +29,9 @@ interface MapProps {
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const INITIAL_VIEW_STATE = {
-  longitude: 115,
-  latitude: -5,
-  zoom: 3,
+  longitude: 20,
+  latitude: 10,
+  zoom: 2,
 };
 
 /**
