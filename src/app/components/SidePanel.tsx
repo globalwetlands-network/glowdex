@@ -147,23 +147,6 @@ export function SidePanel({
 
             <div className="border-t border-gray-100 my-4" />
 
-            {/* Section: Filters */}
-            <div>
-              <CollapsibleSection
-                title="Global Filters"
-                icon={Filter}
-                defaultOpen={false}
-                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-              >
-                <FilterControls
-                  filterState={filterState}
-                  onFilterChange={onFilterChange}
-                />
-              </CollapsibleSection>
-            </div>
-
-            <div className="border-t border-gray-100 my-4" />
-
             {/* Section: Statistical Analysis */}
             <div>
               <CollapsibleSection
@@ -186,10 +169,25 @@ export function SidePanel({
           </>
         )}
 
-        {/* Footer info */}
-        <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-          {visibleCellCount.toLocaleString()} Grid Cells Visible
+        {/* Section: Filters */}
+        <div className="border-t border-gray-100 my-4" />
+        <div>
+          <CollapsibleSection
+            title="Global Filters"
+            icon={Filter}
+            defaultOpen={false}
+            childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+          >
+            <FilterControls
+              filterState={filterState}
+              onFilterChange={onFilterChange}
+            />
+          </CollapsibleSection>
         </div>
+      </div>
+      {/* Footer info */}
+      <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
+        {visibleCellCount.toLocaleString()} Grid Cells Visible
       </div>
     </div>
   );
