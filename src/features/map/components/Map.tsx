@@ -1,5 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl';
+import type { MapRef } from 'react-map-gl';
+import { SearchBox } from '@mapbox/search-js-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
@@ -97,6 +99,11 @@ export function GridMap({
   activeSpeciesId,
   speciesLayerEnabled,
 }: MapProps) {
+  const mapRef = useRef<MapRef>(null);
+  const [mapInstance, setMapInstance] = useState<
+    ReturnType<MapRef['getMap']> | undefined
+  >(undefined);
+
   const filteredGeoJson = useMemo(
     () =>
       enrichGeoJsonFeatures(
@@ -127,7 +134,25 @@ export function GridMap({
 
   return (
     <div className="relative w-full h-full bg-slate-200">
+      {/* Location search overlay */}
+      <div className="absolute top-3 left-3 z-10 w-72">
+        <SearchBox
+          accessToken={MAPBOX_TOKEN}
+          map={mapInstance}
+          placeholder="Search a location..."
+          theme={{
+            variables: {
+              colorBackground: '#ffffff',
+              colorBackgroundHover: '#f0fdfa',
+              borderRadius: '0.5rem',
+              fontFamily: 'inherit',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+            },
+          }}
+        />
+      </div>
       <MapGL
+        ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
@@ -135,6 +160,7 @@ export function GridMap({
         interactiveLayerIds={['grid-fill', 'grid-highlight']}
         onMouseMove={onHover}
         onClick={onClick}
+        onLoad={() => setMapInstance(mapRef.current?.getMap())}
       >
         <NavigationControl position="top-right" />
 
