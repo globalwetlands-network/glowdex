@@ -1,7 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useCallback } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl';
 import type { MapRef } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
+import distance from '@turf/distance';
+import { point } from '@turf/helpers';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
@@ -123,6 +125,50 @@ export function GridMap({
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
+  const handleSearchRetrieve = useCallback(
+    (result: unknown) => {
+      const feature = (
+        result as {
+          features?: { geometry?: { coordinates?: [number, number] } }[];
+        }
+      )?.features?.[0];
+      const coords = feature?.geometry?.coordinates;
+      if (!coords) return;
+
+      const [lng, lat] = coords;
+      const userPoint = point([lng, lat]);
+
+      let closestId: number | null = null;
+      let minDist = Infinity;
+
+      for (const cell of allGridCells) {
+        if (cell.lat == null || cell.lng == null) continue;
+        const cellPoint = point([cell.lng, cell.lat]);
+        const dist = distance(userPoint, cellPoint, { units: 'kilometers' });
+        if (dist < minDist) {
+          minDist = dist;
+          closestId = cell.id;
+        }
+      }
+
+      if (closestId !== null && minDist < 500) {
+        onCellSelect(closestId);
+      } else {
+        onCellSelect(null);
+      }
+    },
+    [allGridCells, onCellSelect],
+  );
+
+  const handleSearchClear = useCallback(() => {
+    mapRef.current?.flyTo({
+      center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+      zoom: INITIAL_VIEW_STATE.zoom,
+      duration: 1000,
+    });
+    onCellSelect(null);
+  }, [onCellSelect]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
@@ -135,11 +181,13 @@ export function GridMap({
   return (
     <div className="relative w-full h-full bg-slate-200">
       {/* Location search overlay */}
-      <div className="absolute top-3 left-3 z-10 w-72">
+      <div className="absolute top-3 left-3 z-10 w-[calc(100%-1.5rem)] sm:w-72">
         <SearchBox
           accessToken={MAPBOX_TOKEN}
           map={mapInstance}
           placeholder="Search a location..."
+          onRetrieve={handleSearchRetrieve}
+          onClear={handleSearchClear}
           theme={{
             variables: {
               colorBackground: '#ffffff',
