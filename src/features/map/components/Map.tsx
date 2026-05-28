@@ -13,7 +13,6 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
-import { findNearestCell } from '../utils/findNearestCell';
 
 interface MapProps {
   allGridCells: RichGridCell[];
@@ -123,23 +122,6 @@ export function GridMap({
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
-  const handleSearchRetrieve = useCallback(
-    (result: unknown) => {
-      const feature = (
-        result as {
-          features?: { geometry?: { coordinates?: [number, number] } }[];
-        }
-      )?.features?.[0];
-      const coords = feature?.geometry?.coordinates;
-      if (!coords) return;
-
-      const [lng, lat] = coords;
-      const nearestId = findNearestCell(lng, lat, allGridCells);
-      onCellSelect(nearestId);
-    },
-    [allGridCells, onCellSelect],
-  );
-
   const handleSearchClear = useCallback(() => {
     mapRef.current?.flyTo({
       center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
@@ -166,7 +148,6 @@ export function GridMap({
           accessToken={MAPBOX_TOKEN}
           map={mapInstance}
           placeholder="Search a location..."
-          onRetrieve={handleSearchRetrieve}
           onClear={handleSearchClear}
           theme={{
             variables: {
