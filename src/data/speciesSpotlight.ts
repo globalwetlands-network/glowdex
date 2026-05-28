@@ -1,3 +1,7 @@
+import katalaImg from '@/assets/species/katala.jpg';
+import estuaryStringRayImg from '@/assets/species/estuary-stingray.jpg';
+import fiddlerCrabImg from '@/assets/species/fiddler-crab-second.jpg';
+
 /**
  * IUCN Red List Conservation Status codes.
  * https://www.iucnredlist.org/about/categories-and-criteria
@@ -100,6 +104,11 @@ export interface SpeciesSpotlightData {
   learnMoreUrl: string;
   mapTipText: string;
   stub?: boolean;
+  imageUrl?: string;
+  imageCredit?: string;
+  imageCreditUrl?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
 }
 
 const katalaData: SpeciesSpotlightData = {
@@ -115,6 +124,12 @@ const katalaData: SpeciesSpotlightData = {
   dataSource: 'IUCN Red List, Katala Foundation',
   learnMoreUrl: 'https://katalafoundation.org/',
   mapTipText: 'Show Katala observation locations',
+  imageUrl: katalaImg,
+  imageCredit: '© matthewkwan, CC BY-ND',
+  imageCreditUrl:
+    'https://www.inaturalist.org/taxa/116758-Cacatua-haematuropygia',
+  sourceUrl: 'https://www.iucnredlist.org/species/22684795/117578604',
+  sourceLabel: 'IUCN Red List',
 };
 
 const fiddlerCrabData: SpeciesSpotlightData = {
@@ -125,11 +140,16 @@ const fiddlerCrabData: SpeciesSpotlightData = {
   conservationStatus: 'LC',
   iucnUrl: 'https://www.iucnredlist.org',
   summaryText:
-    'The Inverted Fiddler Crab inhabits mangroves across the **Indo-Pacific** and East Africa. It was recently recorded by the **GLOWdex South Africa** team — a notable sighting at the southern edge of its known range.',
+    'Cranuca inversa (Inverted Fiddler Crab) was recorded by the **GLOWdex South Africa** team in mangrove habitats along the **KwaZulu-Natal** coast. Fiddler crabs are widely used as bioindicators of mangrove ecosystem health — their presence signals intact intertidal habitat.',
   dataApplicability: 'Regional',
   dataSource: 'GBIF, GLOWdex South Africa',
   learnMoreUrl: 'https://www.fiddlercrab.info/u_inversa.html',
   mapTipText: 'Show Fiddler Crab observation locations',
+  imageUrl: fiddlerCrabImg,
+  imageCredit: '(c) Nelson Miranda – all rights reserved',
+  imageCreditUrl: 'https://www.inaturalist.org/taxa/739157-Cranuca-inversa',
+  sourceUrl: 'https://www.fiddlercrab.info/u_inversa.html',
+  sourceLabel: 'Fiddler Crab Info',
 };
 
 const estuaryStingrayData: SpeciesSpotlightData = {
@@ -144,6 +164,12 @@ const estuaryStingrayData: SpeciesSpotlightData = {
   dataSource: 'GBIF, IUCN Red List',
   learnMoreUrl: 'https://www.iucnredlist.org',
   mapTipText: 'Show Estuary Stingray observation locations',
+  imageUrl: estuaryStringRayImg,
+  imageCredit: '© jmfinoz, CC BY-NC',
+  imageCreditUrl:
+    'https://www.inaturalist.org/taxa/623842-Hemitrygon-fluviorum/browse_photos',
+  sourceUrl: 'https://www.iucnredlist.org/species/161693/984951',
+  sourceLabel: 'IUCN Red List',
 };
 
 export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [

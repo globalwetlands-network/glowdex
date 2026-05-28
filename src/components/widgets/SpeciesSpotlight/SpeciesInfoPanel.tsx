@@ -3,13 +3,19 @@ import {
   CONSERVATION_STATUS_INFO,
   type SpeciesSpotlightData,
 } from '@/data/speciesSpotlight';
+import type { SpeciesObservationsResponse } from '@/api/species';
 
 interface SpeciesInfoPanelProps {
   species: SpeciesSpotlightData;
   open: boolean;
+  data?: SpeciesObservationsResponse | null;
 }
 
-export function SpeciesInfoPanel({ species, open }: SpeciesInfoPanelProps) {
+export function SpeciesInfoPanel({
+  species,
+  open,
+  data,
+}: SpeciesInfoPanelProps) {
   const status = CONSERVATION_STATUS_INFO[species.conservationStatus];
 
   return (
@@ -44,6 +50,28 @@ export function SpeciesInfoPanel({ species, open }: SpeciesInfoPanelProps) {
           </span>
         </div>
 
+        {/* Partner */}
+        {data?.partner && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              Partner
+            </p>
+            <p className="text-xs text-gray-600">{data.partner}</p>
+          </div>
+        )}
+
+        {/* Region */}
+        {data?.region && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              Region
+            </p>
+            <span className="inline-block px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-100">
+              {data.region}
+            </span>
+          </div>
+        )}
+
         {/* Data source */}
         {species.dataSource && (
           <div>
@@ -55,9 +83,9 @@ export function SpeciesInfoPanel({ species, open }: SpeciesInfoPanelProps) {
         )}
 
         {/* Learn more link */}
-        {species.learnMoreUrl && (
+        {data?.learnMoreUrl && (
           <a
-            href={species.learnMoreUrl}
+            href={data.learnMoreUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:text-teal-900 transition-colors"

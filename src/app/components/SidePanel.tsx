@@ -180,8 +180,9 @@ export function SidePanel({
                   isLoading={isLoading}
                 />
               </CollapsibleSection>
-              <div className="border-t border-gray-100 my-4" />
             </div>
+
+            <div className="border-t border-gray-100 my-4" />
           </>
         )}
 
