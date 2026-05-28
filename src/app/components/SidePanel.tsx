@@ -1,4 +1,12 @@
-import { Layers, Filter, MapPin, Bot, BarChart2, Bird } from 'lucide-react';
+import {
+  Layers,
+  Filter,
+  MapPin,
+  Bot,
+  BarChart2,
+  Bird,
+  Search,
+} from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -68,63 +76,101 @@ export function SidePanel({
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Section: Selected Cell */}
-        <div>
-          {/* Section: Species Spotlight */}
-          <div className="pb-8">
-            <CollapsibleSection
-              title="Species Spotlight"
-              icon={Bird}
-              defaultOpen={true}
-            >
-              <SpeciesSpotlightWidget
-                onSpeciesLayerToggle={onSpeciesLayerToggle}
-              />
-            </CollapsibleSection>
+        {/* Empty state — no location selected */}
+        {!selectedCell && (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
+              <Search className="w-6 h-6 text-teal-600" />
+            </div>
+            <p className="text-sm font-medium text-gray-700 mb-1">
+              Search for a mangrove location to get started
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Select any cell on the map to explore the data
+            </p>
           </div>
+        )}
 
-          <CollapsibleSection
-            title="Selection"
-            icon={MapPin}
-            defaultOpen={true}
-            headerAction={
-              selectedCell && (
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClearSelection();
-                  }}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
+        {/* Content — only shown when a cell is selected */}
+        {selectedCell && (
+          <>
+            <div>
+              {/* Section: Species Spotlight */}
+              <div className="pb-8">
+                <CollapsibleSection
+                  title="Species Spotlight"
+                  icon={Bird}
+                  defaultOpen={true}
                 >
-                  Clear
-                </span>
-              )
-            }
-          >
-            <SelectionPanel
-              selectedCell={selectedCell}
-              typologies={typologies}
-              currentScale={filterState.typologyScale}
-            />
-          </CollapsibleSection>
-        </div>
+                  <SpeciesSpotlightWidget
+                    onSpeciesLayerToggle={onSpeciesLayerToggle}
+                  />
+                </CollapsibleSection>
+              </div>
 
-        <div className="border-t border-gray-100 my-4" />
+              <CollapsibleSection
+                title="Selection"
+                icon={MapPin}
+                defaultOpen={true}
+                headerAction={
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClearSelection();
+                    }}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
+                  >
+                    Clear
+                  </span>
+                }
+              >
+                <SelectionPanel
+                  selectedCell={selectedCell}
+                  typologies={typologies}
+                  currentScale={filterState.typologyScale}
+                />
+              </CollapsibleSection>
+            </div>
 
-        {/* Section: Contextual Chat */}
-        <div>
-          <CollapsibleSection
-            title="Analysis Assistant"
-            icon={Bot}
-            defaultOpen={true}
-          >
-            <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
-          </CollapsibleSection>
-        </div>
+            <div className="border-t border-gray-100 my-4" />
 
-        <div className="border-t border-gray-100 my-4" />
+            {/* Section: Contextual Chat */}
+            <div>
+              <CollapsibleSection
+                title="Analysis Assistant"
+                icon={Bot}
+                defaultOpen={true}
+              >
+                <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
+              </CollapsibleSection>
+            </div>
+
+            <div className="border-t border-gray-100 my-4" />
+
+            {/* Section: Statistical Analysis */}
+            <div>
+              <CollapsibleSection
+                title="Statistical Analysis"
+                icon={BarChart2}
+                defaultOpen={true}
+              >
+                <StatisticalAnalysisWidget
+                  selectedCell={selectedCell}
+                  filterState={filterState}
+                  onFilterChange={onFilterChange}
+                  distributions={distributions}
+                  statisticalSummaries={statisticalSummaries}
+                  isLoading={isLoading}
+                />
+              </CollapsibleSection>
+            </div>
+
+            <div className="border-t border-gray-100 my-4" />
+          </>
+        )}
 
         {/* Section: Filters */}
+        <div className="border-t border-gray-100 my-4" />
         <div>
           <CollapsibleSection
             title="Global Filters"
@@ -138,30 +184,7 @@ export function SidePanel({
             />
           </CollapsibleSection>
         </div>
-
-        <div className="border-t border-gray-100 my-4" />
-
-        {/* Section: Statistical Analysis */}
-        <div>
-          <CollapsibleSection
-            title="Statistical Analysis"
-            icon={BarChart2}
-            defaultOpen={true}
-          >
-            <StatisticalAnalysisWidget
-              selectedCell={selectedCell}
-              filterState={filterState}
-              onFilterChange={onFilterChange}
-              distributions={distributions}
-              statisticalSummaries={statisticalSummaries}
-              isLoading={isLoading}
-            />
-          </CollapsibleSection>
-        </div>
-
-        <div className="border-t border-gray-100 my-4" />
       </div>
-
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
         {visibleCellCount.toLocaleString()} Grid Cells Visible
