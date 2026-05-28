@@ -2,8 +2,7 @@ import { useMemo, useRef, useState, useCallback } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl';
 import type { MapRef } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
-import distance from '@turf/distance';
-import { point } from '@turf/helpers';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
@@ -14,8 +13,7 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
-
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { findNearestCell } from '../utils/findNearestCell';
 
 interface MapProps {
   allGridCells: RichGridCell[];
@@ -136,26 +134,8 @@ export function GridMap({
       if (!coords) return;
 
       const [lng, lat] = coords;
-      const userPoint = point([lng, lat]);
-
-      let closestId: number | null = null;
-      let minDist = Infinity;
-
-      for (const cell of allGridCells) {
-        if (cell.lat == null || cell.lng == null) continue;
-        const cellPoint = point([cell.lng, cell.lat]);
-        const dist = distance(userPoint, cellPoint, { units: 'kilometers' });
-        if (dist < minDist) {
-          minDist = dist;
-          closestId = cell.id;
-        }
-      }
-
-      if (closestId !== null && minDist < 500) {
-        onCellSelect(closestId);
-      } else {
-        onCellSelect(null);
-      }
+      const nearestId = findNearestCell(lng, lat, allGridCells);
+      onCellSelect(nearestId);
     },
     [allGridCells, onCellSelect],
   );
