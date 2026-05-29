@@ -1,5 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState, useCallback } from 'react';
 import MapGL, { NavigationControl } from 'react-map-gl';
+import type { MapRef } from 'react-map-gl';
+import { SearchBox } from '@mapbox/search-js-react';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
@@ -10,8 +13,6 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import MapTooltip from './MapTooltip';
-
-import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapProps {
   allGridCells: RichGridCell[];
@@ -97,6 +98,11 @@ export function GridMap({
   activeSpeciesId,
   speciesLayerEnabled,
 }: MapProps) {
+  const mapRef = useRef<MapRef>(null);
+  const [mapInstance, setMapInstance] = useState<
+    ReturnType<MapRef['getMap']> | undefined
+  >(undefined);
+
   const filteredGeoJson = useMemo(
     () =>
       enrichGeoJsonFeatures(
@@ -116,6 +122,15 @@ export function GridMap({
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
+  const handleSearchClear = useCallback(() => {
+    mapRef.current?.flyTo({
+      center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+      zoom: INITIAL_VIEW_STATE.zoom,
+      duration: 1000,
+    });
+    onCellSelect(null);
+  }, [onCellSelect]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
@@ -127,7 +142,26 @@ export function GridMap({
 
   return (
     <div className="relative w-full h-full bg-slate-200">
+      {/* Location search overlay */}
+      <div className="absolute top-3 left-3 z-10 w-[calc(100%-1.5rem)] sm:w-72">
+        <SearchBox
+          accessToken={MAPBOX_TOKEN}
+          map={mapInstance}
+          placeholder="Search a location..."
+          onClear={handleSearchClear}
+          theme={{
+            variables: {
+              colorBackground: '#ffffff',
+              colorBackgroundHover: '#f0fdfa',
+              borderRadius: '0.5rem',
+              fontFamily: 'inherit',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+            },
+          }}
+        />
+      </div>
       <MapGL
+        ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
@@ -135,6 +169,7 @@ export function GridMap({
         interactiveLayerIds={['grid-fill', 'grid-highlight']}
         onMouseMove={onHover}
         onClick={onClick}
+        onLoad={() => setMapInstance(mapRef.current?.getMap())}
       >
         <NavigationControl position="top-right" />
 

@@ -1,12 +1,4 @@
-import {
-  Layers,
-  Filter,
-  MapPin,
-  Bot,
-  BarChart2,
-  Bird,
-  Search,
-} from 'lucide-react';
+import { Layers, Filter, MapPin, Bot, BarChart2, Bird } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -80,13 +72,14 @@ export function SidePanel({
         {!selectedCell && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
-              <Search className="w-6 h-6 text-teal-600" />
+              <MapPin className="w-6 h-6 text-teal-600" />
             </div>
             <p className="text-sm font-medium text-gray-700 mb-1">
-              Search for a mangrove location to get started
+              Search for a location on the map to get started
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              Select any cell on the map to explore the data
+              Use the search box in the top left of the map, or click any cell
+              to explore the data
             </p>
           </div>
         )}
@@ -170,7 +163,6 @@ export function SidePanel({
         )}
 
         {/* Section: Filters */}
-        <div className="border-t border-gray-100 my-4" />
         <div>
           <CollapsibleSection
             title="Global Filters"
