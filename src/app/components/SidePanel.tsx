@@ -103,7 +103,7 @@ export function SidePanel({
             <>
               <div>
                 <CollapsibleSection
-                  title="Selection"
+                  title="Location"
                   icon={MapPin}
                   defaultOpen={true}
                   headerAction={
@@ -131,7 +131,7 @@ export function SidePanel({
               {/* Section: Contextual Chat */}
               <div>
                 <CollapsibleSection
-                  title="Analysis Assistant"
+                  title="Assistant"
                   icon={Bot}
                   defaultOpen={true}
                 >
@@ -144,7 +144,7 @@ export function SidePanel({
               {/* Section: Statistical Analysis */}
               <div>
                 <CollapsibleSection
-                  title="Statistical Analysis"
+                  title="Indicators"
                   icon={BarChart2}
                   defaultOpen={true}
                 >
@@ -166,7 +166,7 @@ export function SidePanel({
           {/* Section: Filters */}
           <div>
             <CollapsibleSection
-              title="Global Filters"
+              title="Filters"
               icon={Filter}
               defaultOpen={false}
               childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
