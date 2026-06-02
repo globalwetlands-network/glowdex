@@ -21,18 +21,16 @@ export function SelectionPanel({
           <MapPin className="w-6 h-6 text-gray-400" />
         </div>
         <p className="text-sm font-semibold text-gray-700">
-          No Location Selected
+          No location selected
         </p>
         <p className="text-xs mt-2 opacity-80 max-w-[200px]">
-          Click on a grid cell on the map to view detailed habitat and typology
-          insights.
+          Click any cell on the map to explore the data.
         </p>
       </div>
     );
   }
 
-  const { id, country, cluster5, cluster18, mangroves, lat, lng } =
-    selectedCell;
+  const { id, country, cluster5, cluster18, lat, lng } = selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
   const clusterInfo = typologies[currentScale][clusterId];
 
@@ -79,30 +77,13 @@ export function SelectionPanel({
       {/* Feature 1: Color */}
       <div className="space-y-1">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Typology Color
+          Mangrove Type
         </p>
         <div className="flex items-center space-x-2">
           <div
             className="w-full h-6 rounded-md shadow-sm border border-gray-100"
             style={{ backgroundColor: clusterInfo?.color || '#ccc' }}
           />
-        </div>
-      </div>
-
-      {/* Feature 2: Habitats */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-          Habitats Present
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {mangroves && (
-            <span className="px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full text-xs font-medium">
-              Mangroves
-            </span>
-          )}
-          {!mangroves && (
-            <span className="text-gray-400 italic text-xs">None recorded</span>
-          )}
         </div>
       </div>
     </div>

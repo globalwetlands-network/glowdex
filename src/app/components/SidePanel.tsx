@@ -1,4 +1,4 @@
-import { Layers, Filter, MapPin, Bot, BarChart2, Bird } from 'lucide-react';
+import { Filter, MapPin, Bot, BarChart2, Leaf } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -11,7 +11,7 @@ import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { StatisticalAnalysisWidget } from './StatisticalAnalysisWidget';
-import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
+import { BiodiversityPanel } from './BiodiversityPanel';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
 interface SidePanelProps {
@@ -29,6 +29,8 @@ interface SidePanelProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
+  activeTab: 'analysis' | 'biodiversity';
+  onTabChange: (tab: 'analysis' | 'biodiversity') => void;
 }
 
 /**
@@ -46,137 +48,139 @@ export function SidePanel({
   isLoading,
   visibleCellCount,
   onSpeciesLayerToggle,
+  activeTab,
+  onTabChange,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
-        <div className="flex items-center space-x-2">
-          <div className="bg-blue-600 text-white p-1.5 rounded-md">
-            <Layers size={18} />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">
-              GLOWdex
-            </h1>
-            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
-              Mangrove Ecosystem Analysis
-            </p>
-          </div>
-        </div>
+      {/* Tab Strip */}
+      <div className="hidden md:flex border-b border-gray-200 shrink-0">
+        <button
+          onClick={() => onTabChange('biodiversity')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${
+            activeTab === 'biodiversity'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Leaf size={16} />
+          Biodiversity
+        </button>
+        <button
+          onClick={() => onTabChange('analysis')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${
+            activeTab === 'analysis'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <BarChart2 size={16} />
+          Analysis
+        </button>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Empty state — no location selected */}
-        {!selectedCell && (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
-              <MapPin className="w-6 h-6 text-teal-600" />
+      {/* Tab Content */}
+      {activeTab === 'analysis' && (
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Empty state — no location selected */}
+          {!selectedCell && (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
+                <MapPin className="w-6 h-6 text-teal-600" />
+              </div>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                Search for a location on the map to get started
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Use the search box in the top left of the map, or click any cell
+                to explore the data
+              </p>
             </div>
-            <p className="text-sm font-medium text-gray-700 mb-1">
-              Search for a location on the map to get started
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Use the search box in the top left of the map, or click any cell
-              to explore the data
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* Content — only shown when a cell is selected */}
-        {selectedCell && (
-          <>
-            <div>
-              {/* Section: Species Spotlight */}
-              <div className="pb-8">
+          {/* Content — only shown when a cell is selected */}
+          {selectedCell && (
+            <>
+              <div>
                 <CollapsibleSection
-                  title="Species Spotlight"
-                  icon={Bird}
+                  title="Location"
+                  icon={MapPin}
                   defaultOpen={true}
                 >
-                  <SpeciesSpotlightWidget
-                    onSpeciesLayerToggle={onSpeciesLayerToggle}
+                  <button
+                    onClick={onClearSelection}
+                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
+                  >
+                    Clear selection
+                  </button>
+                  <SelectionPanel
+                    selectedCell={selectedCell}
+                    typologies={typologies}
+                    currentScale={filterState.typologyScale}
                   />
                 </CollapsibleSection>
               </div>
 
-              <CollapsibleSection
-                title="Selection"
-                icon={MapPin}
-                defaultOpen={true}
-                headerAction={
-                  <span
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClearSelection();
-                    }}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
-                  >
-                    Clear
-                  </span>
-                }
-              >
-                <SelectionPanel
-                  selectedCell={selectedCell}
-                  typologies={typologies}
-                  currentScale={filterState.typologyScale}
-                />
-              </CollapsibleSection>
-            </div>
+              <div className="border-t border-gray-100 my-4" />
 
-            <div className="border-t border-gray-100 my-4" />
+              {/* Section: Contextual Chat */}
+              <div>
+                <CollapsibleSection
+                  title="Assistant"
+                  icon={Bot}
+                  defaultOpen={true}
+                >
+                  <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
+                </CollapsibleSection>
+              </div>
 
-            {/* Section: Contextual Chat */}
-            <div>
-              <CollapsibleSection
-                title="Analysis Assistant"
-                icon={Bot}
-                defaultOpen={true}
-              >
-                <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
-              </CollapsibleSection>
-            </div>
+              <div className="border-t border-gray-100 my-4" />
 
-            <div className="border-t border-gray-100 my-4" />
+              {/* Section: Statistical Analysis */}
+              <div>
+                <CollapsibleSection
+                  title="Indicators"
+                  icon={BarChart2}
+                  defaultOpen={true}
+                >
+                  <StatisticalAnalysisWidget
+                    selectedCell={selectedCell}
+                    filterState={filterState}
+                    onFilterChange={onFilterChange}
+                    distributions={distributions}
+                    statisticalSummaries={statisticalSummaries}
+                    isLoading={isLoading}
+                  />
+                </CollapsibleSection>
+              </div>
 
-            {/* Section: Statistical Analysis */}
-            <div>
-              <CollapsibleSection
-                title="Statistical Analysis"
-                icon={BarChart2}
-                defaultOpen={true}
-              >
-                <StatisticalAnalysisWidget
-                  selectedCell={selectedCell}
-                  filterState={filterState}
-                  onFilterChange={onFilterChange}
-                  distributions={distributions}
-                  statisticalSummaries={statisticalSummaries}
-                  isLoading={isLoading}
-                />
-              </CollapsibleSection>
-            </div>
+              <div className="border-t border-gray-100 my-4" />
+            </>
+          )}
 
-            <div className="border-t border-gray-100 my-4" />
-          </>
-        )}
-
-        {/* Section: Filters */}
-        <div>
-          <CollapsibleSection
-            title="Global Filters"
-            icon={Filter}
-            defaultOpen={false}
-            childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-          >
-            <FilterControls
-              filterState={filterState}
-              onFilterChange={onFilterChange}
-            />
-          </CollapsibleSection>
+          {/* Section: Filters */}
+          <div>
+            <CollapsibleSection
+              title="Filters"
+              icon={Filter}
+              defaultOpen={false}
+              childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+            >
+              <FilterControls
+                filterState={filterState}
+                onFilterChange={onFilterChange}
+              />
+            </CollapsibleSection>
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'biodiversity' && (
+        <div className="flex-1 overflow-y-auto">
+          <BiodiversityPanel onSpeciesLayerToggle={onSpeciesLayerToggle} />
+        </div>
+      )}
+
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
         {visibleCellCount.toLocaleString()} Grid Cells Visible
