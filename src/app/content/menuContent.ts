@@ -213,12 +213,6 @@ export const MENU_CONTENT = {
     body: 'For enquiries about GLOWdex or the Global Wetlands project, please contact the team at Griffith University.',
     placeholder: true,
   },
-  licence: {
-    title: 'Licence',
-    spdx: 'MIT',
-    year: '2021',
-    holder: 'The Global Wetlands Project',
-  },
 } as const;
 
 export type MenuItemKey = keyof typeof MENU_CONTENT;

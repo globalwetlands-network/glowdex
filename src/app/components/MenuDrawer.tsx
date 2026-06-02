@@ -149,43 +149,6 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
     </div>
   );
 
-  const renderLicence = () => (
-    <div className="px-6 py-6 space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          MIT License
-        </span>
-      </div>
-
-      <p className="text-sm text-gray-500 leading-relaxed">
-        Copyright © {MENU_CONTENT.licence.year} {MENU_CONTENT.licence.holder}
-      </p>
-
-      <div className="border-t border-gray-100" />
-
-      <div className="text-xs text-gray-400 leading-relaxed space-y-3">
-        <p>
-          Permission is hereby granted, free of charge, to any person obtaining
-          a copy of this software and associated documentation files (the
-          "Software"), to deal in the Software without restriction, including
-          without limitation the rights to use, copy, modify, merge, publish,
-          distribute, sublicense, and/or sell copies of the Software, and to
-          permit persons to whom the Software is furnished to do so, subject to
-          the following conditions:
-        </p>
-        <p>
-          The above copyright notice and this permission notice shall be
-          included in all copies or substantial portions of the Software.
-        </p>
-        <p>
-          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-          EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-          MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-        </p>
-      </div>
-    </div>
-  );
-
   const renderContent = () => {
     switch (activeItem) {
       case 'about':
@@ -196,8 +159,6 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
         return renderMethods();
       case 'contact':
         return renderContact();
-      case 'licence':
-        return renderLicence();
       default:
         return null;
     }

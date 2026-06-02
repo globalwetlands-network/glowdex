@@ -1,13 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import {
-  Layers,
-  Menu,
-  Info,
-  HelpCircle,
-  Database,
-  Mail,
-  FileText,
-} from 'lucide-react';
+import { Layers, Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
 import type { MenuItemKey } from '@/app/content/menuContent';
 
@@ -62,14 +54,6 @@ export function TopBar() {
       icon: Mail,
       onClick: () => {
         setDrawerItem('contact');
-        setIsMenuOpen(false);
-      },
-    },
-    {
-      label: 'Licence',
-      icon: FileText,
-      onClick: () => {
-        setDrawerItem('licence');
         setIsMenuOpen(false);
       },
     },
