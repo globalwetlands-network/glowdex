@@ -35,10 +35,11 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
           Research Partners
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          {PARTNERS.map((partner, index) => (
+          {PARTNERS.map((partner) => (
             <div
-              key={index}
+              key={`${partner.name}-${partner.region}`}
               className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
+            >
             >
               <div className="text-xs font-semibold text-gray-800 leading-snug">
                 {partner.name}
