@@ -175,13 +175,19 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
 
       {/* Drawer Panel */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="menu-drawer-title"
         className={`fixed inset-y-0 right-0 z-50 flex flex-col w-full sm:w-[480px] bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Header */}
         <div className="bg-[#0a5c47] px-6 py-5 flex items-center justify-between shrink-0">
-          <h2 className="text-white text-base font-semibold tracking-wide">
+          <h2
+            id="menu-drawer-title"
+            className="text-white text-base font-semibold tracking-wide"
+          >
             {content.title}
           </h2>
           <button
