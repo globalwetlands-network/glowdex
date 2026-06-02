@@ -106,18 +106,13 @@ export function SidePanel({
                   title="Location"
                   icon={MapPin}
                   defaultOpen={true}
-                  headerAction={
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onClearSelection();
-                      }}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-0.5 rounded hover:bg-blue-50"
-                    >
-                      Clear
-                    </span>
-                  }
                 >
+                  <button
+                    onClick={onClearSelection}
+                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
+                  >
+                    Clear selection
+                  </button>
                   <SelectionPanel
                     selectedCell={selectedCell}
                     typologies={typologies}

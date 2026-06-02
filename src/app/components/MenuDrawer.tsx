@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { X, ExternalLink, Mail } from 'lucide-react';
 import {
   MENU_CONTENT,
@@ -14,9 +15,20 @@ interface MenuDrawerProps {
 }
 
 export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
-  if (!isOpen || !activeItem) return null;
+  const [localItem, setLocalItem] = useState(activeItem);
 
-  const content = MENU_CONTENT[activeItem];
+  // Update localItem when activeItem changes to non-null
+  // This is needed to preserve content during exit animation
+  useEffect(() => {
+    if (activeItem) {
+      setLocalItem(activeItem); // eslint-disable-line react-hooks/set-state-in-effect
+    }
+  }, [activeItem]);
+
+  // Only return null if it's never been opened
+  if (!isOpen && !localItem) return null;
+
+  const content = localItem ? MENU_CONTENT[localItem] : null;
 
   const renderAbout = () => (
     <div className="px-6 py-6 space-y-6">
@@ -39,7 +51,6 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
             <div
               key={`${partner.name}-${partner.region}`}
               className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
-            >
             >
               <div className="text-xs font-semibold text-gray-800 leading-snug">
                 {partner.name}
@@ -151,7 +162,7 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
   );
 
   const renderContent = () => {
-    switch (activeItem) {
+    switch (localItem) {
       case 'about':
         return renderAbout();
       case 'help':
@@ -169,7 +180,9 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -189,7 +202,7 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
             id="menu-drawer-title"
             className="text-white text-base font-semibold tracking-wide"
           >
-            {content.title}
+            {content?.title}
           </h2>
           <button
             onClick={onClose}
