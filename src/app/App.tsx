@@ -42,7 +42,10 @@ function AppShell() {
   const { selectedCellId, setSelectedCellId } = useSelection();
 
   // Local UI state (layout only)
-  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('panel');
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('analysis');
+  const [panelActiveTab, setPanelActiveTab] = useState<
+    'analysis' | 'biodiversity'
+  >('biodiversity');
 
   // Species layer state
   const [activeSpeciesId, setActiveSpeciesId] = useState('');
@@ -92,7 +95,7 @@ function AppShell() {
     setSelectedCellId(id);
     // Auto-switch to Analysis tab on mobile
     if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab('panel');
+      setMobileActiveTab('analysis');
     }
   };
 
@@ -131,6 +134,8 @@ function AppShell() {
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
       onSpeciesLayerToggle={handleSpeciesLayerToggle}
+      activeTab={panelActiveTab}
+      onTabChange={setPanelActiveTab}
     />
   );
 
