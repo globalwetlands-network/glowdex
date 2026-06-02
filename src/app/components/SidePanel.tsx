@@ -54,7 +54,7 @@ export function SidePanel({
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
       {/* Tab Strip */}
-      <div className="flex border-b border-gray-200 shrink-0">
+      <div className="hidden md:flex border-b border-gray-200 shrink-0">
         <button
           onClick={() => onTabChange('biodiversity')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${

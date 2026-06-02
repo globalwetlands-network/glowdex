@@ -23,6 +23,7 @@ import { useStatistics } from '@/data/hooks/useStatistics';
 import { AppLayout } from './components/AppLayout';
 import { LoadingState } from './components/LoadingState';
 import { SidePanel } from './components/SidePanel';
+import { TopBar } from './components/TopBar';
 
 // App Hooks, Constants & Types
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
@@ -42,7 +43,8 @@ function AppShell() {
   const { selectedCellId, setSelectedCellId } = useSelection();
 
   // Local UI state (layout only)
-  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('analysis');
+  const [mobileActiveTab, setMobileActiveTab] =
+    useState<MobileTab>('biodiversity');
   const [panelActiveTab, setPanelActiveTab] = useState<
     'analysis' | 'biodiversity'
   >('biodiversity');
@@ -96,6 +98,23 @@ function AppShell() {
     // Auto-switch to Analysis tab on mobile
     if (id && window.innerWidth < MOBILE_BREAKPOINT) {
       setMobileActiveTab('analysis');
+      setPanelActiveTab('analysis');
+    }
+  };
+
+  const handleMobileTabChange = (tab: MobileTab) => {
+    setMobileActiveTab(tab);
+    // Sync panel tab state when switching mobile tabs
+    if (tab === 'biodiversity' || tab === 'analysis') {
+      setPanelActiveTab(tab);
+    }
+  };
+
+  const handlePanelTabChange = (tab: 'analysis' | 'biodiversity') => {
+    setPanelActiveTab(tab);
+    // On mobile, sync the bottom nav when panel tabs are switched
+    if (window.innerWidth < MOBILE_BREAKPOINT) {
+      setMobileActiveTab(tab);
     }
   };
 
@@ -135,7 +154,7 @@ function AppShell() {
       visibleCellCount={filteredGridCells.length}
       onSpeciesLayerToggle={handleSpeciesLayerToggle}
       activeTab={panelActiveTab}
-      onTabChange={setPanelActiveTab}
+      onTabChange={handlePanelTabChange}
     />
   );
 
@@ -154,10 +173,11 @@ function AppShell() {
 
   return (
     <AppLayout
+      topBar={<TopBar />}
       mapArea={mapArea}
       sidePanel={sidePanel}
       mobileActiveTab={mobileActiveTab}
-      onMobileTabChange={setMobileActiveTab}
+      onMobileTabChange={handleMobileTabChange}
     />
   );
 }
