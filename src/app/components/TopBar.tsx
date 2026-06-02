@@ -8,9 +8,12 @@ import {
   Mail,
   FileText,
 } from 'lucide-react';
+import { MenuDrawer } from './MenuDrawer';
+import type { MenuItemKey } from '@/app/content/menuContent';
 
 export function TopBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [drawerItem, setDrawerItem] = useState<MenuItemKey | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -28,13 +31,48 @@ export function TopBar() {
   }, [isMenuOpen]);
 
   const menuItems = [
-    { label: 'About', icon: Info },
-    { label: 'Help', icon: HelpCircle },
+    {
+      label: 'About',
+      icon: Info,
+      onClick: () => {
+        setDrawerItem('about');
+        setIsMenuOpen(false);
+      },
+    },
+    {
+      label: 'Help',
+      icon: HelpCircle,
+      onClick: () => {
+        setDrawerItem('help');
+        setIsMenuOpen(false);
+      },
+    },
     { divider: true },
-    { label: 'Methods & Data Sources', icon: Database },
+    {
+      label: 'Methods & Data Sources',
+      icon: Database,
+      onClick: () => {
+        setDrawerItem('methods');
+        setIsMenuOpen(false);
+      },
+    },
     { divider: true },
-    { label: 'Contact', icon: Mail },
-    { label: 'Licence', icon: FileText },
+    {
+      label: 'Contact',
+      icon: Mail,
+      onClick: () => {
+        setDrawerItem('contact');
+        setIsMenuOpen(false);
+      },
+    },
+    {
+      label: 'Licence',
+      icon: FileText,
+      onClick: () => {
+        setDrawerItem('licence');
+        setIsMenuOpen(false);
+      },
+    },
   ];
 
   return (
@@ -93,10 +131,7 @@ export function TopBar() {
                   <button
                     key={item.label}
                     className="w-full px-4 py-2.5 flex items-center gap-3 text-gray-700 text-sm hover:bg-gray-50 transition-colors text-left"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      // Navigation will be wired up later
-                    }}
+                    onClick={item.onClick}
                   >
                     <Icon size={16} className="text-gray-500" />
                     <span>{item.label}</span>
@@ -107,6 +142,12 @@ export function TopBar() {
           )}
         </div>
       </div>
+
+      <MenuDrawer
+        isOpen={drawerItem !== null}
+        onClose={() => setDrawerItem(null)}
+        activeItem={drawerItem}
+      />
     </div>
   );
 }
