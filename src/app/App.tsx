@@ -141,43 +141,79 @@ function AppShell() {
   };
 
   // Render map area
-  const mapArea = isLoading ? (
-    <LoadingState />
-  ) : (
-    <Map
-      allGridCells={gridCells || []}
-      filteredGridCells={filteredGridCells}
-      geojson={geojson!}
-      typologies={typologies!}
-      selectedCellId={selectedCellId}
-      selectedCell={selectedCell}
-      typologyScale={filterState.typologyScale}
-      onCellSelect={handleCellSelect}
-      activeObservations={activeObservations}
-      activeSpeciesId={activeSpeciesId}
-      activeSpeciesName={activeSpeciesName}
-      speciesLayerEnabled={speciesLayerEnabled}
-      hubLayerEnabled={hubLayerEnabled}
-    />
+  const mapArea = useMemo(
+    () =>
+      isLoading ? (
+        <LoadingState />
+      ) : (
+        <Map
+          allGridCells={gridCells || []}
+          filteredGridCells={filteredGridCells}
+          geojson={geojson!}
+          typologies={typologies!}
+          selectedCellId={selectedCellId}
+          selectedCell={selectedCell}
+          typologyScale={filterState.typologyScale}
+          onCellSelect={handleCellSelect}
+          activeObservations={activeObservations}
+          activeSpeciesId={activeSpeciesId}
+          activeSpeciesName={activeSpeciesName}
+          speciesLayerEnabled={speciesLayerEnabled}
+          hubLayerEnabled={hubLayerEnabled}
+        />
+      ),
+    [
+      isLoading,
+      gridCells,
+      filteredGridCells,
+      geojson,
+      typologies,
+      selectedCellId,
+      selectedCell,
+      filterState.typologyScale,
+      handleCellSelect,
+      activeObservations,
+      activeSpeciesId,
+      activeSpeciesName,
+      speciesLayerEnabled,
+      hubLayerEnabled,
+    ],
   );
 
   // Render side panel
-  const sidePanel = (
-    <SidePanel
-      filterState={filterState}
-      onFilterChange={setFilterState}
-      selectedCell={selectedCell}
-      onClearSelection={handleClearSelection}
-      typologies={typologies || { scale5: {}, scale18: {} }}
-      distributions={distributions}
-      statisticalSummaries={cellStats?.statistics?.summaries}
-      isLoading={isLoading}
-      visibleCellCount={filteredGridCells.length}
-      onSpeciesLayerToggle={handleSpeciesLayerToggle}
-      onHubLayerToggle={handleHubLayerToggle}
-      activeTab={panelActiveTab}
-      onTabChange={handlePanelTabChange}
-    />
+  const sidePanel = useMemo(
+    () => (
+      <SidePanel
+        filterState={filterState}
+        onFilterChange={setFilterState}
+        selectedCell={selectedCell}
+        onClearSelection={handleClearSelection}
+        typologies={typologies || { scale5: {}, scale18: {} }}
+        distributions={distributions}
+        statisticalSummaries={cellStats?.statistics?.summaries}
+        isLoading={isLoading}
+        visibleCellCount={filteredGridCells.length}
+        onSpeciesLayerToggle={handleSpeciesLayerToggle}
+        onHubLayerToggle={handleHubLayerToggle}
+        activeTab={panelActiveTab}
+        onTabChange={handlePanelTabChange}
+      />
+    ),
+    [
+      filterState,
+      setFilterState,
+      selectedCell,
+      handleClearSelection,
+      typologies,
+      distributions,
+      cellStats,
+      isLoading,
+      filteredGridCells.length,
+      handleSpeciesLayerToggle,
+      handleHubLayerToggle,
+      panelActiveTab,
+      handlePanelTabChange,
+    ],
   );
 
   if (error) {
