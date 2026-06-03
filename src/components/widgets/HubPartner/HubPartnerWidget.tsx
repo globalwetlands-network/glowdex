@@ -39,7 +39,7 @@ export function HubPartnerWidget({
 
   if (isLoading) {
     return (
-      <div className="space-y-2 p-4">
+      <div className="space-y-2">
         <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
         <div className="h-3 bg-gray-100 rounded animate-pulse w-1/2" />
         <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
@@ -48,12 +48,12 @@ export function HubPartnerWidget({
   }
 
   if (isError) {
-    return <p className="text-xs text-gray-400 p-4">Hub data unavailable</p>;
+    return <p className="text-xs text-gray-400 py-2">Hub data unavailable</p>;
   }
 
   if (!selectedCell || !nearest) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 px-4 text-center gap-2">
+      <div className="flex flex-col items-center justify-center py-6 text-center gap-2">
         <MapPin size={20} className="text-gray-300" />
         <p className="text-sm text-gray-400">
           Select a location to find your nearest hub partner
@@ -63,7 +63,7 @@ export function HubPartnerWidget({
   }
 
   return (
-    <div className="px-4 pb-4 space-y-3">
+    <div className="space-y-3">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
         HUB PARTNER
       </p>

@@ -19,12 +19,19 @@ export function BiodiversityPanel({
   onHubLayerToggle,
 }: BiodiversityPanelProps) {
   return (
-    <div className="p-4 space-y-6">
-      <SpeciesSpotlightWidget onSpeciesLayerToggle={onSpeciesLayerToggle} />
-      <HubPartnerWidget
-        selectedCell={selectedCell}
-        onHubLayerToggle={onHubLayerToggle}
-      />
+    <div className="p-4 space-y-4">
+      {/* Species Spotlight container */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <SpeciesSpotlightWidget onSpeciesLayerToggle={onSpeciesLayerToggle} />
+      </div>
+
+      {/* Hub Partner container */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <HubPartnerWidget
+          selectedCell={selectedCell}
+          onHubLayerToggle={onHubLayerToggle}
+        />
+      </div>
     </div>
   );
 }
