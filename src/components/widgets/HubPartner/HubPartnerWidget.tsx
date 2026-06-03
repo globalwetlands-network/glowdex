@@ -57,17 +57,41 @@ export function HubPartnerWidget({
 
   if (!selectedCell || !nearest) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 text-center gap-2">
-        <MapPin size={20} className="text-gray-300" />
-        <p className="text-sm text-gray-400">
-          Select a location to find your nearest hub partner
-        </p>
+      <div className="space-y-3">
+        <div
+          className="rounded-lg border border-teal-100
+          bg-teal-50/50 p-3 flex items-center gap-3"
+        >
+          <div
+            className="w-2 h-2 rounded-full bg-[#0f6e56]
+            shrink-0"
+          />
+          <p className="text-xs text-gray-600">
+            Hub partner locations are visible on the map.
+          </p>
+        </div>
+        <div
+          className="flex flex-col items-center justify-center
+          py-4 text-center gap-1.5"
+        >
+          <MapPin size={18} className="text-gray-300" />
+          <p className="text-sm text-gray-400">
+            Select a cell to find your nearest partner
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      <div className="flex items-center gap-1.5 text-xs text-gray-400">
+        <MapPin size={10} className="shrink-0" />
+        <span>
+          Cell {selectedCell.id}
+          {selectedCell.country ? ` · ${selectedCell.country}` : ''}
+        </span>
+      </div>
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
         HUB PARTNER
       </p>
