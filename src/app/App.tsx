@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
@@ -8,6 +8,9 @@ import { useSelection } from '@/context/SelectionContext';
 
 // Types
 import type { ObservationPoint } from '@/api/species';
+
+// Data
+import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
 
 // Feature Hooks & Components
 import {
@@ -64,6 +67,14 @@ function AppShell() {
     },
     [],
   );
+
+  const activeSpeciesName = useMemo(() => {
+    if (!activeSpeciesId) return '';
+    return (
+      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === activeSpeciesId)
+        ?.commonName ?? ''
+    );
+  }, [activeSpeciesId]);
 
   // Hub layer state
   const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
@@ -144,6 +155,7 @@ function AppShell() {
       onCellSelect={handleCellSelect}
       activeObservations={activeObservations}
       activeSpeciesId={activeSpeciesId}
+      activeSpeciesName={activeSpeciesName}
       speciesLayerEnabled={speciesLayerEnabled}
       hubLayerEnabled={hubLayerEnabled}
     />
