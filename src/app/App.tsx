@@ -65,6 +65,13 @@ function AppShell() {
     [],
   );
 
+  // Hub layer state
+  const [hubLayerEnabled, setHubLayerEnabled] = useState(false);
+
+  const handleHubLayerToggle = useCallback((enabled: boolean) => {
+    setHubLayerEnabled(enabled);
+  }, []);
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
@@ -132,11 +139,13 @@ function AppShell() {
       geojson={geojson!}
       typologies={typologies!}
       selectedCellId={selectedCellId}
+      selectedCell={selectedCell}
       typologyScale={filterState.typologyScale}
       onCellSelect={handleCellSelect}
       activeObservations={activeObservations}
       activeSpeciesId={activeSpeciesId}
       speciesLayerEnabled={speciesLayerEnabled}
+      hubLayerEnabled={hubLayerEnabled}
     />
   );
 
@@ -153,6 +162,7 @@ function AppShell() {
       isLoading={isLoading}
       visibleCellCount={filteredGridCells.length}
       onSpeciesLayerToggle={handleSpeciesLayerToggle}
+      onHubLayerToggle={handleHubLayerToggle}
       activeTab={panelActiveTab}
       onTabChange={handlePanelTabChange}
     />

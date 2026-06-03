@@ -6,7 +6,7 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 
 interface HubPartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
-  onHubLayerToggle: (hubId: string, enabled: boolean) => void;
+  onHubLayerToggle: (enabled: boolean) => void;
 }
 
 export function HubPartnerWidget({
@@ -34,7 +34,7 @@ export function HubPartnerWidget({
     if (!nearest) return;
     const next = !hubLayerEnabled;
     setEnabledForCellId(next ? (selectedCell?.id ?? null) : null);
-    onHubLayerToggle(nearest.hub.id, next);
+    onHubLayerToggle(next);
   };
 
   if (isLoading) {

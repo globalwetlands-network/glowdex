@@ -29,6 +29,7 @@ interface SidePanelProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
+  onHubLayerToggle: (enabled: boolean) => void;
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
 }
@@ -48,6 +49,7 @@ export function SidePanel({
   isLoading,
   visibleCellCount,
   onSpeciesLayerToggle,
+  onHubLayerToggle,
   activeTab,
   onTabChange,
 }: SidePanelProps) {
@@ -177,7 +179,11 @@ export function SidePanel({
 
       {activeTab === 'biodiversity' && (
         <div className="flex-1 overflow-y-auto">
-          <BiodiversityPanel onSpeciesLayerToggle={onSpeciesLayerToggle} />
+          <BiodiversityPanel
+            selectedCell={selectedCell}
+            onSpeciesLayerToggle={onSpeciesLayerToggle}
+            onHubLayerToggle={onHubLayerToggle}
+          />
         </div>
       )}
 

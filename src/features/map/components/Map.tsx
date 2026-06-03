@@ -8,10 +8,12 @@ import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { ObservationPoint } from '@/api/species';
+import type { EnrichedGridCell } from '@/app/types/app.types';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
+import { HubLayer } from '@/components/widgets/HubPartner';
 import MapTooltip from './MapTooltip';
 
 interface MapProps {
@@ -20,11 +22,13 @@ interface MapProps {
   geojson: GridGeoJSON;
   typologies: TypologyMap;
   selectedCellId: number | null;
+  selectedCell: EnrichedGridCell | null;
   onCellSelect: (id: number | null) => void;
   typologyScale?: 'scale5' | 'scale18';
   activeObservations: ObservationPoint[];
   activeSpeciesId: string;
   speciesLayerEnabled: boolean;
+  hubLayerEnabled: boolean;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -92,11 +96,13 @@ export function GridMap({
   geojson,
   typologies,
   selectedCellId,
+  selectedCell,
   typologyScale = 'scale5',
   onCellSelect,
   activeObservations,
   activeSpeciesId,
   speciesLayerEnabled,
+  hubLayerEnabled,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapInstance, setMapInstance] = useState<
@@ -188,6 +194,8 @@ export function GridMap({
             enabled={speciesLayerEnabled}
           />
         )}
+
+        <HubLayer enabled={hubLayerEnabled} selectedCell={selectedCell} />
 
         {hoverInfo && hoveredCell && (
           <MapTooltip
