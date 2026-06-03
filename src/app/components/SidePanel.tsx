@@ -81,25 +81,25 @@ export function SidePanel({
         </button>
       </div>
 
+      {/* Empty state — no location selected */}
+      {!selectedCell && (
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+          <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
+            <MapPin className="w-6 h-6 text-teal-600" />
+          </div>
+          <p className="text-sm font-medium text-gray-700 mb-1">
+            Search for a location on the map to get started
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Use the search box in the top left of the map, or click any cell to
+            explore the data
+          </p>
+        </div>
+      )}
+
       {/* Tab Content */}
       {activeTab === 'analysis' && (
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Empty state — no location selected */}
-          {!selectedCell && (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
-                <MapPin className="w-6 h-6 text-teal-600" />
-              </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">
-                Search for a location on the map to get started
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Use the search box in the top left of the map, or click any cell
-                to explore the data
-              </p>
-            </div>
-          )}
-
           {/* Content — only shown when a cell is selected */}
           {selectedCell && (
             <>
