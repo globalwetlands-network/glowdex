@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
-import MapGL, { NavigationControl } from 'react-map-gl';
+import MapGL, { NavigationControl, Marker } from 'react-map-gl';
 import type { MapRef } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -29,6 +29,12 @@ interface MapProps {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
+/**
+ * Default camera position on app load.
+ * Centered roughly over the African/European coastline at zoom 2
+ * to provide a global view that shows mangrove coverage across
+ * all major regions without biasing toward any single area.
+ */
 const INITIAL_VIEW_STATE = {
   longitude: 20,
   latitude: 10,
@@ -36,8 +42,21 @@ const INITIAL_VIEW_STATE = {
 };
 
 /**
- * Filters and enriches GeoJSON features with cluster information
- * Only includes features that exist in the filtered grid cells
+ * Filters and enriches GeoJSON features with typology cluster data.
+ *
+ * Two separate cell collections are needed:
+ * - `allGridCells` provides the cluster assignment for every cell,
+ *   including those currently filtered out of the view.
+ * - `filteredGridCells` determines which cells are visible given
+ *   the current filter state (habitat, typology scale, etc.).
+ *
+ * A Map<id, cell> lookup is used for O(1) access when joining the
+ * GeoJSON features to their cluster data, avoiding an O(n²) nested
+ * loop over what can be thousands of features.
+ *
+ * Features with no matching cell in allGridCells are excluded from
+ * the output entirely — this handles cells that exist in the GeoJSON
+ * but were not returned by the data loader.
  */
 function enrichGeoJsonFeatures(
   geojson: GridGeoJSON,
@@ -83,8 +102,34 @@ function enrichGeoJsonFeatures(
 }
 
 /**
- * Main map component displaying global wetlands grid cells
- * Supports hover interactions, cell selection, and typology visualization
+ * Main map component for the GLOWdex platform.
+ *
+ * Renders a Mapbox GL JS map with:
+ * - A global grid of 100×100km coastal wetland cells, coloured by
+ *   typology cluster, with hover and selection interactions.
+ * - An optional species observation layer (GBIF point data) toggled
+ *   from the Species Spotlight widget.
+ * - An optional hub partner layer showing GLOWdex partner institution
+ *   locations, toggled from the Hub Partner widget.
+ * - A location search overlay (Mapbox Search JS) with zoom-capped
+ *   fly-to behaviour and a temporary search result marker.
+ *
+ * ─── Search behaviour ───────────────────────────────────────────
+ * The SearchBox intentionally does NOT receive the `map` prop, even
+ * though the Mapbox docs suggest it for map binding. Passing `map`
+ * causes SearchBox to auto-fly to the result at its own zoom level
+ * (typically zoom 12–15), which is too tight for 100×100km grid
+ * cells. Camera control is handled entirely in onRetrieve instead.
+ *
+ * Suggestion ranking is kept context-aware by passing the current
+ * map center as a `proximity` option, updated on every map move.
+ *
+ * ─── Layer rendering order ──────────────────────────────────────
+ * 1. GridLayer — base typology grid (always rendered)
+ * 2. SpeciesDistributionLayer — GBIF observations (conditional)
+ * 3. HubLayer — partner hub markers (conditional)
+ * 4. Search marker — temporary Marker component (conditional)
+ * 5. MapTooltip — hover tooltip (conditional)
  */
 export function GridMap({
   allGridCells,
@@ -99,9 +144,26 @@ export function GridMap({
   speciesLayerEnabled,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
-  const [mapInstance, setMapInstance] = useState<
-    ReturnType<MapRef['getMap']> | undefined
-  >(undefined);
+  // Temporary marker shown at the search result location.
+  // Set when a search result is retrieved, cleared when the search
+  // is cleared or when the user selects a grid cell.
+  const [searchMarker, setSearchMarker] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
+  // Tracks the current map center for SearchBox proximity biasing.
+  // Passed as options.proximity to SearchBox so that suggestion ranking
+  // is weighted toward the visible viewport. Updated on move end rather
+  // than on every move frame — proximity biasing does not need per-frame
+  // precision and updating on move end avoids continuous re-renders
+  // during pan and zoom interactions.
+  const [mapCenter, setMapCenter] = useState<{
+    lng: number;
+    lat: number;
+  }>({
+    lng: INITIAL_VIEW_STATE.longitude,
+    lat: INITIAL_VIEW_STATE.latitude,
+  });
 
   const filteredGeoJson = useMemo(
     () =>
@@ -114,20 +176,71 @@ export function GridMap({
     [geojson, allGridCells, filteredGridCells, typologyScale],
   );
 
+  const handleCellSelect = useCallback(
+    (id: number | null) => {
+      if (id !== null) {
+        setSearchMarker(null);
+      }
+      onCellSelect(id);
+    },
+    [onCellSelect],
+  );
+
   const { hoveredCellId, hoverInfo, onHover, onClick } = useMapInteraction({
-    onCellSelect,
+    onCellSelect: handleCellSelect,
   });
 
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
 
+  /**
+   * Handles a confirmed search result from SearchBox.
+   *
+   * Extracts coordinates from the GeoJSON feature in the retrieve
+   * response. The response shape is cast from `unknown` because
+   * @mapbox/search-js-react types the onRetrieve callback as
+   * SearchBoxRetrieveResponse — importing that type directly causes
+   * issues with the bundler in some configurations, so we cast and
+   * extract manually.
+   *
+   * Flies to the result at zoom 5 — chosen to show approximately
+   * 3–5 grid cells (each 100×100km) around the searched location,
+   * giving enough regional context without zooming to street level.
+   */
+  const handleSearchRetrieve = useCallback((result: unknown) => {
+    const feature = (
+      result as {
+        features?: Array<{
+          geometry?: { coordinates?: [number, number] };
+        }>;
+      }
+    )?.features?.[0];
+
+    const coords = feature?.geometry?.coordinates;
+    if (!coords) return;
+
+    mapRef.current?.flyTo({
+      center: [coords[0], coords[1]],
+      zoom: 5,
+      duration: 1000,
+    });
+
+    setSearchMarker({ lng: coords[0], lat: coords[1] });
+  }, []);
+
+  /**
+   * Resets the map to the initial global view when the search is cleared.
+   * Also clears the cell selection and search marker so the app returns
+   * to a clean default state.
+   */
   const handleSearchClear = useCallback(() => {
     mapRef.current?.flyTo({
       center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
       zoom: INITIAL_VIEW_STATE.zoom,
       duration: 1000,
     });
+    setSearchMarker(null);
     onCellSelect(null);
   }, [onCellSelect]);
 
@@ -146,9 +259,15 @@ export function GridMap({
       <div className="absolute top-3 left-3 z-10 w-[calc(100%-1.5rem)] sm:w-72">
         <SearchBox
           accessToken={MAPBOX_TOKEN}
-          map={mapInstance}
           placeholder="Search a location..."
+          onRetrieve={handleSearchRetrieve}
           onClear={handleSearchClear}
+          options={{
+            proximity: {
+              lng: mapCenter.lng,
+              lat: mapCenter.lat,
+            },
+          }}
           theme={{
             variables: {
               colorBackground: '#ffffff',
@@ -169,7 +288,12 @@ export function GridMap({
         interactiveLayerIds={['grid-fill', 'grid-highlight']}
         onMouseMove={onHover}
         onClick={onClick}
-        onLoad={() => setMapInstance(mapRef.current?.getMap())}
+        onMoveEnd={(evt) =>
+          setMapCenter({
+            lng: evt.viewState.longitude,
+            lat: evt.viewState.latitude,
+          })
+        }
       >
         <NavigationControl position="top-right" />
 
@@ -187,6 +311,16 @@ export function GridMap({
             speciesId={activeSpeciesId}
             enabled={speciesLayerEnabled}
           />
+        )}
+
+        {searchMarker && (
+          <Marker
+            longitude={searchMarker.lng}
+            latitude={searchMarker.lat}
+            anchor="bottom"
+          >
+            <div className="w-4 h-4 rounded-full bg-white border-2 border-[#0a5c47] shadow-md" />
+          </Marker>
         )}
 
         {hoverInfo && hoveredCell && (
