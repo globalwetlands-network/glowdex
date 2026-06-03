@@ -170,6 +170,13 @@ export function GridMap({
     lng: INITIAL_VIEW_STATE.longitude,
     lat: INITIAL_VIEW_STATE.latitude,
   });
+  const [hubHoverInfo, setHubHoverInfo] = useState<{
+    x: number;
+    y: number;
+    institution: string;
+    city: string;
+    country: string;
+  } | null>(null);
 
   const filteredGeoJson = useMemo(
     () =>
@@ -291,8 +298,26 @@ export function GridMap({
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
         mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={['grid-fill', 'grid-highlight']}
-        onMouseMove={onHover}
+        interactiveLayerIds={['grid-fill', 'grid-highlight', 'hub-locations']}
+        onMouseMove={(evt) => {
+          onHover(evt);
+
+          const hubFeature = evt.features?.find(
+            (f) => f.layer.id === 'hub-locations',
+          );
+
+          if (hubFeature) {
+            setHubHoverInfo({
+              x: evt.point.x,
+              y: evt.point.y,
+              institution: hubFeature.properties?.institution ?? '',
+              city: hubFeature.properties?.city ?? '',
+              country: hubFeature.properties?.country ?? '',
+            });
+          } else {
+            setHubHoverInfo(null);
+          }
+        }}
         onClick={onClick}
         onMoveEnd={(evt) =>
           setMapCenter({
@@ -330,6 +355,23 @@ export function GridMap({
         )}
 
         <HubLayer enabled={hubLayerEnabled} selectedCell={selectedCell} />
+
+        {hubHoverInfo && (
+          <div
+            className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
+            style={{ left: hubHoverInfo.x, top: hubHoverInfo.y }}
+          >
+            <div className="font-bold text-gray-900">
+              {hubHoverInfo.institution}
+            </div>
+            <div className="text-gray-600">
+              {hubHoverInfo.city}, {hubHoverInfo.country}
+            </div>
+            <div className="text-xs text-[#0f6e56] mt-1">
+              GLOWdex Hub Partner
+            </div>
+          </div>
+        )}
 
         {hoverInfo && hoveredCell && (
           <MapTooltip

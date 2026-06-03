@@ -37,6 +37,8 @@ export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
         properties: {
           id: hub.id,
           institution: hub.institution,
+          city: hub.city,
+          country: hub.country,
           isNearest: hub.id === nearestHubId,
         },
         geometry: {
@@ -57,10 +59,21 @@ export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
         id="hub-locations"
         type="circle"
         paint={{
-          'circle-radius': ['case', ['get', 'isNearest'], 9, 6],
-          'circle-color': ['case', ['get', 'isNearest'], '#0f6e56', '#0a5c47'],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
+          'circle-radius': ['case', ['==', ['get', 'isNearest'], true], 8, 5],
+          'circle-color': '#ffffff',
+          'circle-stroke-width': [
+            'case',
+            ['==', ['get', 'isNearest'], true],
+            3,
+            2,
+          ],
+          'circle-stroke-color': [
+            'case',
+            ['==', ['get', 'isNearest'], true],
+            '#0a5c47',
+            '#1d9e75',
+          ],
+          'circle-opacity': 1,
         }}
       />
     </Source>

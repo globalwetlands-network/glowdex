@@ -66,7 +66,7 @@ function AppShell() {
   );
 
   // Hub layer state
-  const [hubLayerEnabled, setHubLayerEnabled] = useState(false);
+  const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
 
   const handleHubLayerToggle = useCallback((enabled: boolean) => {
     setHubLayerEnabled(enabled);
