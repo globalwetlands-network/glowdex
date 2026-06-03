@@ -115,11 +115,6 @@ export function HubPartnerWidget({
 
         <div className="border-t border-gray-100" />
 
-        <p className="text-xs text-gray-600">
-          {nearest.hub.lead}
-          <span className="text-gray-400"> · {nearest.hub.role}</span>
-        </p>
-
         <a
           href={nearest.hub.websiteUrl}
           target="_blank"
