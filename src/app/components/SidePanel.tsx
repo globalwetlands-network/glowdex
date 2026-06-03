@@ -99,80 +99,85 @@ export function SidePanel({
 
       {/* Tab Content */}
       {activeTab === 'analysis' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Content — only shown when a cell is selected */}
           {selectedCell && (
-            <>
-              <div>
-                <CollapsibleSection
-                  title="Location"
-                  icon={MapPin}
-                  defaultOpen={true}
-                >
-                  <button
-                    onClick={onClearSelection}
-                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
+            <div className="space-y-4">
+              {/* Location card */}
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Location"
+                    icon={MapPin}
+                    defaultOpen={true}
                   >
-                    Clear selection
-                  </button>
-                  <SelectionPanel
-                    selectedCell={selectedCell}
-                    typologies={typologies}
-                    currentScale={filterState.typologyScale}
-                  />
-                </CollapsibleSection>
+                    <button
+                      onClick={onClearSelection}
+                      className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
+                    >
+                      Clear selection
+                    </button>
+                    <SelectionPanel
+                      selectedCell={selectedCell}
+                      typologies={typologies}
+                      currentScale={filterState.typologyScale}
+                    />
+                  </CollapsibleSection>
+                </div>
               </div>
 
-              <div className="border-t border-gray-100 my-4" />
-
-              {/* Section: Contextual Chat */}
-              <div>
-                <CollapsibleSection
-                  title="Assistant"
-                  icon={Bot}
-                  defaultOpen={true}
-                >
-                  <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
-                </CollapsibleSection>
+              {/* Assistant card */}
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Assistant"
+                    icon={Bot}
+                    defaultOpen={true}
+                  >
+                    <AnalysisAssistantWidget
+                      selectedCellId={selectedCell?.id}
+                    />
+                  </CollapsibleSection>
+                </div>
               </div>
 
-              <div className="border-t border-gray-100 my-4" />
-
-              {/* Section: Statistical Analysis */}
-              <div>
-                <CollapsibleSection
-                  title="Indicators"
-                  icon={BarChart2}
-                  defaultOpen={true}
-                >
-                  <StatisticalAnalysisWidget
-                    selectedCell={selectedCell}
-                    filterState={filterState}
-                    onFilterChange={onFilterChange}
-                    distributions={distributions}
-                    statisticalSummaries={statisticalSummaries}
-                    isLoading={isLoading}
-                  />
-                </CollapsibleSection>
+              {/* Indicators card */}
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Indicators"
+                    icon={BarChart2}
+                    defaultOpen={true}
+                  >
+                    <StatisticalAnalysisWidget
+                      selectedCell={selectedCell}
+                      filterState={filterState}
+                      onFilterChange={onFilterChange}
+                      distributions={distributions}
+                      statisticalSummaries={statisticalSummaries}
+                      isLoading={isLoading}
+                    />
+                  </CollapsibleSection>
+                </div>
               </div>
-
-              <div className="border-t border-gray-100 my-4" />
-            </>
+            </div>
           )}
 
           {/* Section: Filters */}
-          <div>
-            <CollapsibleSection
-              title="Filters"
-              icon={Filter}
-              defaultOpen={false}
-              childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-            >
-              <FilterControls
-                filterState={filterState}
-                onFilterChange={onFilterChange}
-              />
-            </CollapsibleSection>
+          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Filters"
+                icon={Filter}
+                defaultOpen={false}
+                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+              >
+                <FilterControls
+                  filterState={filterState}
+                  onFilterChange={onFilterChange}
+                />
+              </CollapsibleSection>
+            </div>
           </div>
         </div>
       )}
