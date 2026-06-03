@@ -152,10 +152,11 @@ export function GridMap({
     lat: number;
   } | null>(null);
   // Tracks the current map center for SearchBox proximity biasing.
-  // Passed as options.proximity to SearchBox so that suggestion
-  // ranking is weighted toward the visible viewport. Updated on
-  // every map move — does not trigger a map re-render since
-  // SearchBox lives outside the MapGL tree.
+  // Passed as options.proximity to SearchBox so that suggestion ranking
+  // is weighted toward the visible viewport. Updated on move end rather
+  // than on every move frame — proximity biasing does not need per-frame
+  // precision and updating on move end avoids continuous re-renders
+  // during pan and zoom interactions.
   const [mapCenter, setMapCenter] = useState<{
     lng: number;
     lat: number;
@@ -287,7 +288,7 @@ export function GridMap({
         interactiveLayerIds={['grid-fill', 'grid-highlight']}
         onMouseMove={onHover}
         onClick={onClick}
-        onMove={(evt) =>
+        onMoveEnd={(evt) =>
           setMapCenter({
             lng: evt.viewState.longitude,
             lat: evt.viewState.latitude,
