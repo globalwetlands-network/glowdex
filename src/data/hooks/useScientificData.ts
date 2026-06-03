@@ -87,11 +87,12 @@ export function useScientificData(): ScientificData {
     /** Loads all scientific data asynchronously */
     async function load() {
       try {
-        console.time('DataLoad');
+        const timerLabel = `DataLoad-${Date.now()}`;
+        console.time(timerLabel);
 
         const loadedData = await loadAllData();
 
-        console.timeEnd('DataLoad');
+        console.timeEnd(timerLabel);
         console.log(`Loaded ${loadedData.gridCells.length} grid cells`);
 
         setData({

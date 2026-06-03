@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl';
-import type { MapRef } from 'react-map-gl';
+import type { MapRef, MapMouseEvent } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -8,10 +8,12 @@ import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { ObservationPoint } from '@/api/species';
+import type { EnrichedGridCell } from '@/app/types/app.types';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
+import { HubLayer } from '@/components/widgets/HubPartner';
 import MapTooltip from './MapTooltip';
 
 interface MapProps {
@@ -20,11 +22,14 @@ interface MapProps {
   geojson: GridGeoJSON;
   typologies: TypologyMap;
   selectedCellId: number | null;
+  selectedCell: EnrichedGridCell | null;
   onCellSelect: (id: number | null) => void;
   typologyScale?: 'scale5' | 'scale18';
   activeObservations: ObservationPoint[];
   activeSpeciesId: string;
+  activeSpeciesName: string;
   speciesLayerEnabled: boolean;
+  hubLayerEnabled: boolean;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -137,11 +142,14 @@ export function GridMap({
   geojson,
   typologies,
   selectedCellId,
+  selectedCell,
   typologyScale = 'scale5',
   onCellSelect,
   activeObservations,
   activeSpeciesId,
+  activeSpeciesName,
   speciesLayerEnabled,
+  hubLayerEnabled,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -164,6 +172,20 @@ export function GridMap({
     lng: INITIAL_VIEW_STATE.longitude,
     lat: INITIAL_VIEW_STATE.latitude,
   });
+  const [hubHoverInfo, setHubHoverInfo] = useState<{
+    x: number;
+    y: number;
+    institution: string;
+    city: string;
+    country: string;
+  } | null>(null);
+  const [speciesHoverInfo, setSpeciesHoverInfo] = useState<{
+    x: number;
+    y: number;
+    speciesName: string;
+    date: string;
+    datasetName: string;
+  } | null>(null);
 
   const filteredGeoJson = useMemo(
     () =>
@@ -285,8 +307,55 @@ export function GridMap({
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
         mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={['grid-fill', 'grid-highlight']}
-        onMouseMove={onHover}
+        interactiveLayerIds={[
+          'grid-fill',
+          'grid-highlight',
+          'hub-locations',
+          ...(speciesLayerEnabled && activeSpeciesId
+            ? [`species-${activeSpeciesId}-pins`]
+            : []),
+        ]}
+        onMouseMove={(evt) => {
+          onHover({
+            ...evt,
+            features: evt.features?.filter(
+              (f) =>
+                f.layer?.id === 'grid-fill' || f.layer?.id === 'grid-highlight',
+            ),
+          } as MapMouseEvent);
+
+          const speciesFeature = evt.features?.find(
+            (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,
+          );
+
+          const hubFeature = evt.features?.find(
+            (f) => f.layer?.id === 'hub-locations',
+          );
+
+          // Hub tooltip takes priority over species when overlapping
+          if (hubFeature) {
+            setHubHoverInfo({
+              x: evt.point.x,
+              y: evt.point.y,
+              institution: hubFeature.properties?.institution ?? '',
+              city: hubFeature.properties?.city ?? '',
+              country: hubFeature.properties?.country ?? '',
+            });
+            setSpeciesHoverInfo(null);
+          } else if (speciesFeature) {
+            setSpeciesHoverInfo({
+              x: evt.point.x,
+              y: evt.point.y,
+              speciesName: activeSpeciesName,
+              date: speciesFeature.properties?.date ?? '',
+              datasetName: speciesFeature.properties?.datasetName ?? '',
+            });
+            setHubHoverInfo(null);
+          } else {
+            setHubHoverInfo(null);
+            setSpeciesHoverInfo(null);
+          }
+        }}
         onClick={onClick}
         onMoveEnd={(evt) =>
           setMapCenter({
@@ -321,6 +390,56 @@ export function GridMap({
           >
             <div className="w-4 h-4 rounded-full bg-white border-2 border-[#0a5c47] shadow-md" />
           </Marker>
+        )}
+
+        <HubLayer enabled={hubLayerEnabled} selectedCell={selectedCell} />
+
+        {hubHoverInfo && (
+          <div
+            className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
+            style={{ left: hubHoverInfo.x, top: hubHoverInfo.y }}
+          >
+            <div className="font-bold text-gray-900">
+              {hubHoverInfo.institution}
+            </div>
+            <div className="text-gray-600">
+              {hubHoverInfo.city}, {hubHoverInfo.country}
+            </div>
+            <div className="text-xs text-[#0f6e56] mt-1">
+              GLOWdex Hub Partner
+            </div>
+          </div>
+        )}
+
+        {speciesHoverInfo && (
+          <div
+            className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
+            style={{
+              left: speciesHoverInfo.x,
+              top: speciesHoverInfo.y,
+            }}
+          >
+            <div className="font-bold text-gray-900">
+              {speciesHoverInfo.speciesName}
+            </div>
+            {speciesHoverInfo.date && (
+              <div className="text-gray-600">
+                {new Date(speciesHoverInfo.date).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                })}
+              </div>
+            )}
+            {speciesHoverInfo.datasetName && (
+              <div
+                className="text-xs text-gray-400 mt-1 max-w-[200px] truncate"
+                title={speciesHoverInfo.datasetName}
+              >
+                {speciesHoverInfo.datasetName}
+              </div>
+            )}
+            <div className="text-xs text-[#0f6e56] mt-1">GBIF Observation</div>
+          </div>
         )}
 
         {hoverInfo && hoveredCell && (

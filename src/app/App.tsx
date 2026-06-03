@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
@@ -8,6 +8,9 @@ import { useSelection } from '@/context/SelectionContext';
 
 // Types
 import type { ObservationPoint } from '@/api/species';
+
+// Data
+import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
 
 // Feature Hooks & Components
 import {
@@ -64,6 +67,21 @@ function AppShell() {
     },
     [],
   );
+
+  const activeSpeciesName = useMemo(() => {
+    if (!activeSpeciesId) return '';
+    return (
+      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === activeSpeciesId)
+        ?.commonName ?? ''
+    );
+  }, [activeSpeciesId]);
+
+  // Hub layer state
+  const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
+
+  const handleHubLayerToggle = useCallback((enabled: boolean) => {
+    setHubLayerEnabled(enabled);
+  }, []);
 
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
@@ -123,39 +141,79 @@ function AppShell() {
   };
 
   // Render map area
-  const mapArea = isLoading ? (
-    <LoadingState />
-  ) : (
-    <Map
-      allGridCells={gridCells || []}
-      filteredGridCells={filteredGridCells}
-      geojson={geojson!}
-      typologies={typologies!}
-      selectedCellId={selectedCellId}
-      typologyScale={filterState.typologyScale}
-      onCellSelect={handleCellSelect}
-      activeObservations={activeObservations}
-      activeSpeciesId={activeSpeciesId}
-      speciesLayerEnabled={speciesLayerEnabled}
-    />
+  const mapArea = useMemo(
+    () =>
+      isLoading ? (
+        <LoadingState />
+      ) : (
+        <Map
+          allGridCells={gridCells || []}
+          filteredGridCells={filteredGridCells}
+          geojson={geojson!}
+          typologies={typologies!}
+          selectedCellId={selectedCellId}
+          selectedCell={selectedCell}
+          typologyScale={filterState.typologyScale}
+          onCellSelect={handleCellSelect}
+          activeObservations={activeObservations}
+          activeSpeciesId={activeSpeciesId}
+          activeSpeciesName={activeSpeciesName}
+          speciesLayerEnabled={speciesLayerEnabled}
+          hubLayerEnabled={hubLayerEnabled}
+        />
+      ),
+    [
+      isLoading,
+      gridCells,
+      filteredGridCells,
+      geojson,
+      typologies,
+      selectedCellId,
+      selectedCell,
+      filterState.typologyScale,
+      handleCellSelect,
+      activeObservations,
+      activeSpeciesId,
+      activeSpeciesName,
+      speciesLayerEnabled,
+      hubLayerEnabled,
+    ],
   );
 
   // Render side panel
-  const sidePanel = (
-    <SidePanel
-      filterState={filterState}
-      onFilterChange={setFilterState}
-      selectedCell={selectedCell}
-      onClearSelection={handleClearSelection}
-      typologies={typologies || { scale5: {}, scale18: {} }}
-      distributions={distributions}
-      statisticalSummaries={cellStats?.statistics?.summaries}
-      isLoading={isLoading}
-      visibleCellCount={filteredGridCells.length}
-      onSpeciesLayerToggle={handleSpeciesLayerToggle}
-      activeTab={panelActiveTab}
-      onTabChange={handlePanelTabChange}
-    />
+  const sidePanel = useMemo(
+    () => (
+      <SidePanel
+        filterState={filterState}
+        onFilterChange={setFilterState}
+        selectedCell={selectedCell}
+        onClearSelection={handleClearSelection}
+        typologies={typologies || { scale5: {}, scale18: {} }}
+        distributions={distributions}
+        statisticalSummaries={cellStats?.statistics?.summaries}
+        isLoading={isLoading}
+        visibleCellCount={filteredGridCells.length}
+        onSpeciesLayerToggle={handleSpeciesLayerToggle}
+        onHubLayerToggle={handleHubLayerToggle}
+        activeTab={panelActiveTab}
+        onTabChange={handlePanelTabChange}
+      />
+    ),
+    [
+      filterState,
+      setFilterState,
+      selectedCell,
+      handleClearSelection,
+      typologies,
+      distributions,
+      cellStats,
+      isLoading,
+      filteredGridCells.length,
+      handleSpeciesLayerToggle,
+      handleHubLayerToggle,
+      panelActiveTab,
+      handlePanelTabChange,
+    ],
   );
 
   if (error) {
