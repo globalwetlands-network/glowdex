@@ -442,7 +442,7 @@ export function GridMap({
           </div>
         )}
 
-        {hoverInfo && hoveredCell && (
+        {hoverInfo && hoveredCell && !hubHoverInfo && (
           <MapTooltip
             x={hoverInfo.x}
             y={hoverInfo.y}
