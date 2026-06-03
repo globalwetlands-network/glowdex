@@ -319,11 +319,11 @@ export function GridMap({
           onHover(evt);
 
           const speciesFeature = evt.features?.find(
-            (f) => f.layer.id === `species-${activeSpeciesId}-pins`,
+            (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,
           );
 
           const hubFeature = evt.features?.find(
-            (f) => f.layer.id === 'hub-locations',
+            (f) => f.layer?.id === 'hub-locations',
           );
 
           // Hub tooltip takes priority over species when overlapping
