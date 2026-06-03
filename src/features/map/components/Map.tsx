@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl';
-import type { MapRef } from 'react-map-gl';
+import type { MapRef, MapMouseEvent } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -316,7 +316,13 @@ export function GridMap({
             : []),
         ]}
         onMouseMove={(evt) => {
-          onHover(evt);
+          onHover({
+            ...evt,
+            features: evt.features?.filter(
+              (f) =>
+                f.layer?.id === 'grid-fill' || f.layer?.id === 'grid-highlight',
+            ),
+          } as MapMouseEvent);
 
           const speciesFeature = evt.features?.find(
             (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,

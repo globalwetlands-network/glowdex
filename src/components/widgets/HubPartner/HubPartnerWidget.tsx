@@ -14,15 +14,13 @@ export function HubPartnerWidget({
   onHubLayerToggle,
 }: HubPartnerWidgetProps) {
   const { data: hubsData, isLoading, isError } = useHubs();
-  // Controls hub layer visibility. 'global' means on with no
-  // specific cell context (default). A cell ID means on for
-  // that cell. null means explicitly toggled off.
-  const [enabledForCellId, setEnabledForCellId] = useState<
-    number | 'global' | null
-  >('global');
+  // Controls hub layer visibility. 'global' means on,
+  // null means explicitly toggled off by the user.
+  const [enabledForCellId, setEnabledForCellId] = useState<'global' | null>(
+    'global',
+  );
 
-  const hubLayerEnabled =
-    enabledForCellId === 'global' || enabledForCellId === selectedCell?.id;
+  const hubLayerEnabled = enabledForCellId === 'global';
 
   const nearest = useMemo(() => {
     if (!selectedCell?.centerCoords || !hubsData?.hubs.length) return null;
@@ -37,7 +35,7 @@ export function HubPartnerWidget({
   const handleToggle = () => {
     if (!nearest && enabledForCellId !== 'global') return;
     const next = !hubLayerEnabled;
-    setEnabledForCellId(next ? (selectedCell?.id ?? 'global') : null);
+    setEnabledForCellId(next ? 'global' : null);
     onHubLayerToggle(next);
   };
 
