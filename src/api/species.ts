@@ -40,15 +40,6 @@ export interface SpeciesObservationsResponse {
   region: string;
   learnMoreUrl: string;
   conservationStatus: string;
-  /**
-   * Geographic bounding boxes for this species' known range.
-   * Most-specific first, catchall last.
-   */
-  regionBounds: RegionBoundResponse[];
-  /**
-   * Hub partner IDs associated with this species.
-   */
-  hubIds: string[];
 }
 
 export async function fetchSpeciesObservations(

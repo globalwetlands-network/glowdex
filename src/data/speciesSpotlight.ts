@@ -109,13 +109,6 @@ export interface SpeciesSpotlightData {
   imageCreditUrl?: string;
   sourceUrl?: string;
   sourceLabel?: string;
-  /**
-   * Hub partner IDs associated with this species.
-   * Mirrors the hubIds field in the backend SPECIES_REGISTRY.
-   * Used by SpeciesSpotlightWidget to auto-select the relevant
-   * species based on the nearest hub to the selected cell.
-   */
-  hubIds?: string[];
 }
 
 const katalaData: SpeciesSpotlightData = {
@@ -137,7 +130,6 @@ const katalaData: SpeciesSpotlightData = {
     'https://www.inaturalist.org/taxa/116758-Cacatua-haematuropygia',
   sourceUrl: 'https://www.iucnredlist.org/species/22684795/117578604',
   sourceLabel: 'IUCN Red List',
-  hubIds: ['katala-foundation-ph'],
 };
 
 const fiddlerCrabData: SpeciesSpotlightData = {
@@ -158,7 +150,6 @@ const fiddlerCrabData: SpeciesSpotlightData = {
   imageCreditUrl: 'https://www.inaturalist.org/taxa/739157-Cranuca-inversa',
   sourceUrl: 'https://www.fiddlercrab.info/u_inversa.html',
   sourceLabel: 'Fiddler Crab Info',
-  hubIds: ['uwc-za', 'nelson-mandela-university-za'],
 };
 
 const estuaryStingrayData: SpeciesSpotlightData = {
@@ -179,7 +170,6 @@ const estuaryStingrayData: SpeciesSpotlightData = {
     'https://www.inaturalist.org/taxa/623842-Hemitrygon-fluviorum/browse_photos',
   sourceUrl: 'https://www.iucnredlist.org/species/161693/984951',
   sourceLabel: 'IUCN Red List',
-  hubIds: ['griffith-university-au', 'university-of-tasmania-au'],
 };
 
 export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [
