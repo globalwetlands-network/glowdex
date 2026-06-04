@@ -12,12 +12,14 @@ interface BiodiversityPanelProps {
     enabled: boolean,
   ) => void;
   onHubLayerToggle: (enabled: boolean) => void;
+  onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
 }
 
 export function BiodiversityPanel({
   selectedCell,
   onSpeciesLayerToggle,
   onHubLayerToggle,
+  onSpeciesSelect,
 }: BiodiversityPanelProps) {
   const { data: hubsData } = useHubs();
   // useHubs() is also called in HubPartnerWidget and HubLayer.
@@ -40,6 +42,7 @@ export function BiodiversityPanel({
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           selectedCell={selectedCell}
           hubs={hubsData?.hubs ?? []}
+          onSpeciesSelect={onSpeciesSelect}
         />
       </div>
     </div>

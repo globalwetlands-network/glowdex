@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Info } from 'lucide-react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import {
@@ -21,6 +21,30 @@ interface SpeciesSpotlightWidgetProps {
   ) => void;
   selectedCell: EnrichedGridCell | null;
   hubs: HubResponse[];
+  /**
+   * Called when the active species changes — either via
+   * auto-selection or manual tab click. Passes the center
+   * coordinates of the species' primary region so the map
+   * can fly to the relevant area.
+   * Optional — no fly behaviour if not provided.
+   */
+  onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
+}
+
+/**
+ * Calculates the geographic center of a species' primary
+ * regionBound (index 0 — most specific) for map fly-to.
+ * Returns null if no bounds are defined.
+ */
+function getSpeciesPrimaryCenter(
+  regionBounds: RegionBoundResponse[],
+): { lng: number; lat: number } | null {
+  if (!regionBounds.length) return null;
+  const primary = regionBounds[0];
+  return {
+    lat: (primary.lat[0] + primary.lat[1]) / 2,
+    lng: (primary.lng[0] + primary.lng[1]) / 2,
+  };
 }
 
 /**
@@ -45,14 +69,17 @@ export function SpeciesSpotlightWidget({
   onSpeciesLayerToggle,
   selectedCell,
   hubs,
+  onSpeciesSelect,
 }: SpeciesSpotlightWidgetProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [layerEnabled, setLayerEnabled] = useState(false);
-  // Tracks a manual tab selection scoped to a specific cell.
-  // null means no manual override — auto-selection applies.
-  // Automatically ignored when selectedCell changes to a
-  // different cell, with no effect or setState-in-render needed.
+  /**
+   * Tracks a manual tab selection scoped to a specific cell.
+   * null means no manual override — auto-selection applies.
+   * Automatically ignored when selectedCell changes to a
+   * different cell, with no effect or setState-in-render needed.
+   */
   const [manualSelection, setManualSelection] = useState<{
     cellId: number;
     index: number;
@@ -156,6 +183,35 @@ export function SpeciesSpotlightWidget({
   }
 
   const activeSpecies = effectiveIndex !== -1 ? species[effectiveIndex] : null;
+
+  /**
+   * Fires onSpeciesSelect when the active species changes.
+   * Handles both manual tab clicks and auto-selection.
+   * Only fires when effectiveIndex resolves to a real species
+   * (not -1) and speciesConfigData is loaded.
+   * useEffect is appropriate here — we are triggering an
+   * external side effect (map movement) in response to a
+   * React state change, which is exactly the intended use
+   * of effects.
+   */
+  useEffect(() => {
+    if (effectiveIndex === -1 || !onSpeciesSelect || !speciesConfigData) return;
+
+    const currentSpecies = species[effectiveIndex];
+    if (!currentSpecies) return;
+
+    const config = speciesConfigData.species.find(
+      (c) => c.id === currentSpecies.id,
+    );
+    if (!config) return;
+
+    const center = getSpeciesPrimaryCenter(config.regionBounds);
+    if (center) onSpeciesSelect(center);
+  }, [effectiveIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Intentionally watching only effectiveIndex — we want to
+  // fire when the species changes, not on every dependency
+  // update. onSpeciesSelect and speciesConfigData are stable
+  // references that don't change between renders.
 
   return (
     <div className="space-y-3">
