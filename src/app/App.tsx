@@ -76,6 +76,23 @@ function AppShell() {
     );
   }, [activeSpeciesId]);
 
+  const [speciesFlyTarget, setSpeciesFlyTarget] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
+
+  /**
+   * Receives the target coordinates from SpeciesSpotlightWidget
+   * when the active species changes. Passes them to Map via
+   * props so the map can fly to the species' primary region.
+   */
+  const handleSpeciesSelect = useCallback(
+    (center: { lng: number; lat: number }) => {
+      setSpeciesFlyTarget(center);
+    },
+    [],
+  );
+
   // Hub layer state
   const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
 
@@ -160,6 +177,8 @@ function AppShell() {
           activeSpeciesName={activeSpeciesName}
           speciesLayerEnabled={speciesLayerEnabled}
           hubLayerEnabled={hubLayerEnabled}
+          speciesFlyTarget={speciesFlyTarget}
+          onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
         />
       ),
     [
@@ -177,6 +196,7 @@ function AppShell() {
       activeSpeciesName,
       speciesLayerEnabled,
       hubLayerEnabled,
+      speciesFlyTarget,
     ],
   );
 
@@ -195,6 +215,7 @@ function AppShell() {
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onHubLayerToggle={handleHubLayerToggle}
+        onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
       />
@@ -211,6 +232,7 @@ function AppShell() {
       filteredGridCells.length,
       handleSpeciesLayerToggle,
       handleHubLayerToggle,
+      handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
     ],
