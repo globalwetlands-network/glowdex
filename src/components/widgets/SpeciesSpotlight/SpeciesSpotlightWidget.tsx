@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import {
@@ -31,25 +31,25 @@ export function SpeciesSpotlightWidget({
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [layerEnabled, setLayerEnabled] = useState(false);
-  const [userHasManuallySelected, setUserHasManuallySelected] = useState(false);
-
-  const prevCellIdRef = useRef<number | null>(null);
-
-  if (selectedCell?.id !== prevCellIdRef.current) {
-    prevCellIdRef.current = selectedCell?.id ?? null;
-    if (userHasManuallySelected) {
-      setUserHasManuallySelected(false);
-    }
-  }
+  // Tracks a manual tab selection scoped to a specific cell.
+  // null means no manual override — auto-selection applies.
+  // Automatically ignored when selectedCell changes to a
+  // different cell, with no effect or setState-in-render needed.
+  const [manualSelection, setManualSelection] = useState<{
+    cellId: number;
+    index: number;
+  } | null>(null);
 
   const handleTabChange = (idx: number) => {
-    if (idx !== activeIndex) {
+    if (idx !== effectiveIndex) {
       if (layerEnabled) {
         onSpeciesLayerToggle(activeSpecies.id, [], false);
       }
       setLayerEnabled(false);
       setActiveIndex(idx);
-      setUserHasManuallySelected(true);
+      setManualSelection(
+        selectedCell ? { cellId: selectedCell.id, index: idx } : null,
+      );
     }
   };
 
@@ -67,19 +67,33 @@ export function SpeciesSpotlightWidget({
       hubs,
     );
 
+    console.log('Find nearest hub', nearest);
     if (!nearest) return -1;
 
     return species.findIndex((s) => s.hubIds?.includes(nearest.hub.id));
   }, [selectedCell, hubs, species]);
 
   /**
-   * Effective active tab index.
-   * Uses autoIndex when a cell is selected, a hub match exists,
-   * and the user has not manually overridden the selection.
-   * Falls back to activeIndex otherwise.
+   * Effective active tab index — single source of truth for
+   * which species tab is displayed.
+   *
+   * Priority order:
+   * 1. Manual selection — if the user tapped a tab for the
+   *    current cell, respect that choice.
+   * 2. Auto-selection — nearest hub match surfaces the
+   *    relevant species automatically.
+   * 3. Fallback — default activeIndex (0 on load).
+   *
+   * Manual selection is scoped by cellId so switching to a
+   * new cell clears the override automatically — no effect
+   * or setState-in-render required.
    */
   const effectiveIndex =
-    !userHasManuallySelected && autoIndex !== -1 ? autoIndex : activeIndex;
+    manualSelection !== null && manualSelection.cellId === selectedCell?.id
+      ? manualSelection.index
+      : autoIndex !== -1
+        ? autoIndex
+        : activeIndex;
 
   const activeSpecies = species[effectiveIndex];
 
