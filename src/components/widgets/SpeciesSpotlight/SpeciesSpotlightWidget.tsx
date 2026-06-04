@@ -5,10 +5,11 @@ import {
   SPECIES_SPOTLIGHT_DATA,
   CONSERVATION_STATUS_INFO,
 } from '@/data/speciesSpotlight';
-import type { ObservationPoint } from '@/api/species';
+import type { ObservationPoint, RegionBoundResponse } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { HubResponse } from '@/api/hubs';
 import { findNearestHub } from '@/utils/geo';
+import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
 import { SpeciesTab } from './SpeciesTab';
 
 interface SpeciesSpotlightWidgetProps {
@@ -20,6 +21,23 @@ interface SpeciesSpotlightWidgetProps {
   ) => void;
   selectedCell: EnrichedGridCell | null;
   hubs: HubResponse[];
+}
+
+/**
+ * Returns true if the given lat/lng falls within the bound.
+ * Inclusive on all edges.
+ */
+function isInBound(
+  lat: number,
+  lng: number,
+  bound: RegionBoundResponse,
+): boolean {
+  return (
+    lat >= bound.lat[0] &&
+    lat <= bound.lat[1] &&
+    lng >= bound.lng[0] &&
+    lng <= bound.lng[1]
+  );
 }
 
 export function SpeciesSpotlightWidget({
@@ -40,9 +58,11 @@ export function SpeciesSpotlightWidget({
     index: number;
   } | null>(null);
 
+  const { data: speciesConfigData } = useSpeciesConfig();
+
   const handleTabChange = (idx: number) => {
     if (idx !== effectiveIndex) {
-      if (layerEnabled) {
+      if (layerEnabled && activeSpecies) {
         onSpeciesLayerToggle(activeSpecies.id, [], false);
       }
       setLayerEnabled(false);
@@ -54,50 +74,88 @@ export function SpeciesSpotlightWidget({
   };
 
   /**
-   * Derives the species index to auto-select based on the nearest
-   * hub to the selected cell. Returns -1 if no match is found.
-   * Only used when the user has not manually selected a tab.
+   * Derives the species index to auto-select using three-tier
+   * priority:
+   *
+   * Tier 1 — Hub match: nearest hub is in species' hubIds.
+   *   Partner-validated, most intentional signal.
+   *
+   * Tier 2 — Region bounds: cell falls within species' known
+   *   geographic range. Scientific fallback for areas not
+   *   covered by hub proximity alone.
+   *
+   * Tier 3 — No match: returns -1. effectiveIndex will show
+   *   the empty state.
+   *
+   * Returns -1 while speciesConfigData is loading to avoid
+   * a premature empty state flash before config has arrived.
    */
   const autoIndex = useMemo(() => {
-    if (!selectedCell?.centerCoords || !hubs.length) return -1;
+    if (!selectedCell?.centerCoords) return -1;
+    // Defer until config is loaded to avoid empty state flash
+    if (!speciesConfigData) return -1;
 
-    const nearest = findNearestHub(
-      selectedCell.centerCoords.latitude,
-      selectedCell.centerCoords.longitude,
-      hubs,
-    );
+    const { latitude: lat, longitude: lng } = selectedCell.centerCoords;
 
-    console.log('Find nearest hub', nearest);
-    if (!nearest) return -1;
+    // Tier 1: Hub match
+    if (hubs.length) {
+      const nearest = findNearestHub(lat, lng, hubs);
+      if (nearest) {
+        const hubMatchIdx = species.findIndex((s) => {
+          const config = speciesConfigData.species.find((c) => c.id === s.id);
+          return config?.hubIds.includes(nearest.hub.id) ?? false;
+        });
+        if (hubMatchIdx !== -1) return hubMatchIdx;
+      }
+    }
 
-    return species.findIndex((s) => s.hubIds?.includes(nearest.hub.id));
-  }, [selectedCell, hubs, species]);
+    // Tier 2: Region bounds fallback
+    const boundsMatchIdx = species.findIndex((s) => {
+      const config = speciesConfigData.species.find((c) => c.id === s.id);
+      return (
+        config?.regionBounds.some((bound) => isInBound(lat, lng, bound)) ??
+        false
+      );
+    });
+    if (boundsMatchIdx !== -1) return boundsMatchIdx;
+
+    // Tier 3: No match
+    return -1;
+  }, [selectedCell, hubs, species, speciesConfigData]);
 
   /**
    * Effective active tab index — single source of truth for
    * which species tab is displayed.
    *
    * Priority order:
-   * 1. Manual selection — if the user tapped a tab for the
-   *    current cell, respect that choice.
-   * 2. Auto-selection — nearest hub match surfaces the
-   *    relevant species automatically.
-   * 3. Fallback — default activeIndex (0 on load).
-   *
-   * Manual selection is scoped by cellId so switching to a
-   * new cell clears the override automatically — no effect
-   * or setState-in-render required.
+   * 1. Manual selection scoped to current cell — always
+   *    respected regardless of auto-selection.
+   * 2. Auto-selection via hub match or region bounds.
+   * 3. Default activeIndex when no cell is selected.
+   * 4. Default activeIndex while speciesConfigData is loading
+   *    — avoids premature empty state flash.
+   * 5. -1 when cell is selected, config is loaded, and no
+   *    species match exists — triggers empty state.
    */
-  const effectiveIndex =
-    manualSelection !== null && manualSelection.cellId === selectedCell?.id
-      ? manualSelection.index
-      : autoIndex !== -1
-        ? autoIndex
-        : activeIndex;
+  // Manual selection always wins for the current cell
+  let effectiveIndex: number;
+  if (manualSelection !== null && manualSelection.cellId === selectedCell?.id) {
+    effectiveIndex = manualSelection.index;
+  } else if (selectedCell && !speciesConfigData) {
+    // While config is loading, show default rather than flashing empty state
+    effectiveIndex = activeIndex;
+  } else if (autoIndex !== -1) {
+    // Auto-selection found a match
+    effectiveIndex = autoIndex;
+  } else if (!selectedCell) {
+    // No cell selected — show default
+    effectiveIndex = activeIndex;
+  } else {
+    // Cell selected, config loaded, no match — empty state
+    effectiveIndex = -1;
+  }
 
-  const activeSpecies = species[effectiveIndex];
-
-  if (!activeSpecies) return null;
+  const activeSpecies = effectiveIndex !== -1 ? species[effectiveIndex] : null;
 
   return (
     <div className="space-y-3">
@@ -153,17 +211,32 @@ export function SpeciesSpotlightWidget({
         })}
       </div>
 
-      {/* Active tab content */}
-      <SpeciesTab
-        species={activeSpecies}
-        layerEnabled={layerEnabled}
-        onLayerToggle={(speciesId, observations, enabled) => {
-          setLayerEnabled(enabled);
-          onSpeciesLayerToggle(speciesId, observations, enabled);
-        }}
-        infoOpen={infoOpen}
-        setInfoOpen={setInfoOpen}
-      />
+      {/* Empty state — cell selected but no species match */}
+      {selectedCell && effectiveIndex === -1 && (
+        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-2">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            No spotlight species documented for this region yet.
+          </p>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Explore our partner species, or contact the nearest hub partner for
+            local data.
+          </p>
+        </div>
+      )}
+
+      {/* Species tab content — only rendered when a match exists */}
+      {activeSpecies && (
+        <SpeciesTab
+          species={activeSpecies}
+          layerEnabled={layerEnabled}
+          onLayerToggle={(speciesId, observations, enabled) => {
+            setLayerEnabled(enabled);
+            onSpeciesLayerToggle(speciesId, observations, enabled);
+          }}
+          infoOpen={infoOpen}
+          setInfoOpen={setInfoOpen}
+        />
+      )}
     </div>
   );
 }
