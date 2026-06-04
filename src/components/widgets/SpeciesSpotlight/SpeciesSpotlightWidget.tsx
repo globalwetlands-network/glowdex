@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Info } from 'lucide-react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import {
@@ -6,6 +6,9 @@ import {
   CONSERVATION_STATUS_INFO,
 } from '@/data/speciesSpotlight';
 import type { ObservationPoint } from '@/api/species';
+import type { EnrichedGridCell } from '@/app/types/app.types';
+import type { HubResponse } from '@/api/hubs';
+import { findNearestHub } from '@/utils/geo';
 import { SpeciesTab } from './SpeciesTab';
 
 interface SpeciesSpotlightWidgetProps {
@@ -15,15 +18,29 @@ interface SpeciesSpotlightWidgetProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
+  selectedCell: EnrichedGridCell | null;
+  hubs: HubResponse[];
 }
 
 export function SpeciesSpotlightWidget({
   species = SPECIES_SPOTLIGHT_DATA,
   onSpeciesLayerToggle,
+  selectedCell,
+  hubs,
 }: SpeciesSpotlightWidgetProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [layerEnabled, setLayerEnabled] = useState(false);
+  const [userHasManuallySelected, setUserHasManuallySelected] = useState(false);
+
+  const prevCellIdRef = useRef<number | null>(null);
+
+  if (selectedCell?.id !== prevCellIdRef.current) {
+    prevCellIdRef.current = selectedCell?.id ?? null;
+    if (userHasManuallySelected) {
+      setUserHasManuallySelected(false);
+    }
+  }
 
   const handleTabChange = (idx: number) => {
     if (idx !== activeIndex) {
@@ -32,10 +49,39 @@ export function SpeciesSpotlightWidget({
       }
       setLayerEnabled(false);
       setActiveIndex(idx);
+      setUserHasManuallySelected(true);
     }
   };
 
-  const activeSpecies = species[activeIndex];
+  /**
+   * Derives the species index to auto-select based on the nearest
+   * hub to the selected cell. Returns -1 if no match is found.
+   * Only used when the user has not manually selected a tab.
+   */
+  const autoIndex = useMemo(() => {
+    if (!selectedCell?.centerCoords || !hubs.length) return -1;
+
+    const nearest = findNearestHub(
+      selectedCell.centerCoords.latitude,
+      selectedCell.centerCoords.longitude,
+      hubs,
+    );
+
+    if (!nearest) return -1;
+
+    return species.findIndex((s) => s.hubIds?.includes(nearest.hub.id));
+  }, [selectedCell, hubs, species]);
+
+  /**
+   * Effective active tab index.
+   * Uses autoIndex when a cell is selected, a hub match exists,
+   * and the user has not manually overridden the selection.
+   * Falls back to activeIndex otherwise.
+   */
+  const effectiveIndex =
+    !userHasManuallySelected && autoIndex !== -1 ? autoIndex : activeIndex;
+
+  const activeSpecies = species[effectiveIndex];
 
   if (!activeSpecies) return null;
 
@@ -63,7 +109,7 @@ export function SpeciesSpotlightWidget({
       {/* Tab selector */}
       <div className="flex gap-1.5 flex-wrap">
         {species.map((sp, idx) => {
-          const isActive = idx === activeIndex;
+          const isActive = idx === effectiveIndex;
           const statusColor =
             CONSERVATION_STATUS_INFO[sp.conservationStatus]?.badgeClasses ?? '';
 

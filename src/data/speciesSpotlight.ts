@@ -109,6 +109,8 @@ export interface SpeciesSpotlightData {
   imageCreditUrl?: string;
   sourceUrl?: string;
   sourceLabel?: string;
+  /** Hub partner IDs used to auto-select this species based on the nearest hub. */
+  hubIds?: string[];
 }
 
 const katalaData: SpeciesSpotlightData = {
