@@ -14,6 +14,20 @@ export interface RegionSummary {
   color: string;
 }
 
+/**
+ * A geographic bounding box returned by the species API.
+ * Mirrors RegionBoundResponse in the backend species.types.ts.
+ * Used as a geographic fallback for species auto-selection
+ * when no hub match is found for the selected cell.
+ */
+export interface RegionBoundResponse {
+  label: string;
+  /** [min, max] latitude in decimal degrees */
+  lat: [number, number];
+  /** [min, max] longitude in decimal degrees */
+  lng: [number, number];
+}
+
 export interface SpeciesObservationsResponse {
   speciesId: string;
   totalObservations: number;
@@ -26,6 +40,15 @@ export interface SpeciesObservationsResponse {
   region: string;
   learnMoreUrl: string;
   conservationStatus: string;
+  /**
+   * Geographic bounding boxes for this species' known range.
+   * Most-specific first, catchall last.
+   */
+  regionBounds: RegionBoundResponse[];
+  /**
+   * Hub partner IDs associated with this species.
+   */
+  hubIds: string[];
 }
 
 export async function fetchSpeciesObservations(
@@ -34,4 +57,31 @@ export async function fetchSpeciesObservations(
   return apiClient<SpeciesObservationsResponse>(
     `/species/${speciesId}/observations`,
   );
+}
+
+/**
+ * Lightweight static config for a single species.
+ * Mirrors SpeciesConfigResponse in the backend species.types.ts.
+ */
+export interface SpeciesConfigResponse {
+  id: string;
+  commonName: string;
+  hubIds: string[];
+  regionBounds: RegionBoundResponse[];
+}
+
+/**
+ * Response envelope for GET /api/species/config.
+ */
+export interface AllSpeciesConfigResponse {
+  species: SpeciesConfigResponse[];
+}
+
+/**
+ * Fetches lightweight static config for all species.
+ * No GBIF observation data — only hubIds and regionBounds
+ * needed for frontend auto-selection logic.
+ */
+export async function fetchAllSpeciesConfig(): Promise<AllSpeciesConfigResponse> {
+  return apiClient<AllSpeciesConfigResponse>('/species/config');
 }
