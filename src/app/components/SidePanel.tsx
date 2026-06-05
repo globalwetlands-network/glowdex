@@ -30,6 +30,7 @@ interface SidePanelProps {
     enabled: boolean,
   ) => void;
   onHubLayerToggle: (enabled: boolean) => void;
+  onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
 }
@@ -50,6 +51,7 @@ export function SidePanel({
   visibleCellCount,
   onSpeciesLayerToggle,
   onHubLayerToggle,
+  onSpeciesSelect,
   activeTab,
   onTabChange,
 }: SidePanelProps) {
@@ -188,6 +190,7 @@ export function SidePanel({
             selectedCell={selectedCell}
             onSpeciesLayerToggle={onSpeciesLayerToggle}
             onHubLayerToggle={onHubLayerToggle}
+            onSpeciesSelect={onSpeciesSelect}
           />
         </div>
       )}

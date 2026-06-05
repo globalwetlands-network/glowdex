@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback } from 'react';
+import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl';
 import type { MapRef, MapMouseEvent } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
@@ -30,9 +30,27 @@ interface MapProps {
   activeSpeciesName: string;
   speciesLayerEnabled: boolean;
   hubLayerEnabled: boolean;
+  /**
+   * Target coordinates for the map to fly to when the active
+   * species changes in the Biodiversity tab. Null when no
+   * fly is pending.
+   */
+  speciesFlyTarget: { lng: number; lat: number } | null;
+  /**
+   * Called immediately after flyTo is initiated to clear the
+   * target and prevent re-firing on unrelated re-renders.
+   */
+  onSpeciesFlyComplete: () => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+/**
+ * Zoom level for species region fly-to.
+ * Wider than search zoom (5) since species ranges cover
+ * large geographic areas.
+ */
+const SPECIES_FLY_ZOOM = 4;
 
 /**
  * Default camera position on app load.
@@ -150,6 +168,8 @@ export function GridMap({
   activeSpeciesName,
   speciesLayerEnabled,
   hubLayerEnabled,
+  speciesFlyTarget,
+  onSpeciesFlyComplete,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -215,6 +235,24 @@ export function GridMap({
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
+
+  /**
+   * Flies the map to the species' primary region center when
+   * a new species is selected in the Biodiversity tab.
+   * useEffect is the correct pattern here — we are
+   * synchronising React state (speciesFlyTarget) with an
+   * external system (the Mapbox map instance), which is
+   * exactly the use case React recommends effects for.
+   */
+  useEffect(() => {
+    if (!speciesFlyTarget) return;
+    mapRef.current?.flyTo({
+      center: [speciesFlyTarget.lng, speciesFlyTarget.lat],
+      zoom: SPECIES_FLY_ZOOM,
+      duration: 1200,
+    });
+    onSpeciesFlyComplete();
+  }, [speciesFlyTarget, onSpeciesFlyComplete]);
 
   /**
    * Handles a confirmed search result from SearchBox.
