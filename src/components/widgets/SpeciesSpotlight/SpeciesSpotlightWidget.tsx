@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { Info } from 'lucide-react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import {
@@ -73,7 +73,13 @@ export function SpeciesSpotlightWidget({
 }: SpeciesSpotlightWidgetProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [layerEnabled, setLayerEnabled] = useState(false);
+  // Tracks which species ID has its observation layer enabled.
+  // null means no layer is active. Scoped to a species ID rather
+  // than a boolean so it automatically becomes stale when the
+  // effective species changes — no manual reset needed.
+  const [layerEnabledForSpecies, setLayerEnabledForSpecies] = useState<
+    string | null
+  >(null);
   /**
    * Tracks a manual tab selection scoped to a specific cell.
    * null means no manual override — auto-selection applies.
@@ -92,7 +98,7 @@ export function SpeciesSpotlightWidget({
       if (layerEnabled && activeSpecies) {
         onSpeciesLayerToggle(activeSpecies.id, [], false);
       }
-      setLayerEnabled(false);
+      setLayerEnabledForSpecies(null);
       setActiveIndex(idx);
       setManualSelection(
         selectedCell ? { cellId: selectedCell.id, index: idx } : null,
@@ -184,6 +190,23 @@ export function SpeciesSpotlightWidget({
 
   const activeSpecies = effectiveIndex !== -1 ? species[effectiveIndex] : null;
 
+  // Layer is only considered active if it matches the currently
+  // displayed species. Resets automatically when effectiveIndex
+  // changes via auto-selection without needing handleTabChange.
+  const layerEnabled =
+    layerEnabledForSpecies !== null &&
+    layerEnabledForSpecies === activeSpecies?.id;
+
+  // Ref so the effect below can read the latest layerEnabledForSpecies
+  // without listing it as a dependency (which would re-fire the effect
+  // on every layer toggle, not just on species changes).
+  // Synced via useLayoutEffect (fires before useEffect) so the ref is
+  // always current when the main effect runs.
+  const layerEnabledForSpeciesRef = useRef(layerEnabledForSpecies);
+  useLayoutEffect(() => {
+    layerEnabledForSpeciesRef.current = layerEnabledForSpecies;
+  });
+
   /**
    * Fires onSpeciesSelect when the active species changes.
    * Handles both manual tab clicks and auto-selection.
@@ -197,21 +220,28 @@ export function SpeciesSpotlightWidget({
   useEffect(() => {
     if (effectiveIndex === -1 || !onSpeciesSelect || !speciesConfigData) return;
 
+    // Notify parent to deactivate the layer for the previous species.
+    // Uses a ref so this doesn't re-fire when the user toggles the layer —
+    // only when effectiveIndex changes (species auto-selected or manually switched).
+    if (layerEnabledForSpeciesRef.current) {
+      onSpeciesLayerToggle(layerEnabledForSpeciesRef.current, [], false);
+    }
+
     const currentSpecies = species[effectiveIndex];
     if (!currentSpecies) return;
-
     const config = speciesConfigData.species.find(
       (c) => c.id === currentSpecies.id,
     );
     if (!config) return;
-
     const center = getSpeciesPrimaryCenter(config.regionBounds);
     if (center) onSpeciesSelect(center);
-  }, [effectiveIndex]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Intentionally watching only effectiveIndex — we want to
-  // fire when the species changes, not on every dependency
-  // update. onSpeciesSelect and speciesConfigData are stable
-  // references that don't change between renders.
+  }, [
+    effectiveIndex,
+    onSpeciesSelect,
+    onSpeciesLayerToggle,
+    speciesConfigData,
+    species,
+  ]);
 
   return (
     <div className="space-y-3">
@@ -286,7 +316,7 @@ export function SpeciesSpotlightWidget({
           species={activeSpecies}
           layerEnabled={layerEnabled}
           onLayerToggle={(speciesId, observations, enabled) => {
-            setLayerEnabled(enabled);
+            setLayerEnabledForSpecies(enabled ? speciesId : null);
             onSpeciesLayerToggle(speciesId, observations, enabled);
           }}
           infoOpen={infoOpen}
