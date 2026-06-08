@@ -29,8 +29,8 @@ export function useAskMutation({
 
       // Trim conversation to stay within backend ArrayMaxSize limit.
       // Structure: [initialAiResponse, ...recentHistory, newQuestion]
-      // If MAX_HISTORY_MESSAGES changes in insight.constants.ts,
-      // update this value to match.
+      // If the backend ArrayMaxSize limit changes in glowdex-api,
+      // update MAX_HISTORY_MESSAGES here to match.
       const HISTORY_SLOTS = MAX_HISTORY_MESSAGES - 2; // reserve slots for initial + new question
 
       const [initialMessage, ...rest] = conversationMessages;

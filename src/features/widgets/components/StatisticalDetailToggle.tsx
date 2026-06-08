@@ -17,6 +17,11 @@ const RATE_PRESSURE_KEYS = new Set([
   'pressure_mangrove_marine_rate',
 ]);
 
+const INVERTED_ECOLOGICAL_KEYS = new Set([
+  'mang_spec_score',
+  'mang_frag_area_mn_rate',
+]);
+
 const SIGNAL_LABELS: Record<string, string> = {
   mang_fish_dens: 'Fish density',
   mang_invert_dens: 'Invertebrate density',
@@ -38,17 +43,18 @@ const SIGNAL_LABELS: Record<string, string> = {
  * Returns the correct ordinal suffix for a percentile number.
  */
 function ordinalSuffix(n: number): string {
-  const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
-  switch (n % 10) {
+  const rounded = Math.round(n);
+  const mod100 = rounded % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
+  switch (rounded % 10) {
     case 1:
-      return `${n}st`;
+      return `${rounded}st`;
     case 2:
-      return `${n}nd`;
+      return `${rounded}nd`;
     case 3:
-      return `${n}rd`;
+      return `${rounded}rd`;
     default:
-      return `${n}th`;
+      return `${rounded}th`;
   }
 }
 
@@ -65,15 +71,17 @@ function barColor(key: string, percentile: number): string {
   if (RATE_PRESSURE_KEYS.has(key)) {
     return 'bg-amber-500';
   }
+  // Inverted indicators — higher percentile = worse condition
+  if (INVERTED_ECOLOGICAL_KEYS.has(key)) {
+    if (percentile >= 75) return 'bg-red-500';
+    if (percentile >= 25) return 'bg-amber-500';
+    return 'bg-glowdex-green';
+  }
+  // Standard ecological indicators — higher percentile = better
   if (percentile >= 75) return 'bg-glowdex-green';
   if (percentile >= 25) return 'bg-amber-500';
   return 'bg-red-500';
 }
-
-const INVERTED_ECOLOGICAL_KEYS = new Set([
-  'mang_spec_score',
-  'mang_frag_area_mn_rate',
-]);
 
 function interpretEcologicalPercentile(percentile: number): string {
   if (percentile >= 90) return 'exceptionally high';
@@ -141,7 +149,7 @@ function StatRow({ summary }: { summary: AIStatisticalIndicatorSummary }) {
   const color = barColor(summary.key, summary.percentile);
 
   return (
-    <div style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+    <div className="border-b border-gray-100">
       <div
         style={{
           display: 'grid',
@@ -151,42 +159,15 @@ function StatRow({ summary }: { summary: AIStatisticalIndicatorSummary }) {
           padding: '9px 12px 4px',
         }}
       >
-        <span
-          style={{
-            fontSize: '12px',
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          {label}
-        </span>
-        <span
-          style={{
-            fontSize: '11px',
-            color: 'var(--color-text-secondary)',
-            textAlign: 'right',
-          }}
-        >
+        <span className="text-xs text-gray-800">{label}</span>
+        <span className="text-[11px] text-gray-500 text-right">
           {interpretation}
         </span>
-        <span
-          style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            color: 'var(--color-text-secondary)',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
           {ordinalSuffix(summary.percentile)}
         </span>
       </div>
-      <div
-        style={{
-          margin: '0 12px 10px',
-          height: '3px',
-          background: 'var(--color-border-tertiary)',
-          borderRadius: '2px',
-        }}
-      >
+      <div className="mx-3 mb-2.5 h-[3px] bg-gray-100 rounded-full">
         <div
           className={color}
           style={{
@@ -211,22 +192,8 @@ function Section({
   if (!summaries.length) return null;
   return (
     <>
-      <div
-        className="bg-gray-50"
-        style={{
-          padding: '6px 12px',
-          borderBottom: '0.5px solid var(--color-border-tertiary)',
-        }}
-      >
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 500,
-            color: 'var(--color-text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
+      <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
           {title}
         </span>
       </div>
@@ -264,8 +231,11 @@ export function StatisticalDetailToggle({
     statistics.summaries[0]?.groupingLabel ?? 'this typology';
 
   return (
-    <div className="mt-2">
+    <div data-testid="statistical-detail-toggle" className="mt-2">
       <button
+        type="button"
+        aria-expanded={isOpen}
+        data-testid="toggle-button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="flex items-center gap-1.5 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors pt-2 border-t border-gray-100 w-full"
       >
@@ -279,24 +249,16 @@ export function StatisticalDetailToggle({
       </button>
 
       {isOpen && (
-        <div className="mt-2 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
+        <div
+          data-testid="stats-panel"
+          className="mt-2 border border-gray-100 rounded-lg overflow-hidden"
+        >
           <Section title="Ecological indicators" summaries={ecological} />
           <Section title="Current pressures" summaries={currentPressures} />
           <Section title="Pressure trends" summaries={ratePressures} />
 
-          <div
-            className="bg-gray-50"
-            style={{
-              padding: '8px 12px',
-              borderTop: '0.5px solid var(--color-border-tertiary)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '10px',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
+          <div className="px-3 py-2 bg-gray-50 border-t border-gray-100">
+            <span className="text-[10px] text-gray-400">
               Percentile rank within {groupingLabel} · Sievers et al. (2021)
             </span>
           </div>
