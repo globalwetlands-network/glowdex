@@ -2,19 +2,21 @@ import { useState } from 'react';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+import type { InsightResponse } from '@/api/types';
 import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
 import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
+import { StatisticalDetailToggle } from './StatisticalDetailToggle';
 
 interface ChatInterfaceProps {
   selectedCellId?: number | null;
-  initialText?: string | null;
+  initialInsight?: InsightResponse;
   initialError?: Error | null;
 }
 
 export function ChatInterface({
   selectedCellId,
-  initialText,
+  initialInsight,
   initialError,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
@@ -26,11 +28,11 @@ export function ChatInterface({
    * Not stored in state to avoid async synchronization issues.
    */
   const initialMessage =
-    selectedCellId && initialText
+    selectedCellId && initialInsight?.text
       ? {
           id: `initial-${selectedCellId}`,
           role: 'assistant' as const,
-          content: initialText,
+          content: initialInsight.text,
         }
       : null;
 
@@ -117,42 +119,51 @@ export function ChatInterface({
           </div>
         )}
 
-        {conversation.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex items-start space-x-3 max-w-[90%] ${
-              msg.role === 'user'
-                ? 'ml-auto flex-row-reverse space-x-reverse'
-                : ''
-            }`}
-          >
+        {conversation.map((msg, idx) => (
+          <div key={msg.id}>
             <div
-              className={`shrink-0 rounded-full p-1.5 mt-0.5 ${
+              className={`flex items-start space-x-3 max-w-[90%] ${
                 msg.role === 'user'
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-blue-600 text-white'
+                  ? 'ml-auto flex-row-reverse space-x-reverse'
+                  : ''
               }`}
             >
-              {msg.role === 'user' ? (
-                <User className="w-3.5 h-3.5" />
-              ) : (
-                <Bot className="w-3.5 h-3.5" />
-              )}
+              <div
+                className={`shrink-0 rounded-full p-1.5 mt-0.5 ${
+                  msg.role === 'user'
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-blue-600 text-white'
+                }`}
+              >
+                {msg.role === 'user' ? (
+                  <User className="w-3.5 h-3.5" />
+                ) : (
+                  <Bot className="w-3.5 h-3.5" />
+                )}
+              </div>
+
+              <div
+                className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${
+                  msg.role === 'user'
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white border border-gray-100 text-gray-700 prose prose-sm'
+                }`}
+              >
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
+              </div>
             </div>
 
-            <div
-              className={`rounded-xl px-4 py-2.5 text-sm shadow-sm ${
-                msg.role === 'user'
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-white border border-gray-100 text-gray-700 prose prose-sm'
-              }`}
-            >
-              {msg.role === 'assistant' ? (
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
-              ) : (
-                msg.content
+            {idx === 0 &&
+              msg.role === 'assistant' &&
+              initialInsight?.statistics && (
+                <StatisticalDetailToggle
+                  statistics={initialInsight.statistics}
+                />
               )}
-            </div>
           </div>
         ))}
 

@@ -31,7 +31,7 @@ export function AnalysisAssistantWidget({
     <ChatInterface
       key={selectedCellId ?? 'empty'}
       selectedCellId={selectedCellId}
-      initialText={initialInsight?.text}
+      initialInsight={initialInsight}
       initialError={initialError}
     />
   );

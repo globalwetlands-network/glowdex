@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import type { Message } from './useChatMessages';
 
-const MAX_HISTORY_MESSAGES = 4;
+const MAX_HISTORY_MESSAGES = 10;
 
 interface Options {
   selectedCellId: number | null | undefined;
@@ -13,7 +13,8 @@ interface Options {
 
 /**
  * Hook to manage the AI question mutation and handle user input.
- * Sends a windowed conversation history to the backend for context-aware responses.
+ * Sends a trimmed conversation history (max MAX_HISTORY_MESSAGES
+ * messages) to stay within the backend validation limit.
  */
 export function useAskMutation({
   selectedCellId,
@@ -26,11 +27,17 @@ export function useAskMutation({
         return Promise.reject(new Error('No cell selected'));
       }
 
+      // Trim conversation to stay within backend ArrayMaxSize limit.
+      // Structure: [initialAiResponse, ...recentHistory, newQuestion]
+      // If the backend ArrayMaxSize limit changes in glowdex-api,
+      // update MAX_HISTORY_MESSAGES here to match.
+      const HISTORY_SLOTS = MAX_HISTORY_MESSAGES - 2; // reserve slots for initial + new question
+
       const [initialMessage, ...rest] = conversationMessages;
 
       const trimmedHistory = [
-        initialMessage,
-        ...rest.slice(-(MAX_HISTORY_MESSAGES - 1)),
+        ...(initialMessage ? [initialMessage] : []),
+        ...rest.slice(-HISTORY_SLOTS),
         { role: 'user' as const, content: question },
       ];
 
