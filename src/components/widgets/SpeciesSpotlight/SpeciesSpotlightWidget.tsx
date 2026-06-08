@@ -218,7 +218,13 @@ export function SpeciesSpotlightWidget({
    * of effects.
    */
   useEffect(() => {
-    if (effectiveIndex === -1 || !onSpeciesSelect || !speciesConfigData) return;
+    if (
+      effectiveIndex === -1 ||
+      !onSpeciesSelect ||
+      !speciesConfigData ||
+      !selectedCell
+    )
+      return;
 
     // Notify parent to deactivate the layer for the previous species.
     // Uses a ref so this doesn't re-fire when the user toggles the layer —
