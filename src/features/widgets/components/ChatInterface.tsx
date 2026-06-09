@@ -195,6 +195,17 @@ export function ChatInterface({
             <Send className="w-4 h-4" />
           </button>
         </form>
+        <p className="text-[10px] text-gray-400 text-center px-3 pb-2 leading-relaxed">
+          AI-generated interpretation · Always verify with an expert·{' '}
+          <a
+            href="https://globalwetlandsproject.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600 transition-colors"
+          >
+            Get expert guidance
+          </a>
+        </p>
       </div>
     </div>
   );
