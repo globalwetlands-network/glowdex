@@ -14,6 +14,7 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import { HubLayer } from '@/components/widgets/HubPartner';
+import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
 import MapTooltip from './MapTooltip';
 
 interface MapProps {
@@ -30,6 +31,7 @@ interface MapProps {
   activeSpeciesName: string;
   speciesLayerEnabled: boolean;
   hubLayerEnabled: boolean;
+  mangroveLayerEnabled: boolean;
   /**
    * Target coordinates for the map to fly to when the active
    * species changes in the Biodiversity tab. Null when no
@@ -168,6 +170,7 @@ export function GridMap({
   activeSpeciesName,
   speciesLayerEnabled,
   hubLayerEnabled,
+  mangroveLayerEnabled,
   speciesFlyTarget,
   onSpeciesFlyComplete,
 }: MapProps) {
@@ -411,6 +414,8 @@ export function GridMap({
           selectedCellId={selectedCellId}
           typologyScale={typologyScale}
         />
+
+        <MangroveExtentLayer enabled={mangroveLayerEnabled} />
 
         {activeObservations.length > 0 && (
           <SpeciesDistributionLayer

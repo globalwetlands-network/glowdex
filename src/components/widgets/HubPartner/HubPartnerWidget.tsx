@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { MapPin, ExternalLink, Building2 } from 'lucide-react';
 import { useHubs } from '@/api/hooks/useHubs';
 import { findNearestHub } from '@/utils/geo';
@@ -7,20 +7,15 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 interface HubPartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
   onHubLayerToggle: (enabled: boolean) => void;
+  hubLayerEnabled: boolean;
 }
 
 export function HubPartnerWidget({
   selectedCell,
   onHubLayerToggle,
+  hubLayerEnabled,
 }: HubPartnerWidgetProps) {
   const { data: hubsData, isLoading, isError } = useHubs();
-  // Controls hub layer visibility. 'global' means on,
-  // null means explicitly toggled off by the user.
-  const [enabledForCellId, setEnabledForCellId] = useState<'global' | null>(
-    'global',
-  );
-
-  const hubLayerEnabled = enabledForCellId === 'global';
 
   const nearest = useMemo(() => {
     if (!selectedCell?.centerCoords || !hubsData?.hubs.length) return null;
@@ -33,10 +28,7 @@ export function HubPartnerWidget({
   }, [selectedCell, hubsData]);
 
   const handleToggle = () => {
-    if (!nearest && enabledForCellId !== 'global') return;
-    const next = !hubLayerEnabled;
-    setEnabledForCellId(next ? 'global' : null);
-    onHubLayerToggle(next);
+    onHubLayerToggle(!hubLayerEnabled);
   };
 
   if (isLoading) {

@@ -100,6 +100,13 @@ function AppShell() {
     setHubLayerEnabled(enabled);
   }, []);
 
+  // Mangrove layer state
+  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(false);
+
+  const handleMangroveLayerToggle = useCallback((enabled: boolean) => {
+    setMangroveLayerEnabled(enabled);
+  }, []);
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
@@ -128,14 +135,17 @@ function AppShell() {
   );
 
   // Event handlers
-  const handleCellSelect = (id: number | null) => {
-    setSelectedCellId(id);
-    // Auto-switch to Analysis tab on mobile
-    if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab('analysis');
-      setPanelActiveTab('analysis');
-    }
-  };
+  const handleCellSelect = useCallback(
+    (id: number | null) => {
+      setSelectedCellId(id);
+      // Auto-switch to Analysis tab on mobile
+      if (id && window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('analysis');
+        setPanelActiveTab('analysis');
+      }
+    },
+    [setSelectedCellId],
+  );
 
   const handleMobileTabChange = (tab: MobileTab) => {
     setMobileActiveTab(tab);
@@ -145,17 +155,20 @@ function AppShell() {
     }
   };
 
-  const handlePanelTabChange = (tab: 'analysis' | 'biodiversity') => {
-    setPanelActiveTab(tab);
-    // On mobile, sync the bottom nav when panel tabs are switched
-    if (window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab(tab);
-    }
-  };
+  const handlePanelTabChange = useCallback(
+    (tab: 'analysis' | 'biodiversity') => {
+      setPanelActiveTab(tab);
+      // On mobile, sync the bottom nav when panel tabs are switched
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab(tab);
+      }
+    },
+    [],
+  );
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
-  };
+  }, [setSelectedCellId]);
 
   // Render map area
   const mapArea = useMemo(
@@ -177,6 +190,7 @@ function AppShell() {
           activeSpeciesName={activeSpeciesName}
           speciesLayerEnabled={speciesLayerEnabled}
           hubLayerEnabled={hubLayerEnabled}
+          mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
         />
@@ -196,6 +210,7 @@ function AppShell() {
       activeSpeciesName,
       speciesLayerEnabled,
       hubLayerEnabled,
+      mangroveLayerEnabled,
       speciesFlyTarget,
     ],
   );
@@ -215,6 +230,9 @@ function AppShell() {
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onHubLayerToggle={handleHubLayerToggle}
+        hubLayerEnabled={hubLayerEnabled}
+        onMangroveLayerToggle={handleMangroveLayerToggle}
+        mangroveLayerEnabled={mangroveLayerEnabled}
         onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
@@ -232,6 +250,9 @@ function AppShell() {
       filteredGridCells.length,
       handleSpeciesLayerToggle,
       handleHubLayerToggle,
+      hubLayerEnabled,
+      handleMangroveLayerToggle,
+      mangroveLayerEnabled,
       handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
