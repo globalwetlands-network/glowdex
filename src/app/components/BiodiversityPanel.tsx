@@ -14,6 +14,7 @@ interface BiodiversityPanelProps {
     enabled: boolean,
   ) => void;
   onHubLayerToggle: (enabled: boolean) => void;
+  hubLayerEnabled: boolean;
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
@@ -23,6 +24,7 @@ export function BiodiversityPanel({
   selectedCell,
   onSpeciesLayerToggle,
   onHubLayerToggle,
+  hubLayerEnabled,
   onMangroveLayerToggle,
   mangroveLayerEnabled,
   onSpeciesSelect,
@@ -39,6 +41,7 @@ export function BiodiversityPanel({
         <HubPartnerWidget
           selectedCell={selectedCell}
           onHubLayerToggle={onHubLayerToggle}
+          hubLayerEnabled={hubLayerEnabled}
         />
       </div>
 

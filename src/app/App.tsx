@@ -224,6 +224,7 @@ function AppShell() {
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onHubLayerToggle={handleHubLayerToggle}
+        hubLayerEnabled={hubLayerEnabled}
         onMangroveLayerToggle={handleMangroveLayerToggle}
         mangroveLayerEnabled={mangroveLayerEnabled}
         onSpeciesSelect={handleSpeciesSelect}
@@ -243,6 +244,7 @@ function AppShell() {
       filteredGridCells.length,
       handleSpeciesLayerToggle,
       handleHubLayerToggle,
+      hubLayerEnabled,
       handleMangroveLayerToggle,
       mangroveLayerEnabled,
       handleSpeciesSelect,
