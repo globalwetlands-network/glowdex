@@ -100,6 +100,13 @@ function AppShell() {
     setHubLayerEnabled(enabled);
   }, []);
 
+  // Mangrove layer state
+  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(false);
+
+  const handleMangroveLayerToggle = useCallback((enabled: boolean) => {
+    setMangroveLayerEnabled(enabled);
+  }, []);
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
@@ -177,6 +184,7 @@ function AppShell() {
           activeSpeciesName={activeSpeciesName}
           speciesLayerEnabled={speciesLayerEnabled}
           hubLayerEnabled={hubLayerEnabled}
+          mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
         />
@@ -196,6 +204,7 @@ function AppShell() {
       activeSpeciesName,
       speciesLayerEnabled,
       hubLayerEnabled,
+      mangroveLayerEnabled,
       speciesFlyTarget,
     ],
   );
@@ -215,6 +224,7 @@ function AppShell() {
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onHubLayerToggle={handleHubLayerToggle}
+        onMangroveLayerToggle={handleMangroveLayerToggle}
         onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
@@ -232,6 +242,7 @@ function AppShell() {
       filteredGridCells.length,
       handleSpeciesLayerToggle,
       handleHubLayerToggle,
+      handleMangroveLayerToggle,
       handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
