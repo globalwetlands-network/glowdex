@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 
 import type { ObservationPoint } from '@/api/species';
@@ -16,6 +15,7 @@ interface BiodiversityPanelProps {
   ) => void;
   onHubLayerToggle: (enabled: boolean) => void;
   onMangroveLayerToggle: (enabled: boolean) => void;
+  mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
 }
 
@@ -24,15 +24,13 @@ export function BiodiversityPanel({
   onSpeciesLayerToggle,
   onHubLayerToggle,
   onMangroveLayerToggle,
+  mangroveLayerEnabled,
   onSpeciesSelect,
 }: BiodiversityPanelProps) {
   const { data: hubsData } = useHubs();
   // useHubs() is also called in HubPartnerWidget and HubLayer.
   // TanStack Query deduplicates requests — no additional network
   // call is made.
-
-  const [mangroveLayerEnabledLocal, setMangroveLayerEnabledLocal] =
-    useState(false);
 
   return (
     <div className="p-4 space-y-4">
@@ -60,19 +58,17 @@ export function BiodiversityPanel({
             <button
               type="button"
               role="switch"
-              aria-checked={mangroveLayerEnabledLocal}
+              aria-checked={mangroveLayerEnabled}
               onClick={() => {
-                const next = !mangroveLayerEnabledLocal;
-                setMangroveLayerEnabledLocal(next);
-                onMangroveLayerToggle(next);
+                onMangroveLayerToggle(!mangroveLayerEnabled);
               }}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                mangroveLayerEnabledLocal ? 'bg-[#1d9e75]' : 'bg-gray-200'
+                mangroveLayerEnabled ? 'bg-[#1d9e75]' : 'bg-gray-200'
               }`}
             >
               <span
                 className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  mangroveLayerEnabledLocal ? 'translate-x-4' : 'translate-x-0'
+                  mangroveLayerEnabled ? 'translate-x-4' : 'translate-x-0'
                 }`}
               />
             </button>

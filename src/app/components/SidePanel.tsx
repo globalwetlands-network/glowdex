@@ -31,6 +31,7 @@ interface SidePanelProps {
   ) => void;
   onHubLayerToggle: (enabled: boolean) => void;
   onMangroveLayerToggle: (enabled: boolean) => void;
+  mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
@@ -53,6 +54,7 @@ export function SidePanel({
   onSpeciesLayerToggle,
   onHubLayerToggle,
   onMangroveLayerToggle,
+  mangroveLayerEnabled,
   onSpeciesSelect,
   activeTab,
   onTabChange,
@@ -193,6 +195,7 @@ export function SidePanel({
             onSpeciesLayerToggle={onSpeciesLayerToggle}
             onHubLayerToggle={onHubLayerToggle}
             onMangroveLayerToggle={onMangroveLayerToggle}
+            mangroveLayerEnabled={mangroveLayerEnabled}
             onSpeciesSelect={onSpeciesSelect}
           />
         </div>

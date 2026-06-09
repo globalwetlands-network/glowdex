@@ -225,6 +225,7 @@ function AppShell() {
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onHubLayerToggle={handleHubLayerToggle}
         onMangroveLayerToggle={handleMangroveLayerToggle}
+        mangroveLayerEnabled={mangroveLayerEnabled}
         onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
@@ -243,6 +244,7 @@ function AppShell() {
       handleSpeciesLayerToggle,
       handleHubLayerToggle,
       handleMangroveLayerToggle,
+      mangroveLayerEnabled,
       handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
