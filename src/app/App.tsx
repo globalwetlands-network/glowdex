@@ -135,14 +135,17 @@ function AppShell() {
   );
 
   // Event handlers
-  const handleCellSelect = (id: number | null) => {
-    setSelectedCellId(id);
-    // Auto-switch to Analysis tab on mobile
-    if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab('analysis');
-      setPanelActiveTab('analysis');
-    }
-  };
+  const handleCellSelect = useCallback(
+    (id: number | null) => {
+      setSelectedCellId(id);
+      // Auto-switch to Analysis tab on mobile
+      if (id && window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('analysis');
+        setPanelActiveTab('analysis');
+      }
+    },
+    [setSelectedCellId],
+  );
 
   const handleMobileTabChange = (tab: MobileTab) => {
     setMobileActiveTab(tab);
@@ -152,17 +155,20 @@ function AppShell() {
     }
   };
 
-  const handlePanelTabChange = (tab: 'analysis' | 'biodiversity') => {
-    setPanelActiveTab(tab);
-    // On mobile, sync the bottom nav when panel tabs are switched
-    if (window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab(tab);
-    }
-  };
+  const handlePanelTabChange = useCallback(
+    (tab: 'analysis' | 'biodiversity') => {
+      setPanelActiveTab(tab);
+      // On mobile, sync the bottom nav when panel tabs are switched
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab(tab);
+      }
+    },
+    [],
+  );
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
-  };
+  }, [setSelectedCellId]);
 
   // Render map area
   const mapArea = useMemo(

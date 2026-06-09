@@ -246,6 +246,7 @@ export function SpeciesSpotlightWidget({
     onSpeciesSelect,
     onSpeciesLayerToggle,
     speciesConfigData,
+    selectedCell,
     species,
   ]);
 
