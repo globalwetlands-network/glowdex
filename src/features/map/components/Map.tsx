@@ -407,8 +407,6 @@ export function GridMap({
       >
         <NavigationControl position="top-right" />
 
-        <MangroveExtentLayer enabled={mangroveLayerEnabled} />
-
         <GridLayer
           geojson={filteredGeoJson}
           typologies={typologies}
@@ -416,6 +414,8 @@ export function GridMap({
           selectedCellId={selectedCellId}
           typologyScale={typologyScale}
         />
+
+        <MangroveExtentLayer enabled={mangroveLayerEnabled} />
 
         {activeObservations.length > 0 && (
           <SpeciesDistributionLayer

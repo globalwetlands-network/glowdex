@@ -58,6 +58,7 @@ export function MangroveExtentLayer({ enabled }: MangroveExtentLayerProps) {
         type="fill"
         source="gmw-extent-source"
         source-layer="gmw_v4019_sen2_mng"
+        beforeId="grid-fill"
         paint={{
           'fill-color': '#1d9e75',
           'fill-opacity': 0.6,
