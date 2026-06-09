@@ -37,3 +37,5 @@ jobs:
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_GMW_LAYER_ENABLED: ${{ vars.VITE_GMW_LAYER_ENABLED }}
+          VITE_GMW_MAPBOX_TOKEN: ${{ vars.VITE_GMW_MAPBOX_TOKEN }}
