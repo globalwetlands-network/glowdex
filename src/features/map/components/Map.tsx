@@ -16,6 +16,8 @@ import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/
 import { HubLayer } from '@/components/widgets/HubPartner';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
 import MapTooltip from './MapTooltip';
+import { SearchMarkerIcon } from '@/components/map/markers';
+import { MapLayerLegend } from './MapLayerLegend';
 
 interface MapProps {
   allGridCells: RichGridCell[];
@@ -155,6 +157,7 @@ function enrichGeoJsonFeatures(
  * 3. HubLayer — partner hub markers (conditional)
  * 4. Search marker — teardrop SVG Marker (conditional)
  * 5. MapTooltip — hover tooltip (conditional)
+ * 6. MapLayerLegend — bottom-left overlay (conditional)
  */
 export function GridMap({
   allGridCells,
@@ -342,6 +345,13 @@ export function GridMap({
           }}
         />
       </div>
+      <MapLayerLegend
+        hubLayerEnabled={hubLayerEnabled}
+        speciesLayerEnabled={speciesLayerEnabled}
+        mangroveLayerEnabled={mangroveLayerEnabled}
+        searchMarkerVisible={searchMarker !== null}
+        activeSpeciesName={activeSpeciesName}
+      />
       <MapGL
         ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
@@ -431,25 +441,7 @@ export function GridMap({
             latitude={searchMarker.lat}
             anchor="bottom"
           >
-            <svg
-              width="24"
-              height="32"
-              viewBox="0 0 24 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-              }}
-              aria-label="Search result location"
-            >
-              {/* Teardrop body */}
-              <path
-                d="M12 0C5.373 0 0 5.373 0 12c0 7.333 12 20 12 20S24 19.333 24 12C24 5.373 18.627 0 12 0z"
-                fill="#0a5c47"
-              />
-              {/* Inner white circle */}
-              <circle cx="12" cy="11" r="4.5" fill="white" opacity="0.9" />
-            </svg>
+            <SearchMarkerIcon size={24} />
           </Marker>
         )}
 
