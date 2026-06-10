@@ -427,13 +427,15 @@ export function GridMap({
 
         <MangroveExtentLayer enabled={mangroveLayerEnabled} />
 
-        {activeObservations.length > 0 && (
-          <SpeciesDistributionLayer
-            observations={activeObservations}
-            speciesId={activeSpeciesId}
-            enabled={speciesLayerEnabled}
-          />
-        )}
+        {speciesLayerEnabled &&
+          activeSpeciesId &&
+          activeObservations.length > 0 && (
+            <SpeciesDistributionLayer
+              observations={activeObservations}
+              speciesId={activeSpeciesId}
+              enabled={speciesLayerEnabled}
+            />
+          )}
 
         {searchMarker && (
           <Marker

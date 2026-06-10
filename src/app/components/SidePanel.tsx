@@ -106,101 +106,105 @@ export function SidePanel({
       )}
 
       {/* Tab Content */}
-      {activeTab === 'analysis' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Content — only shown when a cell is selected */}
-          {selectedCell && (
-            <div className="space-y-4">
-              {/* Location card */}
-              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                <div className="p-4">
-                  <CollapsibleSection
-                    title="Location"
-                    icon={MapPin}
-                    defaultOpen={true}
+      <div
+        className={
+          activeTab === 'analysis'
+            ? 'flex-1 overflow-y-auto p-4 space-y-4'
+            : 'hidden'
+        }
+      >
+        {/* Content — only shown when a cell is selected */}
+        {selectedCell && (
+          <div className="space-y-4">
+            {/* Location card */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="p-4">
+                <CollapsibleSection
+                  title="Location"
+                  icon={MapPin}
+                  defaultOpen={true}
+                >
+                  <button
+                    onClick={onClearSelection}
+                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
                   >
-                    <button
-                      onClick={onClearSelection}
-                      className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
-                    >
-                      Clear selection
-                    </button>
-                    <SelectionPanel
-                      selectedCell={selectedCell}
-                      typologies={typologies}
-                      currentScale={filterState.typologyScale}
-                    />
-                  </CollapsibleSection>
-                </div>
-              </div>
-
-              {/* Assistant card */}
-              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                <div className="p-4">
-                  <CollapsibleSection
-                    title="Assistant"
-                    icon={Bot}
-                    defaultOpen={true}
-                  >
-                    <AnalysisAssistantWidget
-                      selectedCellId={selectedCell?.id}
-                    />
-                  </CollapsibleSection>
-                </div>
-              </div>
-
-              {/* Indicators card */}
-              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                <div className="p-4">
-                  <CollapsibleSection
-                    title="Global Wetlands Analysis"
-                    icon={BarChart2}
-                    defaultOpen={true}
-                  >
-                    <GlobalWetlandsAnalysisWidget
-                      selectedCell={selectedCell}
-                      distributions={distributions}
-                      statisticalSummaries={statisticalSummaries}
-                      isLoading={isLoading}
-                    />
-                  </CollapsibleSection>
-                </div>
+                    Clear selection
+                  </button>
+                  <SelectionPanel
+                    selectedCell={selectedCell}
+                    typologies={typologies}
+                    currentScale={filterState.typologyScale}
+                  />
+                </CollapsibleSection>
               </div>
             </div>
-          )}
 
-          {/* Section: Filters */}
-          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
-            <div className="p-4">
-              <CollapsibleSection
-                title="Filters"
-                icon={Filter}
-                defaultOpen={false}
-                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-              >
-                <FilterControls
-                  filterState={filterState}
-                  onFilterChange={onFilterChange}
-                />
-              </CollapsibleSection>
+            {/* Assistant card */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="p-4">
+                <CollapsibleSection
+                  title="Assistant"
+                  icon={Bot}
+                  defaultOpen={true}
+                >
+                  <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
+                </CollapsibleSection>
+              </div>
+            </div>
+
+            {/* Indicators card */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="p-4">
+                <CollapsibleSection
+                  title="Global Wetlands Analysis"
+                  icon={BarChart2}
+                  defaultOpen={true}
+                >
+                  <GlobalWetlandsAnalysisWidget
+                    selectedCell={selectedCell}
+                    distributions={distributions}
+                    statisticalSummaries={statisticalSummaries}
+                    isLoading={isLoading}
+                  />
+                </CollapsibleSection>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {activeTab === 'biodiversity' && (
-        <div className="flex-1 overflow-y-auto">
-          <BiodiversityPanel
-            selectedCell={selectedCell}
-            onSpeciesLayerToggle={onSpeciesLayerToggle}
-            onHubLayerToggle={onHubLayerToggle}
-            hubLayerEnabled={hubLayerEnabled}
-            onMangroveLayerToggle={onMangroveLayerToggle}
-            mangroveLayerEnabled={mangroveLayerEnabled}
-            onSpeciesSelect={onSpeciesSelect}
-          />
+        {/* Section: Filters */}
+        <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+          <div className="p-4">
+            <CollapsibleSection
+              title="Filters"
+              icon={Filter}
+              defaultOpen={false}
+              childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+            >
+              <FilterControls
+                filterState={filterState}
+                onFilterChange={onFilterChange}
+              />
+            </CollapsibleSection>
+          </div>
         </div>
-      )}
+      </div>
+
+      <div
+        className={
+          activeTab === 'biodiversity' ? 'flex-1 overflow-y-auto' : 'hidden'
+        }
+      >
+        <BiodiversityPanel
+          selectedCell={selectedCell}
+          onSpeciesLayerToggle={onSpeciesLayerToggle}
+          onHubLayerToggle={onHubLayerToggle}
+          hubLayerEnabled={hubLayerEnabled}
+          onMangroveLayerToggle={onMangroveLayerToggle}
+          mangroveLayerEnabled={mangroveLayerEnabled}
+          onSpeciesSelect={onSpeciesSelect}
+        />
+      </div>
 
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
