@@ -59,7 +59,7 @@ export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
         id="hub-locations"
         type="circle"
         paint={{
-          'circle-radius': ['case', ['==', ['get', 'isNearest'], true], 8, 5],
+          'circle-radius': ['case', ['==', ['get', 'isNearest'], true], 10, 7],
           'circle-color': '#ffffff',
           'circle-stroke-width': [
             'case',
@@ -74,6 +74,21 @@ export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
             '#1d9e75',
           ],
           'circle-opacity': 1,
+        }}
+      />
+      <Layer
+        id="hub-locations-inner"
+        type="circle"
+        paint={{
+          'circle-radius': [
+            'case',
+            ['==', ['get', 'isNearest'], true],
+            4.5,
+            3.5,
+          ],
+          'circle-color': '#3b82f6',
+          'circle-opacity': 1,
+          'circle-stroke-width': 0,
         }}
       />
     </Source>
