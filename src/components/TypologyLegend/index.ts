@@ -1,0 +1,1 @@
+export { TypologyLegend } from './TypologyLegend';
