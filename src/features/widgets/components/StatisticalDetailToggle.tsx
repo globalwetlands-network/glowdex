@@ -19,7 +19,10 @@ const RATE_PRESSURE_KEYS = new Set([
 
 const INVERTED_ECOLOGICAL_KEYS = new Set([
   'mang_spec_score',
-  'mang_frag_area_mn_rate',
+  // mang_frag_area_mn_rate removed — positive rate = habitat
+  // consolidating (mean patch area increasing), not fragmenting.
+  // Confirmed by science team review, June 2026.
+  // barColor now uses standard green/amber/red for this indicator.
 ]);
 
 const SIGNAL_LABELS: Record<string, string> = {
@@ -28,7 +31,10 @@ const SIGNAL_LABELS: Record<string, string> = {
   mang_mean_agb_mg_ha: 'Above-ground biomass',
   mang_mean_SOC: 'Soil organic carbon',
   mang_spec_score: 'Species threat score',
-  mang_frag_area_mn_rate: 'Fragmentation rate',
+  // Renamed from 'Fragmentation rate' — a positive value means
+  // mean patch area is increasing (habitat consolidating).
+  // Confirmed by science team review, June 2026.
+  mang_frag_area_mn_rate: 'Consolidation rate',
   mang_frag_area_mn: 'Fragment area',
   mang_mean_age: 'Mean canopy age',
   pressure_mangrove_climate_current: 'Climate pressure',
@@ -84,42 +90,46 @@ function barColor(key: string, percentile: number): string {
 }
 
 function interpretEcologicalPercentile(percentile: number): string {
-  if (percentile >= 90) return 'exceptionally high';
-  if (percentile >= 75) return 'above typical range';
-  if (percentile >= 60) return 'moderately above median';
-  if (percentile >= 40) return 'near median';
-  if (percentile >= 25) return 'moderately below median';
-  if (percentile >= 10) return 'below typical range';
-  return 'exceptionally low';
+  if (percentile >= 90) return 'exceptionally high for this typology';
+  if (percentile >= 75) return 'above typical range for this typology';
+  if (percentile >= 60) return 'moderately above median for this typology';
+  if (percentile >= 40) return 'near median for this typology';
+  if (percentile >= 25) return 'moderately below median for this typology';
+  if (percentile >= 10) return 'below typical range for this typology';
+  return 'exceptionally low for this typology';
 }
 
 function interpretInvertedPercentile(percentile: number): string {
-  if (percentile >= 90) return 'exceptionally high threat';
-  if (percentile >= 75) return 'above typical threat level';
-  if (percentile >= 60) return 'moderately elevated threat';
-  if (percentile >= 40) return 'near median threat level';
-  if (percentile >= 25) return 'moderately low threat';
-  if (percentile >= 10) return 'below typical threat level';
-  return 'exceptionally low threat';
+  if (percentile >= 90) return 'exceptionally high threat for this typology';
+  if (percentile >= 75) return 'above typical threat level for this typology';
+  if (percentile >= 60) return 'moderately elevated threat for this typology';
+  if (percentile >= 40) return 'near median threat level for this typology';
+  if (percentile >= 25) return 'moderately low threat for this typology';
+  if (percentile >= 10) return 'below typical threat level for this typology';
+  return 'exceptionally low threat for this typology';
 }
 
 function interpretPressurePercentile(percentile: number): string {
-  if (percentile >= 90) return 'exceptionally elevated stress';
-  if (percentile >= 75) return 'above typical stress level';
-  if (percentile >= 60) return 'moderately elevated stress';
-  if (percentile >= 40) return 'near median stress level';
-  if (percentile >= 25) return 'moderately low stress';
-  if (percentile >= 10) return 'below typical stress level';
-  return 'exceptionally low stress';
+  if (percentile >= 90)
+    return 'exceptionally elevated stress for this typology';
+  if (percentile >= 75) return 'above typical stress level for this typology';
+  if (percentile >= 60) return 'moderately elevated stress for this typology';
+  if (percentile >= 40) return 'near median stress level for this typology';
+  if (percentile >= 25) return 'moderately low stress for this typology';
+  if (percentile >= 10) return 'below typical stress level for this typology';
+  return 'exceptionally low stress for this typology';
 }
 
 function interpretRatePercentile(percentile: number, value: number): string {
+  if (value === 0) return 'no net change';
   const direction = value < 0 ? 'declining' : 'increasing';
-  if (percentile >= 90) return `rapidly ${direction}`;
-  if (percentile >= 75) return `${direction} above typical rate`;
-  if (percentile >= 25) return `${direction} at typical rate`;
-  if (percentile >= 10) return `${direction} below typical rate`;
-  return `rapidly ${direction}`;
+  if (percentile >= 90) return `rapidly ${direction} for this typology`;
+  if (percentile >= 75)
+    return `${direction} above typical rate for this typology`;
+  if (percentile >= 25) return `${direction} at typical rate for this typology`;
+  if (percentile >= 10)
+    return `${direction} below typical rate for this typology`;
+  return `rapidly ${direction} for this typology`;
 }
 
 function getInterpretation(

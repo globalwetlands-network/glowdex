@@ -90,27 +90,33 @@ describe('StatisticalDetailToggle', () => {
     render(<StatisticalDetailToggle statistics={ecologicalStats} />);
     fireEvent.click(screen.getByTestId('toggle-button'));
     expect(screen.getByText('Fish density')).toBeInTheDocument();
-    expect(screen.getByText('above typical range')).toBeInTheDocument();
+    expect(
+      screen.getByText('above typical range for this typology'),
+    ).toBeInTheDocument();
   });
 
   it('uses inverted interpretation for species threat score', () => {
     render(<StatisticalDetailToggle statistics={ecologicalStats} />);
     fireEvent.click(screen.getByTestId('toggle-button'));
-    expect(screen.getByText('above typical threat level')).toBeInTheDocument();
+    expect(
+      screen.getByText('above typical threat level for this typology'),
+    ).toBeInTheDocument();
   });
 
   it('uses stress language for current pressure indicators', () => {
     render(<StatisticalDetailToggle statistics={ecologicalStats} />);
     fireEvent.click(screen.getByTestId('toggle-button'));
     expect(
-      screen.getByText('exceptionally elevated stress'),
+      screen.getByText('exceptionally elevated stress for this typology'),
     ).toBeInTheDocument();
   });
 
   it('uses direction language for rate indicators', () => {
     render(<StatisticalDetailToggle statistics={ecologicalStats} />);
     fireEvent.click(screen.getByTestId('toggle-button'));
-    expect(screen.getByText('increasing at typical rate')).toBeInTheDocument();
+    expect(
+      screen.getByText('increasing at typical rate for this typology'),
+    ).toBeInTheDocument();
   });
 
   it('renders correct ordinal suffix', () => {
