@@ -153,7 +153,7 @@ export function SidePanel({
               <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
                 <div className="p-4">
                   <CollapsibleSection
-                    title="Statistical Analysis"
+                    title="Global Wetlands Analysis"
                     icon={BarChart2}
                     defaultOpen={true}
                   >
