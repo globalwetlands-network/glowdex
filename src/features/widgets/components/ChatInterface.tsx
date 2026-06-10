@@ -152,16 +152,17 @@ export function ChatInterface({
                 {msg.role === 'assistant' ? (
                   <ReactMarkdown
                     components={{
-                      a: ({ href, children }) => (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:text-blue-800"
-                        >
-                          {children}
-                        </a>
-                      ),
+                      a: ({ node, ...props }) => {
+                        void node; // non-DOM remark AST prop, excluded from spread
+                        return (
+                          <a
+                            {...props}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800"
+                          />
+                        );
+                      },
                     }}
                   >
                     {msg.content}
@@ -211,7 +212,7 @@ export function ChatInterface({
           </button>
         </form>
         <p className="text-[10px] text-gray-400 text-center px-3 pb-2 leading-relaxed">
-          AI-generated interpretation · Always verify with an expert·{' '}
+          AI-generated interpretation · Always verify with an expert ·{' '}
           <a
             href="https://globalwetlandsproject.org"
             target="_blank"

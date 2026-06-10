@@ -123,13 +123,13 @@ function interpretPressurePercentile(percentile: number): string {
 function interpretRatePercentile(percentile: number, value: number): string {
   if (value === 0) return 'no net change';
   const direction = value < 0 ? 'declining' : 'increasing';
-  if (percentile >= 90) return `rapidly ${direction} relative to typology`;
+  if (percentile >= 90) return `rapidly ${direction} for this typology`;
   if (percentile >= 75)
     return `${direction} above typical rate for this typology`;
   if (percentile >= 25) return `${direction} at typical rate for this typology`;
   if (percentile >= 10)
     return `${direction} below typical rate for this typology`;
-  return `rapidly ${direction} relative to typology`;
+  return `rapidly ${direction} for this typology`;
 }
 
 function getInterpretation(
