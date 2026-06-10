@@ -10,7 +10,7 @@ import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
-import { StatisticalAnalysisWidget } from './StatisticalAnalysisWidget';
+import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
@@ -157,10 +157,8 @@ export function SidePanel({
                     icon={BarChart2}
                     defaultOpen={true}
                   >
-                    <StatisticalAnalysisWidget
+                    <GlobalWetlandsAnalysisWidget
                       selectedCell={selectedCell}
-                      filterState={filterState}
-                      onFilterChange={onFilterChange}
                       distributions={distributions}
                       statisticalSummaries={statisticalSummaries}
                       isLoading={isLoading}
