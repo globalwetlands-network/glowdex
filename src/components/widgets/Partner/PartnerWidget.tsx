@@ -8,12 +8,14 @@ interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
   onPartnerLayerToggle: (enabled: boolean) => void;
   partnerLayerEnabled: boolean;
+  clickedPartnerId: string | null;
 }
 
 export function PartnerWidget({
   selectedCell,
   onPartnerLayerToggle,
   partnerLayerEnabled,
+  clickedPartnerId,
 }: PartnerWidgetProps) {
   const { data: partnersData, isLoading, isError } = usePartners();
 
@@ -27,6 +29,33 @@ export function PartnerWidget({
       partnersData.partners,
     );
   }, [selectedCell, partnersData]);
+
+  const displayedPartner = useMemo(() => {
+    if (!partnersData?.partners) return nearest;
+
+    if (clickedPartnerId) {
+      const clicked = partnersData.partners.find(
+        (p) => p.id === clickedPartnerId,
+      );
+      if (clicked) {
+        const distance = selectedCell?.centerCoords
+          ? findNearestPartner(
+              selectedCell.centerCoords.latitude,
+              selectedCell.centerCoords.longitude,
+              [clicked],
+            )
+          : null;
+        return (
+          distance ?? {
+            partner: clicked,
+            distanceKm: 0,
+          }
+        );
+      }
+    }
+
+    return nearest;
+  }, [partnersData, clickedPartnerId, nearest, selectedCell]);
 
   const handleToggle = () => {
     onPartnerLayerToggle(!partnerLayerEnabled);
@@ -48,7 +77,7 @@ export function PartnerWidget({
     );
   }
 
-  if (!selectedCell || !nearest) {
+  if (!selectedCell || !displayedPartner) {
     return (
       <div className="space-y-3">
         <div
@@ -86,23 +115,25 @@ export function PartnerWidget({
         </span>
       </div>
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-        NEAREST PARTNER ORGANISATION
+        {clickedPartnerId
+          ? 'SELECTED PARTNER ORGANISATION'
+          : 'NEAREST PARTNER ORGANISATION'}
       </p>
 
       <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
         <div className="flex items-start gap-2">
           <Building2 size={16} className="text-[#0f6e56] mt-0.5 shrink-0" />
           <span className="text-sm font-semibold text-gray-900 leading-snug">
-            {nearest.partner.institution}
+            {displayedPartner.partner.institution}
           </span>
         </div>
 
         <div className="space-y-0.5">
           <p className="text-xs text-gray-500">
-            {nearest.partner.city}, {nearest.partner.country}
+            {displayedPartner.partner.city}, {displayedPartner.partner.country}
           </p>
           <p className="text-xs text-gray-400">
-            {nearest.distanceKm.toLocaleString()} km from selected cell
+            {displayedPartner.distanceKm.toLocaleString()} km from selected cell
           </p>
         </div>
 
@@ -110,7 +141,7 @@ export function PartnerWidget({
 
         <div className="flex flex-col gap-2">
           <a
-            href={nearest.partner.websiteUrl}
+            href={displayedPartner.partner.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"

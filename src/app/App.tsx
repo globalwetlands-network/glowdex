@@ -114,6 +114,17 @@ function AppShell() {
     setMangroveLayerEnabled(enabled);
   }, []);
 
+  // Clicked partner state
+  const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
+
+  const handlePartnerClick = useCallback((partnerId: string) => {
+    setClickedPartnerId(partnerId);
+    setPanelActiveTab('biodiversity');
+    if (window.innerWidth < MOBILE_BREAKPOINT) {
+      setMobileActiveTab('biodiversity');
+    }
+  }, []);
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
@@ -145,6 +156,7 @@ function AppShell() {
   const handleCellSelect = useCallback(
     (id: number | null) => {
       setSelectedCellId(id);
+      setClickedPartnerId(null);
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
@@ -175,6 +187,7 @@ function AppShell() {
 
   const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
+    setClickedPartnerId(null);
   }, [setSelectedCellId]);
 
   // Render map area
@@ -200,6 +213,7 @@ function AppShell() {
           mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
+          onPartnerClick={handlePartnerClick}
         />
       ),
     [
@@ -217,6 +231,7 @@ function AppShell() {
       partnerLayerEnabled,
       mangroveLayerEnabled,
       speciesFlyTarget,
+      handlePartnerClick,
     ],
   );
 
@@ -241,6 +256,7 @@ function AppShell() {
         onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
+        clickedPartnerId={clickedPartnerId}
       />
     ),
     [
@@ -261,6 +277,7 @@ function AppShell() {
       handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
+      clickedPartnerId,
     ],
   );
 

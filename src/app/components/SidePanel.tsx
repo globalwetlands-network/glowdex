@@ -36,6 +36,7 @@ interface SidePanelProps {
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
+  clickedPartnerId: string | null;
 }
 
 /**
@@ -60,6 +61,7 @@ export function SidePanel({
   onSpeciesSelect,
   activeTab,
   onTabChange,
+  clickedPartnerId,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -209,6 +211,7 @@ export function SidePanel({
           onMangroveLayerToggle={onMangroveLayerToggle}
           mangroveLayerEnabled={mangroveLayerEnabled}
           onSpeciesSelect={onSpeciesSelect}
+          clickedPartnerId={clickedPartnerId}
         />
       </div>
 

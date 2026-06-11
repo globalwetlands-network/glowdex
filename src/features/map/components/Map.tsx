@@ -45,6 +45,7 @@ interface MapProps {
    * target and prevent re-firing on unrelated re-renders.
    */
   onSpeciesFlyComplete: () => void;
+  onPartnerClick: (partnerId: string) => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -176,6 +177,7 @@ export function GridMap({
   mangroveLayerEnabled,
   speciesFlyTarget,
   onSpeciesFlyComplete,
+  onPartnerClick,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -201,6 +203,7 @@ export function GridMap({
   const [partnerHoverInfo, setPartnerHoverInfo] = useState<{
     x: number;
     y: number;
+    id: string;
     institution: string;
     city: string;
     country: string;
@@ -238,6 +241,22 @@ export function GridMap({
     onCellSelect: handleCellSelect,
   });
 
+  const handleMapClick = useCallback(
+    (evt: MapMouseEvent) => {
+      const partnerFeature = evt.features?.find(
+        (f) =>
+          f.layer?.id === 'partner-locations' ||
+          f.layer?.id === 'partner-locations-inner',
+      );
+      if (partnerFeature?.properties?.id) {
+        onPartnerClick(partnerFeature.properties.id);
+        return;
+      }
+      onClick(evt);
+    },
+    [onClick, onPartnerClick],
+  );
+
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
@@ -250,6 +269,12 @@ export function GridMap({
    * external system (the Mapbox map instance), which is
    * exactly the use case React recommends effects for.
    */
+  useEffect(() => {
+    const canvas = mapRef.current?.getCanvas();
+    if (!canvas) return;
+    canvas.style.cursor = partnerHoverInfo ? 'pointer' : '';
+  }, [partnerHoverInfo]);
+
   useEffect(() => {
     if (!speciesFlyTarget) return;
     mapRef.current?.flyTo({
@@ -366,6 +391,7 @@ export function GridMap({
           'grid-fill',
           'grid-highlight',
           'partner-locations',
+          'partner-locations-inner',
           ...(speciesLayerEnabled && activeSpeciesId
             ? [`species-${activeSpeciesId}-pins`]
             : []),
@@ -384,7 +410,9 @@ export function GridMap({
           );
 
           const partnerFeature = evt.features?.find(
-            (f) => f.layer?.id === 'partner-locations',
+            (f) =>
+              f.layer?.id === 'partner-locations' ||
+              f.layer?.id === 'partner-locations-inner',
           );
 
           // Partner tooltip takes priority over species when overlapping
@@ -392,6 +420,7 @@ export function GridMap({
             setPartnerHoverInfo({
               x: evt.point.x,
               y: evt.point.y,
+              id: partnerFeature.properties?.id ?? '',
               institution: partnerFeature.properties?.institution ?? '',
               city: partnerFeature.properties?.city ?? '',
               country: partnerFeature.properties?.country ?? '',
@@ -411,7 +440,7 @@ export function GridMap({
             setSpeciesHoverInfo(null);
           }
         }}
-        onClick={onClick}
+        onClick={handleMapClick}
         onMoveEnd={(evt) =>
           setMapCenter({
             lng: evt.viewState.longitude,
@@ -454,6 +483,7 @@ export function GridMap({
         <PartnerLayer
           enabled={partnerLayerEnabled}
           selectedCell={selectedCell}
+          hoveredPartnerId={partnerHoverInfo?.id ?? null}
         />
 
         {partnerHoverInfo && (

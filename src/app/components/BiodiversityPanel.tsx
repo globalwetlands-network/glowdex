@@ -18,6 +18,7 @@ interface BiodiversityPanelProps {
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
+  clickedPartnerId: string | null;
 }
 
 export function BiodiversityPanel({
@@ -28,6 +29,7 @@ export function BiodiversityPanel({
   onMangroveLayerToggle,
   mangroveLayerEnabled,
   onSpeciesSelect,
+  clickedPartnerId,
 }: BiodiversityPanelProps) {
   const { data: partnersData } = usePartners();
   // usePartners() is also called in PartnerWidget and PartnerLayer.
@@ -42,6 +44,7 @@ export function BiodiversityPanel({
           selectedCell={selectedCell}
           onPartnerLayerToggle={onPartnerLayerToggle}
           partnerLayerEnabled={partnerLayerEnabled}
+          clickedPartnerId={clickedPartnerId}
         />
       </div>
 
