@@ -110,7 +110,7 @@ export function SpeciesSpotlightWidget({
    * Derives the species index to auto-select using three-tier
    * priority:
    *
-   * Tier 1 — Partner match: nearest partner is in species' hubIds.
+   * Tier 1 — Partner match: nearest partner is in species' partnerIds.
    *   Partner-validated, most intentional signal.
    *
    * Tier 2 — Region bounds: cell falls within species' known

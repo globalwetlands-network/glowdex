@@ -22,5 +22,5 @@ export async function fetchPartners(): Promise<PartnersResponse> {
 }
 
 export async function fetchPartnerById(id: string): Promise<PartnerResponse> {
-  return apiClient<PartnerResponse>(`/hubs/${id}`);
+  return apiClient<PartnerResponse>(`/partners/${id}`);
 }

@@ -16,5 +16,7 @@ export const INITIAL_FILTER_STATE: FilterState = {
     [Habitat.SEAGRASS]: false,
   },
   typologyScale: 'scale5',
+  // Default to median (0.5) — shows all cells relative
+  // to the full distribution. Previously 0.25 (top quartile).
   quantile: 0.5,
 };
