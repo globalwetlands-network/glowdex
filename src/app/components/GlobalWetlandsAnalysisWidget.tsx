@@ -1,29 +1,23 @@
 import { AlertTriangle } from 'lucide-react';
-import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
 
 import { GroupedViolinPlot } from '@/features/widgets/components/ViolinPlot';
-import { QuantileSlider } from './QuantileSlider';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
-interface StatisticalAnalysisWidgetProps {
+interface GlobalWetlandsAnalysisWidgetProps {
   selectedCell: EnrichedGridCell | null;
-  filterState: FilterState;
-  onFilterChange: (state: FilterState) => void;
   distributions: DistributionsByDimension;
   statisticalSummaries?: AIStatisticalIndicatorSummary[];
   isLoading: boolean;
 }
 
-export function StatisticalAnalysisWidget({
+export function GlobalWetlandsAnalysisWidget({
   selectedCell,
-  filterState,
-  onFilterChange,
   distributions,
   statisticalSummaries,
   isLoading,
-}: StatisticalAnalysisWidgetProps) {
+}: GlobalWetlandsAnalysisWidgetProps) {
   if (isLoading) {
     return (
       <div className="space-y-4 py-2">
@@ -39,10 +33,6 @@ export function StatisticalAnalysisWidget({
       </div>
     );
   }
-
-  const handleQuantileChange = (quantile: number) => {
-    onFilterChange({ ...filterState, quantile });
-  };
 
   return (
     <div className="space-y-6 pt-1">
@@ -60,13 +50,6 @@ export function StatisticalAnalysisWidget({
         </div>
       ) : (
         <>
-          <div className="space-y-3">
-            <QuantileSlider
-              value={filterState.quantile}
-              onChange={handleQuantileChange}
-            />
-          </div>
-
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Distributions By Indicator

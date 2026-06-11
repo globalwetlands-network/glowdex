@@ -53,28 +53,34 @@ function AppShell() {
   >('biodiversity');
 
   // Species layer state
-  const [activeSpeciesId, setActiveSpeciesId] = useState('');
-  const [speciesLayerEnabled, setSpeciesLayerEnabled] = useState(false);
-  const [activeObservations, setActiveObservations] = useState<
-    ObservationPoint[]
-  >([]);
+  const [speciesLayerState, setSpeciesLayerState] = useState<{
+    speciesId: string;
+    observations: ObservationPoint[];
+    enabled: boolean;
+  }>({
+    speciesId: '',
+    observations: [],
+    enabled: false,
+  });
 
   const handleSpeciesLayerToggle = useCallback(
     (speciesId: string, observations: ObservationPoint[], enabled: boolean) => {
-      setActiveSpeciesId(speciesId);
-      setActiveObservations(observations);
-      setSpeciesLayerEnabled(enabled);
+      setSpeciesLayerState({
+        speciesId: enabled ? speciesId : '',
+        observations: enabled ? observations : [],
+        enabled,
+      });
     },
     [],
   );
 
   const activeSpeciesName = useMemo(() => {
-    if (!activeSpeciesId) return '';
+    if (!speciesLayerState.speciesId) return '';
     return (
-      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === activeSpeciesId)
+      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === speciesLayerState.speciesId)
         ?.commonName ?? ''
     );
-  }, [activeSpeciesId]);
+  }, [speciesLayerState.speciesId]);
 
   const [speciesFlyTarget, setSpeciesFlyTarget] = useState<{
     lng: number;
@@ -185,10 +191,10 @@ function AppShell() {
           selectedCell={selectedCell}
           typologyScale={filterState.typologyScale}
           onCellSelect={handleCellSelect}
-          activeObservations={activeObservations}
-          activeSpeciesId={activeSpeciesId}
+          activeObservations={speciesLayerState.observations}
+          activeSpeciesId={speciesLayerState.speciesId}
           activeSpeciesName={activeSpeciesName}
-          speciesLayerEnabled={speciesLayerEnabled}
+          speciesLayerEnabled={speciesLayerState.enabled}
           hubLayerEnabled={hubLayerEnabled}
           mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
@@ -205,10 +211,8 @@ function AppShell() {
       selectedCell,
       filterState.typologyScale,
       handleCellSelect,
-      activeObservations,
-      activeSpeciesId,
+      speciesLayerState,
       activeSpeciesName,
-      speciesLayerEnabled,
       hubLayerEnabled,
       mangroveLayerEnabled,
       speciesFlyTarget,

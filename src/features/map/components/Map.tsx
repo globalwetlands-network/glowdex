@@ -16,6 +16,8 @@ import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/
 import { HubLayer } from '@/components/widgets/HubPartner';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
 import MapTooltip from './MapTooltip';
+import { SearchMarkerIcon } from '@/components/map/markers';
+import { MapLayerLegend } from './MapLayerLegend';
 
 interface MapProps {
   allGridCells: RichGridCell[];
@@ -153,8 +155,9 @@ function enrichGeoJsonFeatures(
  * 1. GridLayer — base typology grid (always rendered)
  * 2. SpeciesDistributionLayer — GBIF observations (conditional)
  * 3. HubLayer — partner hub markers (conditional)
- * 4. Search marker — temporary Marker component (conditional)
+ * 4. Search marker — teardrop SVG Marker (conditional)
  * 5. MapTooltip — hover tooltip (conditional)
+ * 6. MapLayerLegend — bottom-left overlay (conditional)
  */
 export function GridMap({
   allGridCells,
@@ -342,6 +345,17 @@ export function GridMap({
           }}
         />
       </div>
+      <MapLayerLegend
+        hubLayerEnabled={hubLayerEnabled}
+        speciesLayerEnabled={
+          speciesLayerEnabled &&
+          !!activeSpeciesId &&
+          activeObservations.length > 0
+        }
+        mangroveLayerEnabled={mangroveLayerEnabled}
+        searchMarkerVisible={searchMarker !== null}
+        activeSpeciesName={activeSpeciesName}
+      />
       <MapGL
         ref={mapRef}
         initialViewState={INITIAL_VIEW_STATE}
@@ -417,13 +431,15 @@ export function GridMap({
 
         <MangroveExtentLayer enabled={mangroveLayerEnabled} />
 
-        {activeObservations.length > 0 && (
-          <SpeciesDistributionLayer
-            observations={activeObservations}
-            speciesId={activeSpeciesId}
-            enabled={speciesLayerEnabled}
-          />
-        )}
+        {speciesLayerEnabled &&
+          activeSpeciesId &&
+          activeObservations.length > 0 && (
+            <SpeciesDistributionLayer
+              observations={activeObservations}
+              speciesId={activeSpeciesId}
+              enabled={speciesLayerEnabled}
+            />
+          )}
 
         {searchMarker && (
           <Marker
@@ -431,7 +447,7 @@ export function GridMap({
             latitude={searchMarker.lat}
             anchor="bottom"
           >
-            <div className="w-4 h-4 rounded-full bg-white border-2 border-[#0a5c47] shadow-md" />
+            <SearchMarkerIcon size={24} />
           </Marker>
         )}
 

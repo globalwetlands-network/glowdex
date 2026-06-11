@@ -2,6 +2,7 @@ import type { RichGridCell } from '@/data/types/grid.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import { formatCoordinate } from '@/utils/coordinates';
 import { MapPin } from 'lucide-react';
+import { TypologyLegend } from '@/components/TypologyLegend';
 
 interface SelectionPanelProps {
   selectedCell: RichGridCell | null;
@@ -85,6 +86,18 @@ export function SelectionPanel({
             style={{ backgroundColor: clusterInfo?.color || '#ccc' }}
           />
         </div>
+      </div>
+
+      {/* Typology Legend */}
+      <div className="space-y-1.5">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Typology Guide
+        </p>
+        <TypologyLegend
+          typologies={typologies}
+          currentScale={currentScale}
+          activeClusterId={clusterId}
+        />
       </div>
     </div>
   );
