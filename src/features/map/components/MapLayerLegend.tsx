@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import {
   SearchMarkerIcon,
-  HubMarkerIcon,
+  PartnerMarkerIcon,
   SpeciesMarkerIcon,
   MangroveExtentIcon,
 } from '@/components/map/markers';
 
 interface MapLayerLegendProps {
-  hubLayerEnabled: boolean;
+  partnerLayerEnabled: boolean;
   speciesLayerEnabled: boolean;
   mangroveLayerEnabled: boolean;
   searchMarkerVisible: boolean;
@@ -20,7 +20,7 @@ interface LegendItem {
 }
 
 export function MapLayerLegend({
-  hubLayerEnabled,
+  partnerLayerEnabled,
   speciesLayerEnabled,
   mangroveLayerEnabled,
   searchMarkerVisible,
@@ -35,10 +35,10 @@ export function MapLayerLegend({
     });
   }
 
-  if (hubLayerEnabled) {
+  if (partnerLayerEnabled) {
     items.push({
-      icon: <HubMarkerIcon size={16} />,
-      label: 'Hub partner',
+      icon: <PartnerMarkerIcon size={16} />,
+      label: 'Partner organisation',
     });
   }
 

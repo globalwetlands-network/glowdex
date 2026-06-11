@@ -29,13 +29,14 @@ interface SidePanelProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
-  onHubLayerToggle: (enabled: boolean) => void;
-  hubLayerEnabled: boolean;
+  onPartnerLayerToggle: (enabled: boolean) => void;
+  partnerLayerEnabled: boolean;
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
+  clickedPartnerId: string | null;
 }
 
 /**
@@ -53,13 +54,14 @@ export function SidePanel({
   isLoading,
   visibleCellCount,
   onSpeciesLayerToggle,
-  onHubLayerToggle,
-  hubLayerEnabled,
+  onPartnerLayerToggle,
+  partnerLayerEnabled,
   onMangroveLayerToggle,
   mangroveLayerEnabled,
   onSpeciesSelect,
   activeTab,
   onTabChange,
+  clickedPartnerId,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -155,24 +157,6 @@ export function SidePanel({
                 </CollapsibleSection>
               </div>
             </div>
-
-            {/* Indicators card */}
-            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-              <div className="p-4">
-                <CollapsibleSection
-                  title="Global Wetlands Analysis"
-                  icon={BarChart2}
-                  defaultOpen={true}
-                >
-                  <GlobalWetlandsAnalysisWidget
-                    selectedCell={selectedCell}
-                    distributions={distributions}
-                    statisticalSummaries={statisticalSummaries}
-                    isLoading={isLoading}
-                  />
-                </CollapsibleSection>
-              </div>
-            </div>
           </div>
         )}
 
@@ -182,7 +166,7 @@ export function SidePanel({
             <CollapsibleSection
               title="Filters"
               icon={Filter}
-              defaultOpen={false}
+              defaultOpen={true}
               childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
             >
               <FilterControls
@@ -192,6 +176,26 @@ export function SidePanel({
             </CollapsibleSection>
           </div>
         </div>
+
+        {/* Indicators card */}
+        {selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Global Wetlands Analysis"
+                icon={BarChart2}
+                defaultOpen={true}
+              >
+                <GlobalWetlandsAnalysisWidget
+                  selectedCell={selectedCell}
+                  distributions={distributions}
+                  statisticalSummaries={statisticalSummaries}
+                  isLoading={isLoading}
+                />
+              </CollapsibleSection>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
@@ -202,11 +206,12 @@ export function SidePanel({
         <BiodiversityPanel
           selectedCell={selectedCell}
           onSpeciesLayerToggle={onSpeciesLayerToggle}
-          onHubLayerToggle={onHubLayerToggle}
-          hubLayerEnabled={hubLayerEnabled}
+          onPartnerLayerToggle={onPartnerLayerToggle}
+          partnerLayerEnabled={partnerLayerEnabled}
           onMangroveLayerToggle={onMangroveLayerToggle}
           mangroveLayerEnabled={mangroveLayerEnabled}
           onSpeciesSelect={onSpeciesSelect}
+          clickedPartnerId={clickedPartnerId}
         />
       </div>
 

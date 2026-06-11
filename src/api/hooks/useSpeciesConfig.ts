@@ -1,9 +1,9 @@
 /**
  * Fetches lightweight static config for all species.
  *
- * Returns hubIds and regionBounds for each species — used by
+ * Returns partnerIds and regionBounds for each species — used by
  * SpeciesSpotlightWidget to power the three-tier auto-selection
- * logic (hub match → region bounds → empty state).
+ * logic (partner match → region bounds → empty state).
  *
  * One request covers all species, keeping network overhead
  * minimal. 24h stale time matches the static nature of the data.

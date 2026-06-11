@@ -13,7 +13,7 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
-import { HubLayer } from '@/components/widgets/HubPartner';
+import { PartnerLayer } from '@/components/widgets/Partner';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
 import MapTooltip from './MapTooltip';
 import { SearchMarkerIcon } from '@/components/map/markers';
@@ -32,7 +32,7 @@ interface MapProps {
   activeSpeciesId: string;
   activeSpeciesName: string;
   speciesLayerEnabled: boolean;
-  hubLayerEnabled: boolean;
+  partnerLayerEnabled: boolean;
   mangroveLayerEnabled: boolean;
   /**
    * Target coordinates for the map to fly to when the active
@@ -45,6 +45,7 @@ interface MapProps {
    * target and prevent re-firing on unrelated re-renders.
    */
   onSpeciesFlyComplete: () => void;
+  onPartnerClick: (partnerId: string) => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -136,8 +137,8 @@ function enrichGeoJsonFeatures(
  *   typology cluster, with hover and selection interactions.
  * - An optional species observation layer (GBIF point data) toggled
  *   from the Species Spotlight widget.
- * - An optional hub partner layer showing GLOWdex partner institution
- *   locations, toggled from the Hub Partner widget.
+ * - An optional partner layer showing GLOWdex partner institution
+ *   locations, toggled from the Partner widget.
  * - A location search overlay (Mapbox Search JS) with zoom-capped
  *   fly-to behaviour and a temporary search result marker.
  *
@@ -154,7 +155,7 @@ function enrichGeoJsonFeatures(
  * ─── Layer rendering order ──────────────────────────────────────
  * 1. GridLayer — base typology grid (always rendered)
  * 2. SpeciesDistributionLayer — GBIF observations (conditional)
- * 3. HubLayer — partner hub markers (conditional)
+ * 3. PartnerLayer — partner markers (conditional)
  * 4. Search marker — teardrop SVG Marker (conditional)
  * 5. MapTooltip — hover tooltip (conditional)
  * 6. MapLayerLegend — bottom-left overlay (conditional)
@@ -172,10 +173,11 @@ export function GridMap({
   activeSpeciesId,
   activeSpeciesName,
   speciesLayerEnabled,
-  hubLayerEnabled,
+  partnerLayerEnabled,
   mangroveLayerEnabled,
   speciesFlyTarget,
   onSpeciesFlyComplete,
+  onPartnerClick,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -198,9 +200,10 @@ export function GridMap({
     lng: INITIAL_VIEW_STATE.longitude,
     lat: INITIAL_VIEW_STATE.latitude,
   });
-  const [hubHoverInfo, setHubHoverInfo] = useState<{
+  const [partnerHoverInfo, setPartnerHoverInfo] = useState<{
     x: number;
     y: number;
+    id: string;
     institution: string;
     city: string;
     country: string;
@@ -238,6 +241,22 @@ export function GridMap({
     onCellSelect: handleCellSelect,
   });
 
+  const handleMapClick = useCallback(
+    (evt: MapMouseEvent) => {
+      const partnerFeature = evt.features?.find(
+        (f) =>
+          f.layer?.id === 'partner-locations' ||
+          f.layer?.id === 'partner-locations-inner',
+      );
+      if (partnerFeature?.properties?.id) {
+        onPartnerClick(partnerFeature.properties.id);
+        return;
+      }
+      onClick(evt);
+    },
+    [onClick, onPartnerClick],
+  );
+
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
@@ -250,6 +269,12 @@ export function GridMap({
    * external system (the Mapbox map instance), which is
    * exactly the use case React recommends effects for.
    */
+  useEffect(() => {
+    const canvas = mapRef.current?.getCanvas();
+    if (!canvas) return;
+    canvas.style.cursor = partnerHoverInfo ? 'pointer' : '';
+  }, [partnerHoverInfo]);
+
   useEffect(() => {
     if (!speciesFlyTarget) return;
     mapRef.current?.flyTo({
@@ -346,7 +371,7 @@ export function GridMap({
         />
       </div>
       <MapLayerLegend
-        hubLayerEnabled={hubLayerEnabled}
+        partnerLayerEnabled={partnerLayerEnabled}
         speciesLayerEnabled={
           speciesLayerEnabled &&
           !!activeSpeciesId &&
@@ -365,7 +390,8 @@ export function GridMap({
         interactiveLayerIds={[
           'grid-fill',
           'grid-highlight',
-          'hub-locations',
+          'partner-locations',
+          'partner-locations-inner',
           ...(speciesLayerEnabled && activeSpeciesId
             ? [`species-${activeSpeciesId}-pins`]
             : []),
@@ -383,18 +409,21 @@ export function GridMap({
             (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,
           );
 
-          const hubFeature = evt.features?.find(
-            (f) => f.layer?.id === 'hub-locations',
+          const partnerFeature = evt.features?.find(
+            (f) =>
+              f.layer?.id === 'partner-locations' ||
+              f.layer?.id === 'partner-locations-inner',
           );
 
-          // Hub tooltip takes priority over species when overlapping
-          if (hubFeature) {
-            setHubHoverInfo({
+          // Partner tooltip takes priority over species when overlapping
+          if (partnerFeature) {
+            setPartnerHoverInfo({
               x: evt.point.x,
               y: evt.point.y,
-              institution: hubFeature.properties?.institution ?? '',
-              city: hubFeature.properties?.city ?? '',
-              country: hubFeature.properties?.country ?? '',
+              id: partnerFeature.properties?.id ?? '',
+              institution: partnerFeature.properties?.institution ?? '',
+              city: partnerFeature.properties?.city ?? '',
+              country: partnerFeature.properties?.country ?? '',
             });
             setSpeciesHoverInfo(null);
           } else if (speciesFeature) {
@@ -405,13 +434,13 @@ export function GridMap({
               date: speciesFeature.properties?.date ?? '',
               datasetName: speciesFeature.properties?.datasetName ?? '',
             });
-            setHubHoverInfo(null);
+            setPartnerHoverInfo(null);
           } else {
-            setHubHoverInfo(null);
+            setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
           }
         }}
-        onClick={onClick}
+        onClick={handleMapClick}
         onMoveEnd={(evt) =>
           setMapCenter({
             lng: evt.viewState.longitude,
@@ -451,21 +480,25 @@ export function GridMap({
           </Marker>
         )}
 
-        <HubLayer enabled={hubLayerEnabled} selectedCell={selectedCell} />
+        <PartnerLayer
+          enabled={partnerLayerEnabled}
+          selectedCell={selectedCell}
+          hoveredPartnerId={partnerHoverInfo?.id ?? null}
+        />
 
-        {hubHoverInfo && (
+        {partnerHoverInfo && (
           <div
             className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
-            style={{ left: hubHoverInfo.x, top: hubHoverInfo.y }}
+            style={{ left: partnerHoverInfo.x, top: partnerHoverInfo.y }}
           >
             <div className="font-bold text-gray-900">
-              {hubHoverInfo.institution}
+              {partnerHoverInfo.institution}
             </div>
             <div className="text-gray-600">
-              {hubHoverInfo.city}, {hubHoverInfo.country}
+              {partnerHoverInfo.city}, {partnerHoverInfo.country}
             </div>
             <div className="text-xs text-[#0f6e56] mt-1">
-              GLOWdex Hub Partner
+              GLOWdex Partner Organisation
             </div>
           </div>
         )}
@@ -501,7 +534,7 @@ export function GridMap({
           </div>
         )}
 
-        {hoverInfo && hoveredCell && !hubHoverInfo && (
+        {hoverInfo && hoveredCell && !partnerHoverInfo && (
           <MapTooltip
             x={hoverInfo.x}
             y={hoverInfo.y}

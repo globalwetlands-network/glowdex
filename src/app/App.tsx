@@ -24,6 +24,7 @@ import { useStatistics } from '@/data/hooks/useStatistics';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
+import { WelcomeModal } from './components/WelcomeModal';
 import { LoadingState } from './components/LoadingState';
 import { SidePanel } from './components/SidePanel';
 import { TopBar } from './components/TopBar';
@@ -99,11 +100,11 @@ function AppShell() {
     [],
   );
 
-  // Hub layer state
-  const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
+  // Partner layer state
+  const [partnerLayerEnabled, setPartnerLayerEnabled] = useState(true);
 
-  const handleHubLayerToggle = useCallback((enabled: boolean) => {
-    setHubLayerEnabled(enabled);
+  const handlePartnerLayerToggle = useCallback((enabled: boolean) => {
+    setPartnerLayerEnabled(enabled);
   }, []);
 
   // Mangrove layer state
@@ -111,6 +112,17 @@ function AppShell() {
 
   const handleMangroveLayerToggle = useCallback((enabled: boolean) => {
     setMangroveLayerEnabled(enabled);
+  }, []);
+
+  // Clicked partner state
+  const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
+
+  const handlePartnerClick = useCallback((partnerId: string) => {
+    setClickedPartnerId(partnerId);
+    setPanelActiveTab('biodiversity');
+    if (window.innerWidth < MOBILE_BREAKPOINT) {
+      setMobileActiveTab('biodiversity');
+    }
   }, []);
 
   // Custom hooks for derived Logic (Thin Provider pattern)
@@ -144,6 +156,7 @@ function AppShell() {
   const handleCellSelect = useCallback(
     (id: number | null) => {
       setSelectedCellId(id);
+      setClickedPartnerId(null);
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
@@ -174,6 +187,7 @@ function AppShell() {
 
   const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
+    setClickedPartnerId(null);
   }, [setSelectedCellId]);
 
   // Render map area
@@ -195,10 +209,11 @@ function AppShell() {
           activeSpeciesId={speciesLayerState.speciesId}
           activeSpeciesName={activeSpeciesName}
           speciesLayerEnabled={speciesLayerState.enabled}
-          hubLayerEnabled={hubLayerEnabled}
+          partnerLayerEnabled={partnerLayerEnabled}
           mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
+          onPartnerClick={handlePartnerClick}
         />
       ),
     [
@@ -213,9 +228,10 @@ function AppShell() {
       handleCellSelect,
       speciesLayerState,
       activeSpeciesName,
-      hubLayerEnabled,
+      partnerLayerEnabled,
       mangroveLayerEnabled,
       speciesFlyTarget,
+      handlePartnerClick,
     ],
   );
 
@@ -233,13 +249,14 @@ function AppShell() {
         isLoading={isLoading}
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
-        onHubLayerToggle={handleHubLayerToggle}
-        hubLayerEnabled={hubLayerEnabled}
+        onPartnerLayerToggle={handlePartnerLayerToggle}
+        partnerLayerEnabled={partnerLayerEnabled}
         onMangroveLayerToggle={handleMangroveLayerToggle}
         mangroveLayerEnabled={mangroveLayerEnabled}
         onSpeciesSelect={handleSpeciesSelect}
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
+        clickedPartnerId={clickedPartnerId}
       />
     ),
     [
@@ -253,13 +270,14 @@ function AppShell() {
       isLoading,
       filteredGridCells.length,
       handleSpeciesLayerToggle,
-      handleHubLayerToggle,
-      hubLayerEnabled,
+      handlePartnerLayerToggle,
+      partnerLayerEnabled,
       handleMangroveLayerToggle,
       mangroveLayerEnabled,
       handleSpeciesSelect,
       panelActiveTab,
       handlePanelTabChange,
+      clickedPartnerId,
     ],
   );
 
@@ -277,13 +295,16 @@ function AppShell() {
   }
 
   return (
-    <AppLayout
-      topBar={<TopBar />}
-      mapArea={mapArea}
-      sidePanel={sidePanel}
-      mobileActiveTab={mobileActiveTab}
-      onMobileTabChange={handleMobileTabChange}
-    />
+    <>
+      <WelcomeModal />
+      <AppLayout
+        topBar={<TopBar />}
+        mapArea={mapArea}
+        sidePanel={sidePanel}
+        mobileActiveTab={mobileActiveTab}
+        onMobileTabChange={handleMobileTabChange}
+      />
+    </>
   );
 }
 
