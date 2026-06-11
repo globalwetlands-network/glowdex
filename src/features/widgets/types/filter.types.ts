@@ -16,5 +16,5 @@ export const INITIAL_FILTER_STATE: FilterState = {
     [Habitat.SEAGRASS]: false,
   },
   typologyScale: 'scale5',
-  quantile: 0.25,
+  quantile: 0.5,
 };
