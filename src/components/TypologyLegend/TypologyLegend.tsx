@@ -51,7 +51,7 @@ export function TypologyLegend({
                 isActive ? 'font-semibold text-gray-900' : 'text-gray-600'
               }`}
             >
-              {label}
+              {cluster.id} — {label}
             </span>
           </div>
         );

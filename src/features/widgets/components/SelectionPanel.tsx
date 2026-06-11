@@ -33,7 +33,6 @@ export function SelectionPanel({
 
   const { id, country, cluster5, cluster18, lat, lng } = selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
-  const clusterInfo = typologies[currentScale][clusterId];
 
   // Format coordinates
   // Use centerCoords if available (from GeoJSON bbox), otherwise fallback to lat/lng
@@ -93,19 +92,6 @@ export function SelectionPanel({
           <span className="inline-block px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200">
             {clusterId}
           </span>
-        </div>
-      </div>
-
-      {/* Feature 1: Color */}
-      <div className="space-y-1">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Mangrove Type
-        </p>
-        <div className="flex items-center space-x-2">
-          <div
-            className="w-full h-6 rounded-md shadow-sm border border-gray-100"
-            style={{ backgroundColor: clusterInfo?.color || '#ccc' }}
-          />
         </div>
       </div>
 
