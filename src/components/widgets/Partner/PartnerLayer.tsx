@@ -8,9 +8,14 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 interface PartnerLayerProps {
   enabled: boolean;
   selectedCell: EnrichedGridCell | null;
+  hoveredPartnerId: string | null;
 }
 
-export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
+export function PartnerLayer({
+  enabled,
+  selectedCell,
+  hoveredPartnerId,
+}: PartnerLayerProps) {
   const { data: partnersData } = usePartners();
 
   const nearestPartnerId = useMemo(() => {
@@ -60,7 +65,12 @@ export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
         id="partner-locations"
         type="circle"
         paint={{
-          'circle-radius': ['case', ['==', ['get', 'isNearest'], true], 10, 7],
+          'circle-radius': [
+            'case',
+            ['==', ['get', 'id'], hoveredPartnerId ?? ''],
+            ['case', ['==', ['get', 'isNearest'], true], 13, 10],
+            ['case', ['==', ['get', 'isNearest'], true], 10, 7],
+          ],
           'circle-color': '#ffffff',
           'circle-stroke-width': [
             'case',
@@ -75,6 +85,7 @@ export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
             '#1d9e75',
           ],
           'circle-opacity': 1,
+          'circle-radius-transition': { duration: 150, delay: 0 },
         }}
       />
       <Layer
@@ -83,13 +94,14 @@ export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
         paint={{
           'circle-radius': [
             'case',
-            ['==', ['get', 'isNearest'], true],
-            4.5,
-            3.5,
+            ['==', ['get', 'id'], hoveredPartnerId ?? ''],
+            ['case', ['==', ['get', 'isNearest'], true], 6, 5],
+            ['case', ['==', ['get', 'isNearest'], true], 4.5, 3.5],
           ],
           'circle-color': '#3b82f6',
           'circle-opacity': 1,
           'circle-stroke-width': 0,
+          'circle-radius-transition': { duration: 150, delay: 0 },
         }}
       />
     </Source>
