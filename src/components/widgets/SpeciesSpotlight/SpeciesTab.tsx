@@ -182,8 +182,19 @@ export function SpeciesTab({
                   Observations (last 10 years)
                 </span>
                 <div className="relative inline-flex items-center group/obs">
-                  <Info className="w-3 h-3 text-gray-400 cursor-help shrink-0" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/obs:opacity-100 pointer-events-none transition-opacity z-50 whitespace-normal">
+                  <button
+                    type="button"
+                    aria-label="About observation count"
+                    aria-describedby="obs-tooltip"
+                    className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded"
+                  >
+                    <Info className="w-3 h-3 text-gray-400 cursor-help shrink-0" />
+                  </button>
+                  <div
+                    id="obs-tooltip"
+                    role="tooltip"
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/obs:opacity-100 group-focus-within/obs:opacity-100 pointer-events-none transition-opacity z-50 whitespace-normal"
+                  >
                     Showing wild observations with verified coordinates from the
                     last 10 years. Total GBIF records may differ as they include
                     older or unverified data.

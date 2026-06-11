@@ -347,7 +347,11 @@ export function GridMap({
       </div>
       <MapLayerLegend
         hubLayerEnabled={hubLayerEnabled}
-        speciesLayerEnabled={speciesLayerEnabled}
+        speciesLayerEnabled={
+          speciesLayerEnabled &&
+          !!activeSpeciesId &&
+          activeObservations.length > 0
+        }
         mangroveLayerEnabled={mangroveLayerEnabled}
         searchMarkerVisible={searchMarker !== null}
         activeSpeciesName={activeSpeciesName}

@@ -147,7 +147,11 @@ export function SidePanel({
                   icon={Bot}
                   defaultOpen={true}
                 >
-                  <AnalysisAssistantWidget selectedCellId={selectedCell?.id} />
+                  <AnalysisAssistantWidget
+                    selectedCellId={
+                      activeTab === 'analysis' ? selectedCell?.id : null
+                    }
+                  />
                 </CollapsibleSection>
               </div>
             </div>
