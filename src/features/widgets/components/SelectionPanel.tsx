@@ -64,7 +64,7 @@ export function SelectionPanel({
           <div
             id={`cell-help-tooltip-${id}`}
             role="tooltip"
-            className="absolute left-0 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/cell-help:opacity-100 group-focus-within/cell-help:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+            className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/cell-help:opacity-100 group-focus-within/cell-help:opacity-100 pointer-events-none transition-opacity whitespace-normal"
           >
             This panel summarises available biodiversity, habitat and
             organisation information associated with the selected map cell.
