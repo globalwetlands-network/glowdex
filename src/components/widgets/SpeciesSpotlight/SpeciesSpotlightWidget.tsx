@@ -7,8 +7,8 @@ import {
 } from '@/data/speciesSpotlight';
 import type { ObservationPoint, RegionBoundResponse } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
-import type { HubResponse } from '@/api/hubs';
-import { findNearestHub } from '@/utils/geo';
+import type { PartnerResponse } from '@/api/partners';
+import { findNearestPartner } from '@/utils/geo';
 import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
 import { SpeciesTab } from './SpeciesTab';
 
@@ -20,7 +20,7 @@ interface SpeciesSpotlightWidgetProps {
     enabled: boolean,
   ) => void;
   selectedCell: EnrichedGridCell | null;
-  hubs: HubResponse[];
+  partners: PartnerResponse[];
   /**
    * Called when the active species changes — either via
    * auto-selection or manual tab click. Passes the center
@@ -68,7 +68,7 @@ export function SpeciesSpotlightWidget({
   species = SPECIES_SPOTLIGHT_DATA,
   onSpeciesLayerToggle,
   selectedCell,
-  hubs,
+  partners,
   onSpeciesSelect,
 }: SpeciesSpotlightWidgetProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -110,12 +110,12 @@ export function SpeciesSpotlightWidget({
    * Derives the species index to auto-select using three-tier
    * priority:
    *
-   * Tier 1 — Hub match: nearest hub is in species' hubIds.
+   * Tier 1 — Partner match: nearest partner is in species' hubIds.
    *   Partner-validated, most intentional signal.
    *
    * Tier 2 — Region bounds: cell falls within species' known
    *   geographic range. Scientific fallback for areas not
-   *   covered by hub proximity alone.
+   *   covered by partner proximity alone.
    *
    * Tier 3 — No match: returns -1. effectiveIndex will show
    *   the empty state.
@@ -130,15 +130,15 @@ export function SpeciesSpotlightWidget({
 
     const { latitude: lat, longitude: lng } = selectedCell.centerCoords;
 
-    // Tier 1: Hub match
-    if (hubs.length) {
-      const nearest = findNearestHub(lat, lng, hubs);
+    // Tier 1: Partner match
+    if (partners.length) {
+      const nearest = findNearestPartner(lat, lng, partners);
       if (nearest) {
-        const hubMatchIdx = species.findIndex((s) => {
+        const partnerMatchIdx = species.findIndex((s) => {
           const config = speciesConfigData.species.find((c) => c.id === s.id);
-          return config?.hubIds.includes(nearest.hub.id) ?? false;
+          return config?.hubIds.includes(nearest.partner.id) ?? false;
         });
-        if (hubMatchIdx !== -1) return hubMatchIdx;
+        if (partnerMatchIdx !== -1) return partnerMatchIdx;
       }
     }
 
@@ -154,7 +154,7 @@ export function SpeciesSpotlightWidget({
 
     // Tier 3: No match
     return -1;
-  }, [selectedCell, hubs, species, speciesConfigData]);
+  }, [selectedCell, partners, species, speciesConfigData]);
 
   /**
    * Effective active tab index — single source of truth for
@@ -163,7 +163,7 @@ export function SpeciesSpotlightWidget({
    * Priority order:
    * 1. Manual selection scoped to current cell — always
    *    respected regardless of auto-selection.
-   * 2. Auto-selection via hub match or region bounds.
+   * 2. Auto-selection via partner match or region bounds.
    * 3. Default activeIndex when no cell is selected.
    * 4. Default activeIndex while speciesConfigData is loading
    *    — avoids premature empty state flash.
@@ -311,8 +311,8 @@ export function SpeciesSpotlightWidget({
             No spotlight species documented for this region yet.
           </p>
           <p className="text-xs text-gray-400 leading-relaxed">
-            Explore our partner species, or contact the nearest hub partner for
-            local data.
+            Explore our partner species, or contact the nearest partner
+            organisation for local data.
           </p>
         </div>
       )}

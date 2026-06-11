@@ -99,11 +99,11 @@ function AppShell() {
     [],
   );
 
-  // Hub layer state
-  const [hubLayerEnabled, setHubLayerEnabled] = useState(true);
+  // Partner layer state
+  const [partnerLayerEnabled, setPartnerLayerEnabled] = useState(true);
 
-  const handleHubLayerToggle = useCallback((enabled: boolean) => {
-    setHubLayerEnabled(enabled);
+  const handlePartnerLayerToggle = useCallback((enabled: boolean) => {
+    setPartnerLayerEnabled(enabled);
   }, []);
 
   // Mangrove layer state
@@ -195,7 +195,7 @@ function AppShell() {
           activeSpeciesId={speciesLayerState.speciesId}
           activeSpeciesName={activeSpeciesName}
           speciesLayerEnabled={speciesLayerState.enabled}
-          hubLayerEnabled={hubLayerEnabled}
+          partnerLayerEnabled={partnerLayerEnabled}
           mangroveLayerEnabled={mangroveLayerEnabled}
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
@@ -213,7 +213,7 @@ function AppShell() {
       handleCellSelect,
       speciesLayerState,
       activeSpeciesName,
-      hubLayerEnabled,
+      partnerLayerEnabled,
       mangroveLayerEnabled,
       speciesFlyTarget,
     ],
@@ -233,8 +233,8 @@ function AppShell() {
         isLoading={isLoading}
         visibleCellCount={filteredGridCells.length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
-        onHubLayerToggle={handleHubLayerToggle}
-        hubLayerEnabled={hubLayerEnabled}
+        onPartnerLayerToggle={handlePartnerLayerToggle}
+        partnerLayerEnabled={partnerLayerEnabled}
         onMangroveLayerToggle={handleMangroveLayerToggle}
         mangroveLayerEnabled={mangroveLayerEnabled}
         onSpeciesSelect={handleSpeciesSelect}
@@ -253,8 +253,8 @@ function AppShell() {
       isLoading,
       filteredGridCells.length,
       handleSpeciesLayerToggle,
-      handleHubLayerToggle,
-      hubLayerEnabled,
+      handlePartnerLayerToggle,
+      partnerLayerEnabled,
       handleMangroveLayerToggle,
       mangroveLayerEnabled,
       handleSpeciesSelect,

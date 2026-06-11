@@ -189,7 +189,7 @@ export const MENU_CONTENT = {
       },
       {
         heading: 'Biodiversity Tab',
-        body: 'Your starting point. Highlights threatened species with known associations to mangrove ecosystems near your selected region, drawing on observation data from the Global Biodiversity Information Facility (GBIF). Each species card shows recent observation counts, last recorded sighting, and primary range. Toggle species observation points directly onto the map to see where sightings have been recorded. A Hub Partner widget shows the nearest research or conservation partner organisation to your selected cell, with a direct link to contact them.',
+        body: 'Your starting point. Highlights threatened species with known associations to mangrove ecosystems near your selected region, drawing on observation data from the Global Biodiversity Information Facility (GBIF). Each species card shows recent observation counts, last recorded sighting, and primary range. Toggle species observation points directly onto the map to see where sightings have been recorded. A Partner Organisation widget shows the nearest research or conservation partner organisation to your selected cell, with a direct link to contact them.',
       },
       {
         heading: 'Analysis Tab',

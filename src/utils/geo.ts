@@ -22,36 +22,38 @@ export function calculateDistance(
 }
 
 /**
- * Finds the nearest hub to a given coordinate from an array of hubs.
- * Coordinates on each hub must be [longitude, latitude] (GeoJSON convention).
+ * Finds the nearest partner to a given coordinate from an array of partners.
+ * Coordinates on each partner must be [longitude, latitude] (GeoJSON convention).
  *
- * Returns the nearest hub and its distance in km, or null if the
- * hubs array is empty.
+ * Returns the nearest partner and its distance in km, or null if the
+ * partners array is empty.
  */
-export function findNearestHub<T extends { coordinates: [number, number] }>(
+export function findNearestPartner<T extends { coordinates: [number, number] }>(
   lat: number,
   lng: number,
-  hubs: T[],
-): { hub: T; distanceKm: number } | null {
-  if (!hubs.length) return null;
+  partners: T[],
+): { partner: T; distanceKm: number } | null {
+  if (!partners.length) return null;
 
-  return hubs.reduce(
-    (nearest, hub) => {
+  return partners.reduce(
+    (nearest, partner) => {
       const distanceKm = calculateDistance(
         lat,
         lng,
-        hub.coordinates[1], // latitude
-        hub.coordinates[0], // longitude
+        partner.coordinates[1], // latitude
+        partner.coordinates[0], // longitude
       );
-      return distanceKm < nearest.distanceKm ? { hub, distanceKm } : nearest;
+      return distanceKm < nearest.distanceKm
+        ? { partner, distanceKm }
+        : nearest;
     },
     {
-      hub: hubs[0],
+      partner: partners[0],
       distanceKm: calculateDistance(
         lat,
         lng,
-        hubs[0].coordinates[1],
-        hubs[0].coordinates[0],
+        partners[0].coordinates[1],
+        partners[0].coordinates[0],
       ),
     },
   );

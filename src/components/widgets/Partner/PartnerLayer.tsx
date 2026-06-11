@@ -1,62 +1,62 @@
 import { useMemo } from 'react';
 import { Source, Layer } from 'react-map-gl';
 import type { FeatureCollection, Point } from 'geojson';
-import { useHubs } from '@/api/hooks/useHubs';
-import { findNearestHub } from '@/utils/geo';
+import { usePartners } from '@/api/hooks/usePartners';
+import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 
-interface HubLayerProps {
+interface PartnerLayerProps {
   enabled: boolean;
   selectedCell: EnrichedGridCell | null;
 }
 
-export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
-  const { data: hubsData } = useHubs();
+export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
+  const { data: partnersData } = usePartners();
 
-  const nearestHubId = useMemo(() => {
-    if (!selectedCell?.centerCoords || !hubsData?.hubs.length) return null;
+  const nearestPartnerId = useMemo(() => {
+    if (!selectedCell?.centerCoords || !partnersData?.hubs.length) return null;
 
-    const nearest = findNearestHub(
+    const nearest = findNearestPartner(
       selectedCell.centerCoords.latitude,
       selectedCell.centerCoords.longitude,
-      hubsData.hubs,
+      partnersData.hubs,
     );
 
-    return nearest?.hub.id ?? null;
-  }, [selectedCell, hubsData]);
+    return nearest?.partner.id ?? null;
+  }, [selectedCell, partnersData]);
 
   const geojsonData = useMemo<FeatureCollection<Point>>(() => {
-    if (!hubsData?.hubs) {
+    if (!partnersData?.hubs) {
       return { type: 'FeatureCollection', features: [] };
     }
 
     return {
       type: 'FeatureCollection',
-      features: hubsData.hubs.map((hub) => ({
+      features: partnersData.hubs.map((partner) => ({
         type: 'Feature' as const,
         properties: {
-          id: hub.id,
-          institution: hub.institution,
-          city: hub.city,
-          country: hub.country,
-          isNearest: hub.id === nearestHubId,
+          id: partner.id,
+          institution: partner.institution,
+          city: partner.city,
+          country: partner.country,
+          isNearest: partner.id === nearestPartnerId,
         },
         geometry: {
           type: 'Point' as const,
-          coordinates: hub.coordinates,
+          coordinates: partner.coordinates,
         },
       })),
     };
-  }, [hubsData, nearestHubId]);
+  }, [partnersData, nearestPartnerId]);
 
   if (!enabled) {
     return null;
   }
 
   return (
-    <Source id="hub-locations-source" type="geojson" data={geojsonData}>
+    <Source id="partner-locations-source" type="geojson" data={geojsonData}>
       <Layer
-        id="hub-locations"
+        id="partner-locations"
         type="circle"
         paint={{
           'circle-radius': ['case', ['==', ['get', 'isNearest'], true], 10, 7],
@@ -77,7 +77,7 @@ export function HubLayer({ enabled, selectedCell }: HubLayerProps) {
         }}
       />
       <Layer
-        id="hub-locations-inner"
+        id="partner-locations-inner"
         type="circle"
         paint={{
           'circle-radius': [

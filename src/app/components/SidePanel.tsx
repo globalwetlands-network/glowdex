@@ -29,8 +29,8 @@ interface SidePanelProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
-  onHubLayerToggle: (enabled: boolean) => void;
-  hubLayerEnabled: boolean;
+  onPartnerLayerToggle: (enabled: boolean) => void;
+  partnerLayerEnabled: boolean;
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
@@ -53,8 +53,8 @@ export function SidePanel({
   isLoading,
   visibleCellCount,
   onSpeciesLayerToggle,
-  onHubLayerToggle,
-  hubLayerEnabled,
+  onPartnerLayerToggle,
+  partnerLayerEnabled,
   onMangroveLayerToggle,
   mangroveLayerEnabled,
   onSpeciesSelect,
@@ -202,8 +202,8 @@ export function SidePanel({
         <BiodiversityPanel
           selectedCell={selectedCell}
           onSpeciesLayerToggle={onSpeciesLayerToggle}
-          onHubLayerToggle={onHubLayerToggle}
-          hubLayerEnabled={hubLayerEnabled}
+          onPartnerLayerToggle={onPartnerLayerToggle}
+          partnerLayerEnabled={partnerLayerEnabled}
           onMangroveLayerToggle={onMangroveLayerToggle}
           mangroveLayerEnabled={mangroveLayerEnabled}
           onSpeciesSelect={onSpeciesSelect}

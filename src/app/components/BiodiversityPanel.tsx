@@ -3,8 +3,8 @@ import { MapPin } from 'lucide-react';
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
-import { HubPartnerWidget } from '@/components/widgets/HubPartner';
-import { useHubs } from '@/api/hooks/useHubs';
+import { PartnerWidget } from '@/components/widgets/Partner';
+import { usePartners } from '@/api/hooks/usePartners';
 
 interface BiodiversityPanelProps {
   selectedCell: EnrichedGridCell | null;
@@ -13,8 +13,8 @@ interface BiodiversityPanelProps {
     observations: ObservationPoint[],
     enabled: boolean,
   ) => void;
-  onHubLayerToggle: (enabled: boolean) => void;
-  hubLayerEnabled: boolean;
+  onPartnerLayerToggle: (enabled: boolean) => void;
+  partnerLayerEnabled: boolean;
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
@@ -23,25 +23,25 @@ interface BiodiversityPanelProps {
 export function BiodiversityPanel({
   selectedCell,
   onSpeciesLayerToggle,
-  onHubLayerToggle,
-  hubLayerEnabled,
+  onPartnerLayerToggle,
+  partnerLayerEnabled,
   onMangroveLayerToggle,
   mangroveLayerEnabled,
   onSpeciesSelect,
 }: BiodiversityPanelProps) {
-  const { data: hubsData } = useHubs();
-  // useHubs() is also called in HubPartnerWidget and HubLayer.
+  const { data: partnersData } = usePartners();
+  // usePartners() is also called in PartnerWidget and PartnerLayer.
   // TanStack Query deduplicates requests — no additional network
   // call is made.
 
   return (
     <div className="p-4 space-y-4">
-      {/* Hub Partner container */}
+      {/* Partner container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-        <HubPartnerWidget
+        <PartnerWidget
           selectedCell={selectedCell}
-          onHubLayerToggle={onHubLayerToggle}
-          hubLayerEnabled={hubLayerEnabled}
+          onPartnerLayerToggle={onPartnerLayerToggle}
+          partnerLayerEnabled={partnerLayerEnabled}
         />
       </div>
 
@@ -95,7 +95,7 @@ export function BiodiversityPanel({
         <SpeciesSpotlightWidget
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           selectedCell={selectedCell}
-          hubs={hubsData?.hubs ?? []}
+          partners={partnersData?.hubs ?? []}
           onSpeciesSelect={onSpeciesSelect}
         />
       </div>

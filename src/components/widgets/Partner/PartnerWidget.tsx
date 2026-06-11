@@ -1,34 +1,34 @@
 import { useMemo } from 'react';
 import { MapPin, ExternalLink, Building2 } from 'lucide-react';
-import { useHubs } from '@/api/hooks/useHubs';
-import { findNearestHub } from '@/utils/geo';
+import { usePartners } from '@/api/hooks/usePartners';
+import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 
-interface HubPartnerWidgetProps {
+interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
-  onHubLayerToggle: (enabled: boolean) => void;
-  hubLayerEnabled: boolean;
+  onPartnerLayerToggle: (enabled: boolean) => void;
+  partnerLayerEnabled: boolean;
 }
 
-export function HubPartnerWidget({
+export function PartnerWidget({
   selectedCell,
-  onHubLayerToggle,
-  hubLayerEnabled,
-}: HubPartnerWidgetProps) {
-  const { data: hubsData, isLoading, isError } = useHubs();
+  onPartnerLayerToggle,
+  partnerLayerEnabled,
+}: PartnerWidgetProps) {
+  const { data: partnersData, isLoading, isError } = usePartners();
 
   const nearest = useMemo(() => {
-    if (!selectedCell?.centerCoords || !hubsData?.hubs.length) return null;
+    if (!selectedCell?.centerCoords || !partnersData?.hubs.length) return null;
 
-    return findNearestHub(
+    return findNearestPartner(
       selectedCell.centerCoords.latitude,
       selectedCell.centerCoords.longitude,
-      hubsData.hubs,
+      partnersData.hubs,
     );
-  }, [selectedCell, hubsData]);
+  }, [selectedCell, partnersData]);
 
   const handleToggle = () => {
-    onHubLayerToggle(!hubLayerEnabled);
+    onPartnerLayerToggle(!partnerLayerEnabled);
   };
 
   if (isLoading) {
@@ -42,7 +42,9 @@ export function HubPartnerWidget({
   }
 
   if (isError) {
-    return <p className="text-xs text-gray-400 py-2">Hub data unavailable</p>;
+    return (
+      <p className="text-xs text-gray-400 py-2">Partner data unavailable</p>
+    );
   }
 
   if (!selectedCell || !nearest) {
@@ -57,7 +59,7 @@ export function HubPartnerWidget({
             shrink-0"
           />
           <p className="text-xs text-gray-600">
-            Hub partner locations are visible on the map.
+            Partner organisation locations are visible on the map.
           </p>
         </div>
         <div
@@ -66,7 +68,7 @@ export function HubPartnerWidget({
         >
           <MapPin size={18} className="text-gray-300" />
           <p className="text-sm text-gray-400">
-            Select a cell to find your nearest partner
+            Select a cell to find your nearest partner organisation
           </p>
         </div>
       </div>
@@ -83,20 +85,20 @@ export function HubPartnerWidget({
         </span>
       </div>
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-        HUB PARTNER
+        NEAREST PARTNER ORGANISATION
       </p>
 
       <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-3">
         <div className="flex items-start gap-2">
           <Building2 size={16} className="text-[#0f6e56] mt-0.5 shrink-0" />
           <span className="text-sm font-semibold text-gray-900 leading-snug">
-            {nearest.hub.institution}
+            {nearest.partner.institution}
           </span>
         </div>
 
         <div className="space-y-0.5">
           <p className="text-xs text-gray-500">
-            {nearest.hub.city}, {nearest.hub.country}
+            {nearest.partner.city}, {nearest.partner.country}
           </p>
           <p className="text-xs text-gray-400">
             {nearest.distanceKm.toLocaleString()} km from selected cell
@@ -107,7 +109,7 @@ export function HubPartnerWidget({
 
         <div className="flex flex-col gap-2">
           <a
-            href={nearest.hub.websiteUrl}
+            href={nearest.partner.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
@@ -136,23 +138,22 @@ export function HubPartnerWidget({
         <div className="flex items-center gap-2">
           <MapPin size={14} className="text-[#0f6e56] shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-[#0f6e56] uppercase tracking-wide">
-              MAP TIP
+            <p className="text-xs text-gray-600">
+              Show partner organisation locations
             </p>
-            <p className="text-xs text-gray-600">Show hub locations on map</p>
           </div>
         </div>
         <button
           role="switch"
-          aria-checked={hubLayerEnabled}
+          aria-checked={partnerLayerEnabled}
           onClick={handleToggle}
           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            hubLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
+            partnerLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
           }`}
         >
           <span
             className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
-              hubLayerEnabled ? 'translate-x-4' : 'translate-x-0'
+              partnerLayerEnabled ? 'translate-x-4' : 'translate-x-0'
             }`}
           />
         </button>

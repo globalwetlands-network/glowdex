@@ -1,12 +1,12 @@
-interface HubMarkerIconProps {
+interface PartnerMarkerIconProps {
   isNearest?: boolean;
   size?: number;
 }
 
-export function HubMarkerIcon({
+export function PartnerMarkerIcon({
   isNearest = false,
   size = 20,
-}: HubMarkerIconProps) {
+}: PartnerMarkerIconProps) {
   const outerRadius = size / 2;
   const innerRadius = isNearest ? outerRadius * 0.42 : outerRadius * 0.38;
   const strokeWidth = isNearest ? 3 : 2;
@@ -19,7 +19,7 @@ export function HubMarkerIcon({
       viewBox={`0 0 ${size} ${size}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="Hub partner location"
+      aria-label="Partner organisation location"
     >
       {/* Outer white circle with teal stroke */}
       <circle
