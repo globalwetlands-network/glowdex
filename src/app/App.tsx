@@ -24,6 +24,7 @@ import { useStatistics } from '@/data/hooks/useStatistics';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
+import { WelcomeModal } from './components/WelcomeModal';
 import { LoadingState } from './components/LoadingState';
 import { SidePanel } from './components/SidePanel';
 import { TopBar } from './components/TopBar';
@@ -277,13 +278,16 @@ function AppShell() {
   }
 
   return (
-    <AppLayout
-      topBar={<TopBar />}
-      mapArea={mapArea}
-      sidePanel={sidePanel}
-      mobileActiveTab={mobileActiveTab}
-      onMobileTabChange={handleMobileTabChange}
-    />
+    <>
+      <WelcomeModal />
+      <AppLayout
+        topBar={<TopBar />}
+        mapArea={mapArea}
+        sidePanel={sidePanel}
+        mobileActiveTab={mobileActiveTab}
+        onMobileTabChange={handleMobileTabChange}
+      />
+    </>
   );
 }
 
