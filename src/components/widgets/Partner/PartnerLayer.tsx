@@ -14,25 +14,26 @@ export function PartnerLayer({ enabled, selectedCell }: PartnerLayerProps) {
   const { data: partnersData } = usePartners();
 
   const nearestPartnerId = useMemo(() => {
-    if (!selectedCell?.centerCoords || !partnersData?.hubs.length) return null;
+    if (!selectedCell?.centerCoords || !partnersData?.partners.length)
+      return null;
 
     const nearest = findNearestPartner(
       selectedCell.centerCoords.latitude,
       selectedCell.centerCoords.longitude,
-      partnersData.hubs,
+      partnersData.partners,
     );
 
     return nearest?.partner.id ?? null;
   }, [selectedCell, partnersData]);
 
   const geojsonData = useMemo<FeatureCollection<Point>>(() => {
-    if (!partnersData?.hubs) {
+    if (!partnersData?.partners) {
       return { type: 'FeatureCollection', features: [] };
     }
 
     return {
       type: 'FeatureCollection',
-      features: partnersData.hubs.map((partner) => ({
+      features: partnersData.partners.map((partner) => ({
         type: 'Feature' as const,
         properties: {
           id: partner.id,

@@ -136,7 +136,7 @@ export function SpeciesSpotlightWidget({
       if (nearest) {
         const partnerMatchIdx = species.findIndex((s) => {
           const config = speciesConfigData.species.find((c) => c.id === s.id);
-          return config?.hubIds.includes(nearest.partner.id) ?? false;
+          return config?.partnerIds.includes(nearest.partner.id) ?? false;
         });
         if (partnerMatchIdx !== -1) return partnerMatchIdx;
       }

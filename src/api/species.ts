@@ -57,7 +57,7 @@ export async function fetchSpeciesObservations(
 export interface SpeciesConfigResponse {
   id: string;
   commonName: string;
-  hubIds: string[];
+  partnerIds: string[];
   regionBounds: RegionBoundResponse[];
 }
 
@@ -70,7 +70,7 @@ export interface AllSpeciesConfigResponse {
 
 /**
  * Fetches lightweight static config for all species.
- * No GBIF observation data — only hubIds and regionBounds
+ * No GBIF observation data — only partnerIds and regionBounds
  * needed for frontend auto-selection logic.
  */
 export async function fetchAllSpeciesConfig(): Promise<AllSpeciesConfigResponse> {

@@ -18,12 +18,13 @@ export function PartnerWidget({
   const { data: partnersData, isLoading, isError } = usePartners();
 
   const nearest = useMemo(() => {
-    if (!selectedCell?.centerCoords || !partnersData?.hubs.length) return null;
+    if (!selectedCell?.centerCoords || !partnersData?.partners.length)
+      return null;
 
     return findNearestPartner(
       selectedCell.centerCoords.latitude,
       selectedCell.centerCoords.longitude,
-      partnersData.hubs,
+      partnersData.partners,
     );
   }, [selectedCell, partnersData]);
 

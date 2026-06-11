@@ -95,7 +95,7 @@ export function BiodiversityPanel({
         <SpeciesSpotlightWidget
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           selectedCell={selectedCell}
-          partners={partnersData?.hubs ?? []}
+          partners={partnersData?.partners ?? []}
           onSpeciesSelect={onSpeciesSelect}
         />
       </div>
