@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 const STORAGE_KEY = 'glowdex_welcome_dismissed';
@@ -13,20 +13,34 @@ export function WelcomeModal() {
     setVisible(false);
   };
 
+  useEffect(() => {
+    if (!visible) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleDismiss();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [visible]);
+
   if (!visible) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={handleDismiss}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="welcome-title"
     >
-      <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <button
+        type="button"
+        aria-label="Close welcome message"
+        onClick={handleDismiss}
+        className="absolute inset-0 w-full h-full bg-black/40 backdrop-blur-sm cursor-default focus:outline-none"
+        tabIndex={-1}
+      />
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-4">
         {/* Close button */}
         <button
           type="button"
