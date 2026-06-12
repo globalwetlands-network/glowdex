@@ -1,5 +1,7 @@
+import bbox from '@turf/bbox';
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
+import type { Feature } from 'geojson';
 
 /**
  * Calculates geodesic distance between two points in kilometres.
@@ -57,4 +59,28 @@ export function findNearestPartner<T extends { coordinates: [number, number] }>(
       ),
     },
   );
+}
+
+export function getBboxCenter({
+  minLng,
+  minLat,
+  maxLng,
+  maxLat,
+}: {
+  minLng: number;
+  minLat: number;
+  maxLng: number;
+  maxLat: number;
+}): { latitude: number; longitude: number } {
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
+  return { latitude: centerLat, longitude: centerLng };
+}
+
+export function getFeatureCenterCoords(feature: Feature): {
+  latitude: number;
+  longitude: number;
+} {
+  const [minLng, minLat, maxLng, maxLat] = bbox(feature);
+  return getBboxCenter({ minLng, minLat, maxLng, maxLat });
 }

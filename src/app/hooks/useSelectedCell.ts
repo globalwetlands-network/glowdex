@@ -5,7 +5,7 @@ import type { GridGeoJSON } from '@/data/types/geo.types';
 
 import type { EnrichedGridCell } from '../types/app.types';
 
-import { getFeatureCenterCoords } from '@/utils/geoUtils';
+import { getFeatureCenterCoords } from '@/utils/geo';
 
 /**
  * Retrieves and enriches the selected grid cell with center coordinates
