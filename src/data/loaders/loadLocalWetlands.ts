@@ -16,7 +16,8 @@ export async function loadLocalWetlands(): Promise<LocalObservationRaw[]> {
   const response = await fetchAsset('data/local-wetlands-crab-data.csv');
   if (!response.ok) {
     throw new Error(
-      `Failed to load local wetlands data: ${response.statusText}`,
+      `Failed to load local wetlands data: ` +
+        `${response.status} ${response.statusText}`.trim(),
     );
   }
   const text = await response.text();

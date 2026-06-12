@@ -72,13 +72,28 @@ export function deriveLocalWetlands(
       siteMap.set(siteId, []);
     }
 
+    const density = parseFloat(row.Density);
+    const se = parseFloat(row.SE);
+    const samplesN = parseInt(row.Samples_n, 10);
+    const year = parseInt(row.Year, 10);
+
+    if (isNaN(density) || isNaN(se) || isNaN(samplesN) || isNaN(year)) {
+      console.warn(
+        `Skipping malformed row — non-numeric value: ` +
+          `Year=${row.Year}, Site_Type=${row.Site_Type}, ` +
+          `Species=${row.Species}, Density=${row.Density}, ` +
+          `SE=${row.SE}, Samples_n=${row.Samples_n}`,
+      );
+      continue;
+    }
+
     siteMap.get(siteId)!.push({
-      year: parseInt(row.Year, 10),
+      year,
       siteType: row.Site_Type,
       species: row.Species,
-      density: parseFloat(row.Density),
-      se: parseFloat(row.SE),
-      samplesN: parseInt(row.Samples_n, 10),
+      density,
+      se,
+      samplesN,
     });
   }
 
@@ -118,7 +133,8 @@ export function deriveLocalWetlands(
       return totalDensity + combinedSE;
     });
 
-    const globalMaxDensity = Math.max(...groupTotals, 5) * 1.1;
+    const globalMaxDensity =
+      groupTotals.reduce((m, v) => Math.max(m, v), 5) * 1.1;
 
     return {
       ...meta,

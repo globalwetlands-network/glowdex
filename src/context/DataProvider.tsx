@@ -16,7 +16,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const value = useMemo<DataContextValue>(() => {
     const isLoading =
       scienceData.isLoading || indicatorData.isLoading || localData.isLoading;
-    const error = indicatorData.error; // useScientificData handles error internally by logging, but we could expose it if modified
+    // Error reflects indicatorData only — useScientificData
+    // and useLocalWetlands swallow errors internally.
+    // See DataContext.tsx error field comment for context.
+    const error = indicatorData.error;
 
     return {
       gridCells: scienceData.gridCells,
