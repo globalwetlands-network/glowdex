@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type {
   Indicator,
   IndicatorDimension,
@@ -13,6 +14,7 @@ export interface DataContextValue {
   geojson: GridGeoJSON | null;
   indicators: Indicator[];
   dimensions: IndicatorDimension[];
+  localSites: LocalSite[];
   isLoading: boolean;
   error: Error | null;
 }
