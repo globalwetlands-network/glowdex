@@ -61,6 +61,15 @@ export function findNearestPartner<T extends { coordinates: [number, number] }>(
   );
 }
 
+/**
+ * Calculates the geographic center of a bounding box.
+ *
+ * @param minLng - Western boundary longitude
+ * @param minLat - Southern boundary latitude
+ * @param maxLng - Eastern boundary longitude
+ * @param maxLat - Northern boundary latitude
+ * @returns Centre point as latitude/longitude
+ */
 export function getBboxCenter({
   minLng,
   minLat,
@@ -77,6 +86,13 @@ export function getBboxCenter({
   return { latitude: centerLat, longitude: centerLng };
 }
 
+/**
+ * Returns the geographic centre of a GeoJSON feature
+ * derived from its bounding box.
+ *
+ * @param feature - GeoJSON Feature of any geometry type
+ * @returns Centre point as latitude/longitude
+ */
 export function getFeatureCenterCoords(feature: Feature): {
   latitude: number;
   longitude: number;

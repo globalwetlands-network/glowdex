@@ -35,7 +35,7 @@ export function useSelectedCell(
       (f) => f.properties.ID === selectedCellId,
     );
     if (!feature) {
-      return cell as EnrichedGridCell;
+      return null;
     }
 
     const centerCoords = getFeatureCenterCoords(feature);
