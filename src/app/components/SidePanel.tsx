@@ -5,6 +5,7 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
 import type { ObservationPoint } from '@/api/species';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
@@ -37,6 +38,7 @@ interface SidePanelProps {
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
+  localSites: LocalSite[];
 }
 
 /**
@@ -91,8 +93,9 @@ export function SidePanel({
         </button>
       </div>
 
-      {/* Empty state — no location selected */}
-      {!selectedCell && (
+      {/* Empty state — no location selected, analysis tab only.
+          Biodiversity tab shows useful content without a selection. */}
+      {!selectedCell && activeTab === 'analysis' && (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
           <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
             <MapPin className="w-6 h-6 text-teal-600" />

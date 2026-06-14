@@ -41,8 +41,15 @@ import type { MobileTab } from './types/app.types';
  */
 function AppShell() {
   // Context consumption
-  const { gridCells, geojson, typologies, indicators, isLoading, error } =
-    useData();
+  const {
+    gridCells,
+    geojson,
+    typologies,
+    indicators,
+    localSites,
+    isLoading,
+    error,
+  } = useData();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
@@ -257,6 +264,7 @@ function AppShell() {
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
+        localSites={localSites}
       />
     ),
     [
@@ -278,6 +286,7 @@ function AppShell() {
       panelActiveTab,
       handlePanelTabChange,
       clickedPartnerId,
+      localSites,
     ],
   );
 
