@@ -19,6 +19,11 @@
  * The partner link resolves the website URL from the site's
  * partnerId via the usePartners hook (TanStack Query —
  * deduplicated with PartnerWidget / PartnerLayer).
+ *
+ * URL policy: only https:// partner URLs are rendered.
+ * http:// URLs are silently dropped. This convention
+ * is applied consistently across all components that
+ * render partner website links.
  */
 
 import { useState, useMemo } from 'react';
@@ -101,6 +106,13 @@ export function LocalWetlandsAnalysisWidget({
       null
     );
   }, [associatedSite, partnersData]);
+
+  console.log('[LocalWetlands]', {
+    selectedCell,
+    localSites,
+    associatedSite,
+    activeYear,
+  });
 
   if (!associatedSite || !activeYear) return null;
 

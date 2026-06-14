@@ -12,6 +12,7 @@ import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
+import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
@@ -64,6 +65,7 @@ export function SidePanel({
   activeTab,
   onTabChange,
   clickedPartnerId,
+  localSites,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -199,6 +201,17 @@ export function SidePanel({
             </div>
           </div>
         )}
+
+        {/* Local Wetlands Analysis card —
+            widget handles its own null return */}
+        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div className="p-4">
+            <LocalWetlandsAnalysisWidget
+              localSites={localSites}
+              selectedCell={selectedCell}
+            />
+          </div>
+        </div>
       </div>
 
       <div
