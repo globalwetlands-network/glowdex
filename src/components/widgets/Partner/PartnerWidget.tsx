@@ -140,19 +140,24 @@ export function PartnerWidget({
         <div className="border-t border-gray-100" />
 
         <div className="flex flex-col gap-2">
-          <a
-            href={displayedPartner.partner.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
-          >
-            <ExternalLink size={10} />
-            Visit website
-          </a>
+          {/* Only render https:// URLs — see
+              LocalWetlandsAnalysisWidget for policy note */}
+          {displayedPartner.partner.websiteUrl.startsWith('https://') && (
+            <a
+              href={displayedPartner.partner.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
+            >
+              <ExternalLink size={10} />
+              Visit website
+            </a>
+          )}
           <div className="border-t border-gray-100 pt-2">
             <p className="text-[10px] text-gray-400 mb-1">
               Learn more about the project
             </p>
+            {/* Hardcoded https:// URL — not from the API */}
             <a
               href="https://globalwetlandsproject.org"
               target="_blank"
