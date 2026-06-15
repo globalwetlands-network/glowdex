@@ -54,6 +54,14 @@ const MAX_SITE_ASSOCIATION_DISTANCE_KM = 157;
 interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
   selectedCell: EnrichedGridCell | null;
+  /**
+   * Externally selected site ID — set when the user
+   * clicks a monitoring site pin on the map.
+   * Synced into manualSiteId via useEffect so the
+   * dropdowns reflect the active site.
+   * null when no external selection has been made.
+   */
+  selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
@@ -62,6 +70,7 @@ interface LocalWetlandsAnalysisWidgetProps {
 export function LocalWetlandsAnalysisWidget({
   localSites,
   selectedCell,
+  selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
@@ -86,9 +95,12 @@ export function LocalWetlandsAnalysisWidget({
 
   // associatedSite must be defined before activeSitesForSelector
   const associatedSite = useMemo(() => {
-    // Manual selection takes priority
-    if (manualSiteId) {
-      return localSites.find((s) => s.id === manualSiteId) ?? null;
+    // Manual dropdown selection takes priority over external map selection.
+    // selectedSiteId (from map pin click) is used as fallback so the
+    // selectors reflect the active site without copying prop into state.
+    const effectiveSiteId = manualSiteId ?? selectedSiteId;
+    if (effectiveSiteId) {
+      return localSites.find((s) => s.id === effectiveSiteId) ?? null;
     }
 
     // Fall back to proximity association
@@ -107,7 +119,7 @@ export function LocalWetlandsAnalysisWidget({
     }
 
     return result.site;
-  }, [selectedCell, localSites, manualSiteId]);
+  }, [selectedCell, localSites, manualSiteId, selectedSiteId]);
 
   const availableCountries = useMemo(() => {
     return [...new Set(localSites.map((s) => s.country))].sort();
@@ -264,6 +276,11 @@ export function LocalWetlandsAnalysisWidget({
           className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
             localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
           }`}
+          aria-label={
+            localSiteLayerEnabled
+              ? 'Hide monitoring sites on map'
+              : 'Show monitoring sites on map'
+          }
           title={
             localSiteLayerEnabled
               ? 'Hide monitoring sites on map'

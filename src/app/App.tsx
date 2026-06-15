@@ -319,6 +319,7 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
+        selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
         localSiteLayerEnabled={localSiteLayerEnabled}
         onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
@@ -344,6 +345,7 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
+      selectedSiteId,
       handleSiteSelect,
       localSiteLayerEnabled,
       handleLocalSiteLayerToggle,

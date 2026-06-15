@@ -40,6 +40,7 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
+  selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
@@ -69,6 +70,7 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
+  selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
@@ -198,6 +200,7 @@ export function SidePanel({
             <LocalWetlandsAnalysisWidget
               localSites={localSites}
               selectedCell={selectedCell}
+              selectedSiteId={selectedSiteId}
               onSiteSelect={onSiteSelect}
               localSiteLayerEnabled={localSiteLayerEnabled}
               onLocalSiteLayerToggle={onLocalSiteLayerToggle}
