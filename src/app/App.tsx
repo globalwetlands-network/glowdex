@@ -20,7 +20,7 @@ import {
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
-import { useStatistics } from '@/data/hooks/useStatistics';
+import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -188,7 +188,7 @@ function AppShell() {
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
 
   // 1a. Fetch backend statistics for the selected cell (Single Source of Truth)
-  const { data: cellStats } = useStatistics(selectedCellId);
+  const { data: cellStats } = useGlobalStatistics(selectedCellId);
 
   // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
