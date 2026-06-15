@@ -10,8 +10,14 @@ export async function fetchInsight({
   question,
   messages,
   contextId,
+  localSiteContext,
 }: InsightRequest): Promise<InsightResponse> {
-  const body: Record<string, unknown> = { gridCellId, question, messages };
+  const body: Record<string, unknown> = {
+    gridCellId,
+    question,
+    messages,
+    ...(localSiteContext ? { localSiteContext } : {}),
+  };
 
   // Only pass contextId if it's not the default to keep the request clean
   if (contextId && contextId !== 'default') {

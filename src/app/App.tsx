@@ -8,9 +8,11 @@ import { useSelection } from '@/context/SelectionContext';
 
 // Types
 import type { ObservationPoint } from '@/api/species';
+import type { LocalSiteContext } from '@/api/types';
 
 // Data
 import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
+import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
 
 // Feature Hooks & Components
 import {
@@ -21,6 +23,7 @@ import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
+import { usePartners } from '@/api/hooks/usePartners';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -173,6 +176,71 @@ function AppShell() {
     },
     [localSites, gridCells, setSelectedCellId],
   );
+
+  const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
+
+  /**
+   * Derives the local site context for the AI assistant
+   * when a monitoring site is selected. Uses the most
+   * recent available year. Returns null when no site is
+   * selected, no data is available, or all conditions
+   * have zero samples (no field data collected).
+   *
+   * Partner institution name is resolved from the partners
+   * API — the AI receives the full name rather than the
+   * partner ID slug.
+   */
+  const localSiteContext = useMemo((): LocalSiteContext | null => {
+    if (!selectedSiteId || !localSites.length) return null;
+
+    const site = localSites.find((s) => s.id === selectedSiteId);
+    if (!site || !site.observations.length) return null;
+
+    // availableYears is sorted ascending in
+    // deriveLocalWetlands — .at(-1) safely returns
+    // the most recent year.
+    const year = site.availableYears.at(-1) ?? null;
+    if (!year) return null;
+
+    // Filter out conditions with no samples — zero samplesN indicates
+    // no field data was collected for that condition in this year.
+    const conditions = aggregateByCondition(site.observations, year).filter(
+      (c) => c.samplesN > 0,
+    );
+
+    if (!conditions.length) return null;
+
+    // Wait for partners data to load before sending
+    // local context to the AI — prevents the AI
+    // receiving a partner ID slug instead of the full
+    // institution name. Once loaded the memo re-runs
+    // with the correct name and the query updates.
+    if (site.partnerId && !partnersData?.partners) {
+      return null;
+    }
+
+    const partnerName = site.partnerId
+      ? (partnersData?.partners.find((p) => p.id === site.partnerId)
+          ?.institution ?? site.name)
+      : site.name;
+
+    return {
+      siteName: site.name,
+      country: site.country,
+      partner: partnerName,
+      year,
+      conditions,
+    };
+  }, [selectedSiteId, localSites, partnersData]);
+
+  /**
+   * True only when a site is selected and the partners
+   * API hasn't resolved yet — prevents the AI query
+   * firing without local context then re-firing with it.
+   * False for plain cell selections with no associated
+   * site so those queries are not delayed.
+   */
+  const isLocalContextPending = !!selectedSiteId && isPartnersLoading;
 
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
@@ -328,6 +396,8 @@ function AppShell() {
         // selection and tab switch. If these use cases ever diverge (e.g.
         // onViewLocalData should not fly-to the site), split the callback.
         onViewLocalData={handleSiteSelect}
+        localSiteContext={localSiteContext}
+        isLocalContextPending={isLocalContextPending}
       />
     ),
     [
@@ -354,6 +424,8 @@ function AppShell() {
       handleSiteSelect,
       localSiteLayerEnabled,
       handleLocalSiteLayerToggle,
+      localSiteContext,
+      isLocalContextPending,
     ],
   );
 

@@ -6,6 +6,7 @@ import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
 import type { ObservationPoint } from '@/api/species';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { LocalSiteContext } from '@/api/types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
@@ -45,6 +46,8 @@ interface SidePanelProps {
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
   onViewLocalData: (siteId: string) => void;
+  localSiteContext: LocalSiteContext | null;
+  isLocalContextPending: boolean;
 }
 
 /**
@@ -76,6 +79,8 @@ export function SidePanel({
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
   onViewLocalData,
+  localSiteContext,
+  isLocalContextPending,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -151,6 +156,8 @@ export function SidePanel({
                     selectedCellId={
                       activeTab === 'analysis' ? selectedCell?.id : null
                     }
+                    localSiteContext={localSiteContext}
+                    isLocalContextPending={isLocalContextPending}
                   />
                 </CollapsibleSection>
               </div>
