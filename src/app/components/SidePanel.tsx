@@ -40,6 +40,7 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
+  onSiteSelect: (siteId: string) => void;
 }
 
 /**
@@ -66,6 +67,7 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
+  onSiteSelect,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -95,23 +97,6 @@ export function SidePanel({
         </button>
       </div>
 
-      {/* Empty state — no location selected, analysis tab only.
-          Biodiversity tab shows useful content without a selection. */}
-      {!selectedCell && activeTab === 'analysis' && (
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-          <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
-            <MapPin className="w-6 h-6 text-teal-600" />
-          </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">
-            Search for a location on the map to get started
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Use the search box in the top left of the map, or click any cell to
-            explore the data
-          </p>
-        </div>
-      )}
-
       {/* Tab Content */}
       <div
         className={
@@ -120,7 +105,7 @@ export function SidePanel({
             : 'hidden'
         }
       >
-        {/* Content — only shown when a cell is selected */}
+        {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (
           <div className="space-y-4">
             {/* Location card */}
@@ -165,7 +150,7 @@ export function SidePanel({
           </div>
         )}
 
-        {/* Section: Filters */}
+        {/* Filters card — always visible */}
         <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
           <div className="p-4">
             <CollapsibleSection
@@ -182,7 +167,7 @@ export function SidePanel({
           </div>
         </div>
 
-        {/* Indicators card */}
+        {/* Global Wetlands Analysis card — only shown when a cell is selected */}
         {selectedCell && (
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
             <div className="p-4">
@@ -202,13 +187,13 @@ export function SidePanel({
           </div>
         )}
 
-        {/* Local Wetlands Analysis card —
-            widget handles its own null return */}
+        {/* Local Wetlands Analysis card — always visible */}
         <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
           <div className="p-4">
             <LocalWetlandsAnalysisWidget
               localSites={localSites}
               selectedCell={selectedCell}
+              onSiteSelect={onSiteSelect}
             />
           </div>
         </div>

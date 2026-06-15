@@ -26,7 +26,7 @@
  * render partner website links.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ExternalLink } from 'lucide-react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { EnrichedGridCell } from '@/app/types/app.types';
@@ -54,11 +54,13 @@ const MAX_SITE_ASSOCIATION_DISTANCE_KM = 157;
 interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
   selectedCell: EnrichedGridCell | null;
+  onSiteSelect: (siteId: string) => void;
 }
 
 export function LocalWetlandsAnalysisWidget({
   localSites,
   selectedCell,
+  onSiteSelect,
 }: LocalWetlandsAnalysisWidgetProps) {
   const { data: partnersData } = usePartners();
 
@@ -73,7 +75,19 @@ export function LocalWetlandsAnalysisWidget({
    */
   const [selectedYear] = useState<number | null>(null);
 
+  // Explicit site selection via dropdown.
+  // Takes priority over proximity association.
+  // null = no explicit selection — fall back to proximity.
+  const [manualSiteId, setManualSiteId] = useState<string | null>(null);
+
+  // associatedSite must be defined before activeSitesForSelector
   const associatedSite = useMemo(() => {
+    // Manual selection takes priority
+    if (manualSiteId) {
+      return localSites.find((s) => s.id === manualSiteId) ?? null;
+    }
+
+    // Fall back to proximity association
     if (!selectedCell?.centerCoords || !localSites.length) {
       return null;
     }
@@ -89,7 +103,17 @@ export function LocalWetlandsAnalysisWidget({
     }
 
     return result.site;
-  }, [selectedCell, localSites]);
+  }, [selectedCell, localSites, manualSiteId]);
+
+  const availableCountries = useMemo(() => {
+    return [...new Set(localSites.map((s) => s.country))].sort();
+  }, [localSites]);
+
+  const activeSitesForSelector = useMemo(() => {
+    const country = associatedSite?.country ?? null;
+    if (!country) return [];
+    return localSites.filter((s) => s.country === country);
+  }, [localSites, associatedSite]);
 
   const activeYear = useMemo(() => {
     if (!associatedSite) return null;
@@ -107,14 +131,90 @@ export function LocalWetlandsAnalysisWidget({
     );
   }, [associatedSite, partnersData]);
 
-  console.log('[LocalWetlands]', {
-    selectedCell,
-    localSites,
-    associatedSite,
-    activeYear,
-  });
+  const handleSiteSelect = useCallback(
+    (siteId: string) => {
+      if (!siteId) return;
+      setManualSiteId(siteId);
+      onSiteSelect(siteId);
+    },
+    [onSiteSelect],
+  );
 
-  if (!associatedSite || !activeYear) return null;
+  const handleCountryChange = useCallback(
+    (country: string) => {
+      if (!country) {
+        setManualSiteId(null);
+        return;
+      }
+      // Auto-select the first site in the new country
+      // so manualSiteId is never null after the user
+      // has touched the country dropdown — prevents
+      // fallback to proximity association.
+      const firstSite = localSites.find((s) => s.country === country);
+      if (firstSite) {
+        setManualSiteId(firstSite.id);
+        onSiteSelect(firstSite.id);
+      } else {
+        // Defensive fallback — every listed country
+        // should have at least one site, but clear
+        // manualSiteId if none found to avoid showing
+        // stale data.
+        setManualSiteId(null);
+      }
+    },
+    [localSites, onSiteSelect],
+  );
+
+  if (!associatedSite || !activeYear) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Local Wetlands Analysis
+        </p>
+        <p className="text-xs text-gray-500">
+          Select a monitoring site to view local field data.
+        </p>
+
+        {/* Country selector */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-gray-500">Country</label>
+          <select
+            value={associatedSite?.country ?? ''}
+            onChange={(e) => handleCountryChange(e.target.value)}
+            className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+          >
+            <option value="">Select country...</option>
+            {availableCountries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Site selector — shown once a site is selected (country is known) */}
+        {associatedSite && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-500">
+              Monitoring site
+            </label>
+            <select
+              value={manualSiteId ?? ''}
+              onChange={(e) => handleSiteSelect(e.target.value)}
+              className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+            >
+              <option value="">Select site...</option>
+              {activeSitesForSelector.map((site) => (
+                <option key={site.id} value={site.id}>
+                  {site.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const yearIndex = associatedSite.availableYears.indexOf(activeYear);
   const yearProgress =
@@ -122,6 +222,34 @@ export function LocalWetlandsAnalysisWidget({
 
   return (
     <div className="space-y-3">
+      {/* Site selector in chart mode —
+          changing country auto-selects the first site
+          in that country immediately. */}
+      <div className="flex gap-2">
+        <select
+          value={associatedSite.country}
+          onChange={(e) => handleCountryChange(e.target.value)}
+          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+        >
+          {availableCountries.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
+        <select
+          value={manualSiteId ?? associatedSite.id}
+          onChange={(e) => handleSiteSelect(e.target.value)}
+          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+        >
+          {activeSitesForSelector.map((site) => (
+            <option key={site.id} value={site.id}>
+              {site.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Section header */}
       <div className="space-y-0.5">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">

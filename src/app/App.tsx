@@ -32,6 +32,7 @@ import { TopBar } from './components/TopBar';
 // App Hooks, Constants & Types
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
 import { useSelectedCell } from './hooks/useSelectedCell';
+import { findNearestGridCell } from '@/utils/geo';
 import { useTypologyScale } from './hooks/useTypologyScale';
 import type { MobileTab } from './types/app.types';
 
@@ -131,6 +132,23 @@ function AppShell() {
       setMobileActiveTab('biodiversity');
     }
   }, []);
+
+  const handleSiteSelect = useCallback(
+    (siteId: string) => {
+      const site = localSites.find((s) => s.id === siteId);
+      if (site && gridCells?.length) {
+        const nearest = findNearestGridCell(
+          site.coordinates[1], // latitude
+          site.coordinates[0], // longitude
+          gridCells,
+        );
+        if (nearest) {
+          setSelectedCellId(nearest.cell.id);
+        }
+      }
+    },
+    [localSites, gridCells, setSelectedCellId],
+  );
 
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
@@ -265,6 +283,7 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
+        onSiteSelect={handleSiteSelect}
       />
     ),
     [
@@ -287,6 +306,7 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
+      handleSiteSelect,
     ],
   );
 
