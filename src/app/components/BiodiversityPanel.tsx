@@ -2,6 +2,7 @@ import { MapPin } from 'lucide-react';
 
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import { PartnerWidget } from '@/components/widgets/Partner';
 import { usePartners } from '@/api/hooks/usePartners';
@@ -21,6 +22,8 @@ interface BiodiversityPanelProps {
   onLocalSiteLayerToggle: (enabled: boolean) => void;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   clickedPartnerId: string | null;
+  localSites: LocalSite[];
+  onViewLocalData: (siteId: string) => void;
 }
 
 export function BiodiversityPanel({
@@ -34,6 +37,8 @@ export function BiodiversityPanel({
   onLocalSiteLayerToggle,
   onSpeciesSelect,
   clickedPartnerId,
+  localSites,
+  onViewLocalData,
 }: BiodiversityPanelProps) {
   const { data: partnersData } = usePartners();
   // usePartners() is also called in PartnerWidget and PartnerLayer.
@@ -49,6 +54,8 @@ export function BiodiversityPanel({
           onPartnerLayerToggle={onPartnerLayerToggle}
           partnerLayerEnabled={partnerLayerEnabled}
           clickedPartnerId={clickedPartnerId}
+          localSites={localSites}
+          onViewLocalData={onViewLocalData}
         />
       </div>
 

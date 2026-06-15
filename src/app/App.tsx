@@ -324,6 +324,10 @@ function AppShell() {
         onSiteSelect={handleSiteSelect}
         localSiteLayerEnabled={localSiteLayerEnabled}
         onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
+        // Intentionally aliases onSiteSelect — both trigger the same site
+        // selection and tab switch. If these use cases ever diverge (e.g.
+        // onViewLocalData should not fly-to the site), split the callback.
+        onViewLocalData={handleSiteSelect}
       />
     ),
     [

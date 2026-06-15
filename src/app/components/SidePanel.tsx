@@ -44,6 +44,7 @@ interface SidePanelProps {
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
+  onViewLocalData: (siteId: string) => void;
 }
 
 /**
@@ -74,6 +75,7 @@ export function SidePanel({
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
+  onViewLocalData,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -225,6 +227,8 @@ export function SidePanel({
           onLocalSiteLayerToggle={onLocalSiteLayerToggle}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
+          localSites={localSites}
+          onViewLocalData={onViewLocalData}
         />
       </div>
 
