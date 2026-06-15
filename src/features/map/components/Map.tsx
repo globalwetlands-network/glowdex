@@ -378,6 +378,21 @@ export function GridMap({
     onCellSelect(null);
   }, [onCellSelect]);
 
+  const interactiveLayerIds = useMemo(
+    () => [
+      'grid-fill',
+      'grid-highlight',
+      'local-sites',
+      'local-sites-inner',
+      'partner-locations',
+      'partner-locations-inner',
+      ...(speciesLayerEnabled && activeSpeciesId
+        ? [`species-${activeSpeciesId}-pins`]
+        : []),
+    ],
+    [speciesLayerEnabled, activeSpeciesId],
+  );
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
@@ -432,17 +447,7 @@ export function GridMap({
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
         mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={[
-          'grid-fill',
-          'grid-highlight',
-          'local-sites',
-          'local-sites-inner',
-          'partner-locations',
-          'partner-locations-inner',
-          ...(speciesLayerEnabled && activeSpeciesId
-            ? [`species-${activeSpeciesId}-pins`]
-            : []),
-        ]}
+        interactiveLayerIds={interactiveLayerIds}
         onMouseMove={(evt) => {
           onHover({
             ...evt,
