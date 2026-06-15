@@ -50,10 +50,10 @@ interface MapProps {
   onPartnerClick: (partnerId: string) => void;
   localSites: LocalSite[];
   localSiteLayerEnabled: boolean;
-  hoveredSiteId: string | null;
   selectedSiteId: string | null;
   onSiteClick: (siteId: string) => void;
-  onSiteHover: (siteId: string | null) => void;
+  siteFlyTarget: { lng: number; lat: number } | null;
+  onSiteFlyComplete: () => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -162,11 +162,13 @@ function enrichGeoJsonFeatures(
  *
  * ─── Layer rendering order ──────────────────────────────────────
  * 1. GridLayer — base typology grid (always rendered)
- * 2. SpeciesDistributionLayer — GBIF observations (conditional)
- * 3. PartnerLayer — partner markers (conditional)
- * 4. Search marker — teardrop SVG Marker (conditional)
- * 5. MapTooltip — hover tooltip (conditional)
- * 6. MapLayerLegend — bottom-left overlay (conditional)
+ * 2. MangroveExtentLayer — habitat raster (conditional)
+ * 3. SpeciesDistributionLayer — GBIF observations (conditional)
+ * 4. PartnerLayer — partner markers (conditional)
+ * 5. LocalSiteLayer — monitoring site pins (conditional)
+ * 6. Search marker — teardrop SVG Marker (conditional)
+ * 7. MapTooltip — hover tooltip (conditional)
+ * 8. MapLayerLegend — bottom-left overlay (conditional)
  */
 export function GridMap({
   allGridCells,
@@ -188,10 +190,10 @@ export function GridMap({
   onPartnerClick,
   localSites,
   localSiteLayerEnabled,
-  hoveredSiteId,
   selectedSiteId,
   onSiteClick,
-  onSiteHover,
+  siteFlyTarget,
+  onSiteFlyComplete,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -316,6 +318,16 @@ export function GridMap({
     onSpeciesFlyComplete();
   }, [speciesFlyTarget, onSpeciesFlyComplete]);
 
+  useEffect(() => {
+    if (!siteFlyTarget) return;
+    mapRef.current?.flyTo({
+      center: [siteFlyTarget.lng, siteFlyTarget.lat],
+      zoom: 8,
+      duration: 1000,
+    });
+    onSiteFlyComplete();
+  }, [siteFlyTarget, onSiteFlyComplete]);
+
   /**
    * Handles a confirmed search result from SearchBox.
    *
@@ -409,6 +421,7 @@ export function GridMap({
           activeObservations.length > 0
         }
         mangroveLayerEnabled={mangroveLayerEnabled}
+        localSiteLayerEnabled={localSiteLayerEnabled}
         searchMarkerVisible={searchMarker !== null}
         activeSpeciesName={activeSpeciesName}
       />
@@ -463,7 +476,6 @@ export function GridMap({
               name: siteFeature.properties?.name ?? '',
               country: siteFeature.properties?.country ?? '',
             });
-            onSiteHover(siteFeature.properties?.id ?? null);
             setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
           } else if (partnerFeature) {
@@ -476,7 +488,6 @@ export function GridMap({
               country: partnerFeature.properties?.country ?? '',
             });
             setSiteHoverInfo(null);
-            onSiteHover(null);
             setSpeciesHoverInfo(null);
           } else if (speciesFeature) {
             setSpeciesHoverInfo({
@@ -488,12 +499,10 @@ export function GridMap({
             });
             setPartnerHoverInfo(null);
             setSiteHoverInfo(null);
-            onSiteHover(null);
           } else {
             setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
             setSiteHoverInfo(null);
-            onSiteHover(null);
           }
         }}
         onClick={handleMapClick}
@@ -545,7 +554,7 @@ export function GridMap({
         <LocalSiteLayer
           enabled={localSiteLayerEnabled}
           localSites={localSites}
-          hoveredSiteId={hoveredSiteId}
+          hoveredSiteId={siteHoverInfo?.id ?? null}
           selectedSiteId={selectedSiteId}
         />
 

@@ -199,6 +199,8 @@ export function SidePanel({
               localSites={localSites}
               selectedCell={selectedCell}
               onSiteSelect={onSiteSelect}
+              localSiteLayerEnabled={localSiteLayerEnabled}
+              onLocalSiteLayerToggle={onLocalSiteLayerToggle}
             />
           </div>
         </div>

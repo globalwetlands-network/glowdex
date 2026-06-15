@@ -55,12 +55,16 @@ interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
   selectedCell: EnrichedGridCell | null;
   onSiteSelect: (siteId: string) => void;
+  localSiteLayerEnabled: boolean;
+  onLocalSiteLayerToggle: (enabled: boolean) => void;
 }
 
 export function LocalWetlandsAnalysisWidget({
   localSites,
   selectedCell,
   onSiteSelect,
+  localSiteLayerEnabled,
+  onLocalSiteLayerToggle,
 }: LocalWetlandsAnalysisWidgetProps) {
   const { data: partnersData } = usePartners();
 
@@ -168,9 +172,30 @@ export function LocalWetlandsAnalysisWidget({
   if (!associatedSite || !activeYear) {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Local Wetlands Analysis
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Local Wetlands Analysis
+          </p>
+          <button
+            role="switch"
+            aria-checked={localSiteLayerEnabled}
+            onClick={() => onLocalSiteLayerToggle(!localSiteLayerEnabled)}
+            className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
+            }`}
+            title={
+              localSiteLayerEnabled
+                ? 'Hide monitoring sites on map'
+                : 'Show monitoring sites on map'
+            }
+          >
+            <span
+              className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
+                localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
         <p className="text-xs text-gray-500">
           Select a monitoring site to view local field data.
         </p>
@@ -223,9 +248,30 @@ export function LocalWetlandsAnalysisWidget({
   return (
     <div className="space-y-3">
       {/* Section header */}
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-        Local Wetlands Analysis
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Local Wetlands Analysis
+        </p>
+        <button
+          role="switch"
+          aria-checked={localSiteLayerEnabled}
+          onClick={() => onLocalSiteLayerToggle(!localSiteLayerEnabled)}
+          className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
+          }`}
+          title={
+            localSiteLayerEnabled
+              ? 'Hide monitoring sites on map'
+              : 'Show monitoring sites on map'
+          }
+        >
+          <span
+            className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
+              localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
 
       {/* Site selectors — changing country auto-selects
           the first site in that country immediately. */}

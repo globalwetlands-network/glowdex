@@ -4,12 +4,14 @@ import {
   PartnerMarkerIcon,
   SpeciesMarkerIcon,
   MangroveExtentIcon,
+  LocalSiteMarkerIcon,
 } from '@/components/map/markers';
 
 interface MapLayerLegendProps {
   partnerLayerEnabled: boolean;
   speciesLayerEnabled: boolean;
   mangroveLayerEnabled: boolean;
+  localSiteLayerEnabled: boolean;
   searchMarkerVisible: boolean;
   activeSpeciesName?: string;
 }
@@ -23,6 +25,7 @@ export function MapLayerLegend({
   partnerLayerEnabled,
   speciesLayerEnabled,
   mangroveLayerEnabled,
+  localSiteLayerEnabled,
   searchMarkerVisible,
   activeSpeciesName,
 }: MapLayerLegendProps) {
@@ -39,6 +42,13 @@ export function MapLayerLegend({
     items.push({
       icon: <PartnerMarkerIcon size={16} />,
       label: 'Partner organisation',
+    });
+  }
+
+  if (localSiteLayerEnabled) {
+    items.push({
+      icon: <LocalSiteMarkerIcon size={14} />,
+      label: 'Monitoring site',
     });
   }
 

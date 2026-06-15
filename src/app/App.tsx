@@ -128,8 +128,12 @@ function AppShell() {
     setLocalSiteLayerEnabled(enabled);
   }, []);
 
-  const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+
+  const [siteFlyTarget, setSiteFlyTarget] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
@@ -145,15 +149,25 @@ function AppShell() {
   const handleSiteSelect = useCallback(
     (siteId: string) => {
       setSelectedSiteId(siteId);
+      setPanelActiveTab('analysis');
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('analysis');
+      }
       const site = localSites.find((s) => s.id === siteId);
-      if (site && gridCells?.length) {
-        const nearest = findNearestGridCell(
-          site.coordinates[1], // latitude
-          site.coordinates[0], // longitude
-          gridCells,
-        );
-        if (nearest) {
-          setSelectedCellId(nearest.cell.id);
+      if (site) {
+        setSiteFlyTarget({
+          lng: site.coordinates[0],
+          lat: site.coordinates[1],
+        });
+        if (gridCells?.length) {
+          const nearest = findNearestGridCell(
+            site.coordinates[1], // latitude
+            site.coordinates[0], // longitude
+            gridCells,
+          );
+          if (nearest) {
+            setSelectedCellId(nearest.cell.id);
+          }
         }
       }
     },
@@ -252,10 +266,10 @@ function AppShell() {
           onPartnerClick={handlePartnerClick}
           localSites={localSites}
           localSiteLayerEnabled={localSiteLayerEnabled}
-          hoveredSiteId={hoveredSiteId}
           selectedSiteId={selectedSiteId}
           onSiteClick={handleSiteSelect}
-          onSiteHover={setHoveredSiteId}
+          siteFlyTarget={siteFlyTarget}
+          onSiteFlyComplete={() => setSiteFlyTarget(null)}
         />
       ),
     [
@@ -276,9 +290,9 @@ function AppShell() {
       handlePartnerClick,
       localSites,
       localSiteLayerEnabled,
-      hoveredSiteId,
       selectedSiteId,
       handleSiteSelect,
+      siteFlyTarget,
     ],
   );
 
