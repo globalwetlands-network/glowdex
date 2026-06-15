@@ -1,8 +1,9 @@
 import bbox from '@turf/bbox';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
 import type { Feature } from 'geojson';
-import type { EnrichedGridCell } from '@/app/types/app.types';
+import type { GridGeoJSON } from '@/data/types/geo.types';
 
 /**
  * A geographic coordinate as latitude/longitude.
@@ -110,57 +111,52 @@ export function findNearestSite<T extends { coordinates: [number, number] }>(
 }
 
 /**
- * Finds the nearest grid cell to a given coordinate
- * from an array of enriched grid cells.
+ * Finds the grid cell whose GeoJSON feature geometry
+ * contains the given coordinates using point-in-polygon
+ * testing.
  *
- * Uses centerCoords when available (derived from GeoJSON
- * bbox centroid). Falls back to lat/lng from GridItem if
- * centerCoords is absent.
+ * More accurate than distance-based nearest-cell lookup
+ * for determining which cell a monitoring site belongs
+ * to — avoids the issue of RichGridCell having no
+ * centerCoords populated.
  *
- * Note: iterates over all cells — O(n) on grid size.
- * Acceptable for single site-click events but should not
- * be called in hot paths or on every render.
+ * Iterates all features — O(n) on grid size. Acceptable
+ * for single site-selection events, not for hot paths.
  *
- * @param lat - Latitude of the target point
- * @param lng - Longitude of the target point
- * @param gridCells - Array of enriched grid cells to search
- * @returns Nearest cell and its distance in km, or null
- *   if the array is empty
+ * Returns null when no feature contains the point —
+ * e.g. coordinates fall in open ocean or between cells.
+ * Callers should handle null gracefully.
+ *
+ * @param lat - Latitude of the point
+ * @param lng - Longitude of the point
+ * @param geojson - The full grid GeoJSON
+ * @returns Cell ID (number) or null
  */
-export function findNearestGridCell(
+export function findCellContainingPoint(
   lat: number,
   lng: number,
-  gridCells: EnrichedGridCell[],
-): { cell: EnrichedGridCell; distanceKm: number } | null {
-  if (!gridCells.length) return null;
+  geojson: GridGeoJSON,
+): number | null {
+  const pt = point([lng, lat]);
 
-  const cellsWithCoords = gridCells.filter(
-    (c) => c.centerCoords || (c.lat != null && c.lng != null),
-  );
+  for (const feature of geojson.features) {
+    try {
+      if (booleanPointInPolygon(pt, feature)) {
+        // Cast safely — ID may be string in GeoJSON
+        return Number(feature.properties.ID);
+      }
+    } catch (err) {
+      // Skip malformed features rather than aborting
+      console.warn(
+        'findCellContainingPoint: skipping malformed ' +
+          `feature ID=${feature.properties?.ID}:`,
+        err,
+      );
+      continue;
+    }
+  }
 
-  if (!cellsWithCoords.length) return null;
-
-  return cellsWithCoords.reduce(
-    (nearest, cell) => {
-      const cellLat = cell.centerCoords?.latitude ?? cell.lat ?? 0;
-      const cellLng = cell.centerCoords?.longitude ?? cell.lng ?? 0;
-      const distanceKm = calculateDistance(lat, lng, cellLat, cellLng);
-      return distanceKm < nearest.distanceKm ? { cell, distanceKm } : nearest;
-    },
-    {
-      cell: cellsWithCoords[0],
-      distanceKm: calculateDistance(
-        lat,
-        lng,
-        cellsWithCoords[0].centerCoords?.latitude ??
-          cellsWithCoords[0].lat ??
-          0,
-        cellsWithCoords[0].centerCoords?.longitude ??
-          cellsWithCoords[0].lng ??
-          0,
-      ),
-    },
-  );
+  return null;
 }
 
 /**

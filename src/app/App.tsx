@@ -24,7 +24,11 @@ import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCe
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
 import { usePartners } from '@/api/hooks/usePartners';
-import { calculateDistance } from '@/utils/geo';
+import {
+  calculateDistance,
+  findCellContainingPoint,
+  getFeatureCenterCoords,
+} from '@/utils/geo';
 import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 
 // App Components
@@ -37,7 +41,6 @@ import { TopBar } from './components/TopBar';
 // App Hooks, Constants & Types
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
 import { useSelectedCell } from './hooks/useSelectedCell';
-import { findNearestGridCell } from '@/utils/geo';
 import { useTypologyScale } from './hooks/useTypologyScale';
 import type { MobileTab } from './types/app.types';
 
@@ -156,37 +159,51 @@ function AppShell() {
 
   const handleSiteSelect = useCallback(
     (siteId: string) => {
-      console.log('[handleSiteSelect] siteId', siteId);
       setSelectedSiteId(siteId);
       setPanelActiveTab('analysis');
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
       }
+
       const site = localSites.find((s) => s.id === siteId);
-      console.log('[handleSiteSelect] site:', site);
-      if (site) {
-        setSiteFlyTarget({
-          lng: site.coordinates[0],
-          lat: site.coordinates[1],
-        });
-        if (gridCells?.length) {
-          const nearest = findNearestGridCell(
-            site.coordinates[1], // latitude
-            site.coordinates[0], // longitude
-            gridCells,
+      if (!site) return;
+
+      setSiteFlyTarget({
+        lng: site.coordinates[0],
+        lat: site.coordinates[1],
+      });
+
+      // geojson is stable after initial load — set once
+      // in useScientificData setState and never updated.
+      // Safe to include in the dependency array without
+      // risk of unnecessary re-creation.
+      if (geojson) {
+        // Use point-in-polygon against GeoJSON features
+        // to find the containing cell — more reliable
+        // than distance-based lookup since RichGridCell
+        // has no centerCoords populated at App level.
+        const cellId = findCellContainingPoint(
+          site.coordinates[1], // latitude
+          site.coordinates[0], // longitude
+          geojson,
+        );
+
+        if (cellId !== null) {
+          setSelectedCellId(cellId);
+        } else {
+          // Site coordinates don't fall within any grid
+          // cell (e.g. coastal edge case). Local data
+          // widget still shows correctly without a cell.
+          console.warn(
+            `handleSiteSelect: no grid cell found ` +
+              `containing site "${siteId}" at ` +
+              `[${site.coordinates[1]}, ` +
+              `${site.coordinates[0]}]`,
           );
-          console.log(
-            '[handleSiteSelect] nearest cell:',
-            nearest?.cell.id,
-            nearest?.distanceKm,
-          );
-          if (nearest) {
-            setSelectedCellId(nearest.cell.id);
-          }
         }
       }
     },
-    [localSites, gridCells, setSelectedCellId],
+    [localSites, geojson, setSelectedCellId],
   );
 
   const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
@@ -216,15 +233,34 @@ function AppShell() {
     const site = localSites.find((s) => s.id === effectiveSiteId);
     if (!site || !site.observations.length) return null;
 
-    // Only send local context when the site is within
-    // range of the selected cell — prevents sending
-    // geographically irrelevant field data to the AI
-    // (e.g. Philippines crab data for a South African
-    // cell).
+    // Guard: only send local context when the site is
+    // geographically relevant to the selected cell.
+    // Use selectedCell.centerCoords when available,
+    // fall back to the GeoJSON feature bbox center.
+    // If neither is available, skip the guard — this
+    // is a known limitation when geojson is not yet
+    // loaded.
+    let cellLat: number | null = null;
+    let cellLng: number | null = null;
+
     if (selectedCell?.centerCoords) {
+      cellLat = selectedCell.centerCoords.latitude;
+      cellLng = selectedCell.centerCoords.longitude;
+    } else if (geojson && selectedCellId) {
+      const feature = geojson.features.find(
+        (f) => f.properties.ID === selectedCellId,
+      );
+      if (feature) {
+        const center = getFeatureCenterCoords(feature);
+        cellLat = center.latitude;
+        cellLng = center.longitude;
+      }
+    }
+
+    if (cellLat !== null && cellLng !== null) {
       const distanceKm = calculateDistance(
-        selectedCell.centerCoords.latitude,
-        selectedCell.centerCoords.longitude,
+        cellLat,
+        cellLng,
         site.coordinates[1], // latitude
         site.coordinates[0], // longitude
       );
@@ -274,6 +310,8 @@ function AppShell() {
     localSites,
     partnersData,
     selectedCell,
+    selectedCellId,
+    geojson,
   ]);
 
   /**
