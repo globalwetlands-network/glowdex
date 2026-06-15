@@ -24,6 +24,8 @@ import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCe
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
 import { usePartners } from '@/api/hooks/usePartners';
+import { calculateDistance } from '@/utils/geo';
+import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -132,6 +134,9 @@ function AppShell() {
   }, []);
 
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [proximityAssociatedSiteId, setProximityAssociatedSiteId] = useState<
+    string | null
+  >(null);
 
   const [siteFlyTarget, setSiteFlyTarget] = useState<{
     lng: number;
@@ -151,12 +156,14 @@ function AppShell() {
 
   const handleSiteSelect = useCallback(
     (siteId: string) => {
+      console.log('[handleSiteSelect] siteId', siteId);
       setSelectedSiteId(siteId);
       setPanelActiveTab('analysis');
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
       }
       const site = localSites.find((s) => s.id === siteId);
+      console.log('[handleSiteSelect] site:', site);
       if (site) {
         setSiteFlyTarget({
           lng: site.coordinates[0],
@@ -167,6 +174,11 @@ function AppShell() {
             site.coordinates[1], // latitude
             site.coordinates[0], // longitude
             gridCells,
+          );
+          console.log(
+            '[handleSiteSelect] nearest cell:',
+            nearest?.cell.id,
+            nearest?.distanceKm,
           );
           if (nearest) {
             setSelectedCellId(nearest.cell.id);
@@ -179,22 +191,47 @@ function AppShell() {
 
   const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
 
+  // Custom hooks for derived Logic (Thin Provider pattern)
+  const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
+
+  // Derived selection object
+  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
   /**
    * Derives the local site context for the AI assistant
-   * when a monitoring site is selected. Uses the most
-   * recent available year. Returns null when no site is
-   * selected, no data is available, or all conditions
-   * have zero samples (no field data collected).
+   * when a monitoring site is selected or proximity-associated.
+   * Uses the most recent available year. Returns null when no
+   * site is selected, no data is available, the site is
+   * geographically distant from the selected cell, or all
+   * conditions have zero samples (no field data collected).
    *
    * Partner institution name is resolved from the partners
    * API — the AI receives the full name rather than the
    * partner ID slug.
    */
   const localSiteContext = useMemo((): LocalSiteContext | null => {
-    if (!selectedSiteId || !localSites.length) return null;
+    const effectiveSiteId = selectedSiteId ?? proximityAssociatedSiteId;
+    if (!effectiveSiteId || !localSites.length) return null;
 
-    const site = localSites.find((s) => s.id === selectedSiteId);
+    const site = localSites.find((s) => s.id === effectiveSiteId);
     if (!site || !site.observations.length) return null;
+
+    // Only send local context when the site is within
+    // range of the selected cell — prevents sending
+    // geographically irrelevant field data to the AI
+    // (e.g. Philippines crab data for a South African
+    // cell).
+    if (selectedCell?.centerCoords) {
+      const distanceKm = calculateDistance(
+        selectedCell.centerCoords.latitude,
+        selectedCell.centerCoords.longitude,
+        site.coordinates[1], // latitude
+        site.coordinates[0], // longitude
+      );
+      if (distanceKm > MAX_SITE_ASSOCIATION_DISTANCE_KM) {
+        return null;
+      }
+    }
 
     // availableYears is sorted ascending in
     // deriveLocalWetlands — .at(-1) safely returns
@@ -231,22 +268,23 @@ function AppShell() {
       year,
       conditions,
     };
-  }, [selectedSiteId, localSites, partnersData]);
+  }, [
+    selectedSiteId,
+    proximityAssociatedSiteId,
+    localSites,
+    partnersData,
+    selectedCell,
+  ]);
 
   /**
-   * True only when a site is selected and the partners
+   * True only when an effective site is selected and the partners
    * API hasn't resolved yet — prevents the AI query
    * firing without local context then re-firing with it.
    * False for plain cell selections with no associated
    * site so those queries are not delayed.
    */
-  const isLocalContextPending = !!selectedSiteId && isPartnersLoading;
-
-  // Custom hooks for derived Logic (Thin Provider pattern)
-  const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
-
-  // Derived selection object
-  const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+  const isLocalContextPending =
+    (!!selectedSiteId || !!proximityAssociatedSiteId) && isPartnersLoading;
 
   // Analytics hooks
   useSelectionAnalytics(selectedCell);
@@ -275,6 +313,7 @@ function AppShell() {
       setSelectedCellId(id);
       setClickedPartnerId(null);
       setSelectedSiteId(null);
+      setProximityAssociatedSiteId(null);
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
@@ -307,6 +346,7 @@ function AppShell() {
     setSelectedCellId(null);
     setClickedPartnerId(null);
     setSelectedSiteId(null);
+    setProximityAssociatedSiteId(null);
   }, [setSelectedCellId]);
 
   // Render map area
@@ -398,6 +438,7 @@ function AppShell() {
         onViewLocalData={handleSiteSelect}
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
+        onSiteAssociated={setProximityAssociatedSiteId}
       />
     ),
     [

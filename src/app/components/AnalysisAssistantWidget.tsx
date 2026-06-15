@@ -60,6 +60,7 @@ export function AnalysisAssistantWidget({
       selectedCellId={selectedCellId}
       initialInsight={initialInsight}
       initialError={initialError}
+      localSiteContext={localSiteContext}
     />
   );
 }

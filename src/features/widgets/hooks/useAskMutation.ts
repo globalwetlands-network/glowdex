@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import type { Message } from './useChatMessages';
+import type { LocalSiteContext } from '@/api/types';
 
 const MAX_HISTORY_MESSAGES = 10;
 
@@ -9,6 +10,7 @@ interface Options {
   selectedCellId: number | null | undefined;
   conversationMessages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  localSiteContext?: LocalSiteContext | null;
 }
 
 /**
@@ -20,6 +22,7 @@ export function useAskMutation({
   selectedCellId,
   conversationMessages,
   setMessages,
+  localSiteContext,
 }: Options) {
   const askMutation = useMutation({
     mutationFn: (question: string) => {
@@ -47,6 +50,7 @@ export function useAskMutation({
           role,
           content,
         })),
+        localSiteContext: localSiteContext ?? undefined,
       });
     },
 

@@ -26,30 +26,22 @@
  * render partner website links.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import { findNearestSite } from '@/utils/geo';
+import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 import { usePartners } from '@/api/hooks/usePartners';
 import { SiteConditionChart } from './SiteConditionChart';
 import { SpeciesCompositionTrigger } from './SpeciesCompositionTrigger';
 
 /**
- * Maximum distance in km between a monitoring site and the
- * selected cell center for the site to be considered
- * associated with that cell.
- *
- * 100km × √2 ≈ 141km (grid cell diagonal) + 16km buffer
- * = 157km. Sites beyond this threshold are not shown,
- * preventing cross-cell associations.
- *
  * TODO: Pre-filter localSites by country or bounding box
  * before calling findNearestSite when the dataset grows
  * beyond a handful of sites — the current O(n) scan across
  * all sites globally is acceptable for small datasets.
  */
-const MAX_SITE_ASSOCIATION_DISTANCE_KM = 157;
 
 interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
@@ -66,6 +58,14 @@ interface LocalWetlandsAnalysisWidgetProps {
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
+  /**
+   * Called when a site is automatically associated with
+   * the selected cell via proximity. Allows App.tsx to
+   * compute localSiteContext for the AI even when no
+   * explicit site selection has been made.
+   * Called with null when no site is in proximity range.
+   */
+  onSiteAssociated?: (siteId: string | null) => void;
 }
 
 export function LocalWetlandsAnalysisWidget({
@@ -75,6 +75,7 @@ export function LocalWetlandsAnalysisWidget({
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
+  onSiteAssociated,
 }: LocalWetlandsAnalysisWidgetProps) {
   const { data: partnersData } = usePartners();
 
@@ -163,6 +164,16 @@ export function LocalWetlandsAnalysisWidget({
     },
     [localSites, onSiteSelect],
   );
+
+  useEffect(() => {
+    if (!onSiteAssociated) return;
+    // Only fire for proximity associations —
+    // explicit selections are already handled by
+    // handleSiteSelect → onSiteSelect in App.tsx.
+    if (!selectedSiteId) {
+      onSiteAssociated(associatedSite?.id ?? null);
+    }
+  }, [associatedSite, selectedSiteId, onSiteAssociated]);
 
   if (!associatedSite || !activeYear) {
     return (

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-import type { InsightResponse } from '@/api/types';
+import type { InsightResponse, LocalSiteContext } from '@/api/types';
 import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
 import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
@@ -12,12 +12,14 @@ interface ChatInterfaceProps {
   selectedCellId?: number | null;
   initialInsight?: InsightResponse;
   initialError?: Error | null;
+  localSiteContext?: LocalSiteContext | null;
 }
 
 export function ChatInterface({
   selectedCellId,
   initialInsight,
   initialError,
+  localSiteContext,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
 
@@ -47,6 +49,7 @@ export function ChatInterface({
     selectedCellId,
     conversationMessages: conversation,
     setMessages,
+    localSiteContext,
   });
 
   const scrollRef = useAutoScroll(conversation.length);

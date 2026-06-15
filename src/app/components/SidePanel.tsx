@@ -48,6 +48,7 @@ interface SidePanelProps {
   onViewLocalData: (siteId: string) => void;
   localSiteContext: LocalSiteContext | null;
   isLocalContextPending: boolean;
+  onSiteAssociated?: (siteId: string | null) => void;
 }
 
 /**
@@ -81,6 +82,7 @@ export function SidePanel({
   onViewLocalData,
   localSiteContext,
   isLocalContextPending,
+  onSiteAssociated,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -213,6 +215,7 @@ export function SidePanel({
               onSiteSelect={onSiteSelect}
               localSiteLayerEnabled={localSiteLayerEnabled}
               onLocalSiteLayerToggle={onLocalSiteLayerToggle}
+              onSiteAssociated={onSiteAssociated}
             />
           </div>
         </div>
