@@ -422,6 +422,7 @@ export function GridMap({
         }
         mangroveLayerEnabled={mangroveLayerEnabled}
         localSiteLayerEnabled={localSiteLayerEnabled}
+        localSitesCount={localSites.length}
         searchMarkerVisible={searchMarker !== null}
         activeSpeciesName={activeSpeciesName}
       />
@@ -565,7 +566,9 @@ export function GridMap({
           >
             <div className="font-bold text-gray-900">{siteHoverInfo.name}</div>
             <div className="text-gray-600">{siteHoverInfo.country}</div>
-            <div className="text-xs text-[#0f6e56] mt-1">Monitoring Site</div>
+            <div className="text-xs text-[#0f6e56] mt-1">
+              Local Monitoring Site
+            </div>
           </div>
         )}
 
@@ -617,7 +620,7 @@ export function GridMap({
           </div>
         )}
 
-        {hoverInfo && hoveredCell && !partnerHoverInfo && (
+        {hoverInfo && hoveredCell && !partnerHoverInfo && !siteHoverInfo && (
           <MapTooltip
             x={hoverInfo.x}
             y={hoverInfo.y}

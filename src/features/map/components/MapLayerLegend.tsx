@@ -12,6 +12,7 @@ interface MapLayerLegendProps {
   speciesLayerEnabled: boolean;
   mangroveLayerEnabled: boolean;
   localSiteLayerEnabled: boolean;
+  localSitesCount: number;
   searchMarkerVisible: boolean;
   activeSpeciesName?: string;
 }
@@ -26,6 +27,7 @@ export function MapLayerLegend({
   speciesLayerEnabled,
   mangroveLayerEnabled,
   localSiteLayerEnabled,
+  localSitesCount,
   searchMarkerVisible,
   activeSpeciesName,
 }: MapLayerLegendProps) {
@@ -45,10 +47,10 @@ export function MapLayerLegend({
     });
   }
 
-  if (localSiteLayerEnabled) {
+  if (localSiteLayerEnabled && localSitesCount > 0) {
     items.push({
       icon: <LocalSiteMarkerIcon size={14} />,
-      label: 'Monitoring site',
+      label: 'Local monitoring site',
     });
   }
 
