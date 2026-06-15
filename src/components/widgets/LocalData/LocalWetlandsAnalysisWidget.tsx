@@ -55,11 +55,12 @@ interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
   selectedCell: EnrichedGridCell | null;
   /**
-   * Externally selected site ID — set when the user
-   * clicks a monitoring site pin on the map.
-   * Synced into manualSiteId via useEffect so the
-   * dropdowns reflect the active site.
-   * null when no external selection has been made.
+   * Active site ID — single source of truth owned by
+   * App.tsx. Set by map pin clicks and dropdown
+   * interactions (via onSiteSelect). Cleared on cell
+   * select or clear selection so the widget reverts to
+   * proximity association.
+   * null when no explicit selection has been made.
    */
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
@@ -88,22 +89,17 @@ export function LocalWetlandsAnalysisWidget({
    */
   const [selectedYear] = useState<number | null>(null);
 
-  // Explicit site selection via dropdown.
-  // Takes priority over proximity association.
-  // null = no explicit selection — fall back to proximity.
-  const [manualSiteId, setManualSiteId] = useState<string | null>(null);
-
   // associatedSite must be defined before activeSitesForSelector
   const associatedSite = useMemo(() => {
-    // Manual dropdown selection takes priority over external map selection.
-    // selectedSiteId (from map pin click) is used as fallback so the
-    // selectors reflect the active site without copying prop into state.
-    const effectiveSiteId = manualSiteId ?? selectedSiteId;
-    if (effectiveSiteId) {
-      return localSites.find((s) => s.id === effectiveSiteId) ?? null;
+    // External selection (map pin click or dropdown)
+    // takes priority — fully controlled by App.tsx
+    // via selectedSiteId prop.
+    if (selectedSiteId) {
+      return localSites.find((s) => s.id === selectedSiteId) ?? null;
     }
 
-    // Fall back to proximity association
+    // Fall back to proximity association when no
+    // explicit selection has been made.
     if (!selectedCell?.centerCoords || !localSites.length) {
       return null;
     }
@@ -119,7 +115,7 @@ export function LocalWetlandsAnalysisWidget({
     }
 
     return result.site;
-  }, [selectedCell, localSites, manualSiteId, selectedSiteId]);
+  }, [selectedCell, localSites, selectedSiteId]);
 
   const availableCountries = useMemo(() => {
     return [...new Set(localSites.map((s) => s.country))].sort();
@@ -150,7 +146,6 @@ export function LocalWetlandsAnalysisWidget({
   const handleSiteSelect = useCallback(
     (siteId: string) => {
       if (!siteId) return;
-      setManualSiteId(siteId);
       onSiteSelect(siteId);
     },
     [onSiteSelect],
@@ -158,24 +153,12 @@ export function LocalWetlandsAnalysisWidget({
 
   const handleCountryChange = useCallback(
     (country: string) => {
-      if (!country) {
-        setManualSiteId(null);
-        return;
-      }
-      // Auto-select the first site in the new country
-      // so manualSiteId is never null after the user
-      // has touched the country dropdown — prevents
-      // fallback to proximity association.
+      if (!country) return;
       const firstSite = localSites.find((s) => s.country === country);
       if (firstSite) {
-        setManualSiteId(firstSite.id);
         onSiteSelect(firstSite.id);
       } else {
-        // Defensive fallback — every listed country
-        // should have at least one site, but clear
-        // manualSiteId if none found to avoid showing
-        // stale data.
-        setManualSiteId(null);
+        console.warn(`No sites found for country "${country}"`);
       }
     },
     [localSites, onSiteSelect],
@@ -241,7 +224,7 @@ export function LocalWetlandsAnalysisWidget({
               Monitoring site
             </label>
             <select
-              value={manualSiteId ?? ''}
+              value={selectedSiteId ?? ''}
               onChange={(e) => handleSiteSelect(e.target.value)}
               className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             >
@@ -310,7 +293,7 @@ export function LocalWetlandsAnalysisWidget({
           ))}
         </select>
         <select
-          value={manualSiteId ?? associatedSite.id}
+          value={selectedSiteId ?? associatedSite.id}
           onChange={(e) => handleSiteSelect(e.target.value)}
           className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
         >

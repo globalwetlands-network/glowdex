@@ -206,6 +206,7 @@ function AppShell() {
     (id: number | null) => {
       setSelectedCellId(id);
       setClickedPartnerId(null);
+      setSelectedSiteId(null);
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
