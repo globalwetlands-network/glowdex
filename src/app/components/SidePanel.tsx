@@ -150,24 +150,25 @@ export function SidePanel({
           </div>
         )}
 
-        {/* Filters card — always visible */}
-        <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
-          <div className="p-4">
-            <CollapsibleSection
-              title="Filters"
-              icon={Filter}
-              defaultOpen={true}
-              childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-            >
-              <FilterControls
-                filterState={filterState}
-                onFilterChange={onFilterChange}
-              />
-            </CollapsibleSection>
+        {/* Filters + Global Wetlands Analysis — only shown when a cell is selected */}
+        {selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Filters"
+                icon={Filter}
+                defaultOpen={true}
+                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+              >
+                <FilterControls
+                  filterState={filterState}
+                  onFilterChange={onFilterChange}
+                />
+              </CollapsibleSection>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Global Wetlands Analysis card — only shown when a cell is selected */}
         {selectedCell && (
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
             <div className="p-4">
