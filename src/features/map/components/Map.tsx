@@ -14,7 +14,9 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import { PartnerLayer } from '@/components/widgets/Partner';
+import { LocalSiteLayer } from '@/components/widgets/LocalData';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 import MapTooltip from './MapTooltip';
 import { SearchMarkerIcon } from '@/components/map/markers';
 import { MapLayerLegend } from './MapLayerLegend';
@@ -46,6 +48,12 @@ interface MapProps {
    */
   onSpeciesFlyComplete: () => void;
   onPartnerClick: (partnerId: string) => void;
+  localSites: LocalSite[];
+  localSiteLayerEnabled: boolean;
+  hoveredSiteId: string | null;
+  selectedSiteId: string | null;
+  onSiteClick: (siteId: string) => void;
+  onSiteHover: (siteId: string | null) => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -178,6 +186,12 @@ export function GridMap({
   speciesFlyTarget,
   onSpeciesFlyComplete,
   onPartnerClick,
+  localSites,
+  localSiteLayerEnabled,
+  hoveredSiteId,
+  selectedSiteId,
+  onSiteClick,
+  onSiteHover,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -215,6 +229,13 @@ export function GridMap({
     date: string;
     datasetName: string;
   } | null>(null);
+  const [siteHoverInfo, setSiteHoverInfo] = useState<{
+    x: number;
+    y: number;
+    id: string;
+    name: string;
+    country: string;
+  } | null>(null);
 
   const filteredGeoJson = useMemo(
     () =>
@@ -243,6 +264,16 @@ export function GridMap({
 
   const handleMapClick = useCallback(
     (evt: MapMouseEvent) => {
+      const siteFeature = evt.features?.find(
+        (f) =>
+          f.layer?.id === 'local-sites' || f.layer?.id === 'local-sites-inner',
+      );
+
+      if (siteFeature?.properties?.id) {
+        onSiteClick(siteFeature.properties.id);
+        return;
+      }
+
       const partnerFeature = evt.features?.find(
         (f) =>
           f.layer?.id === 'partner-locations' ||
@@ -254,7 +285,7 @@ export function GridMap({
       }
       onClick(evt);
     },
-    [onClick, onPartnerClick],
+    [onClick, onPartnerClick, onSiteClick],
   );
 
   const hoveredCell = hoveredCellId
@@ -272,8 +303,8 @@ export function GridMap({
   useEffect(() => {
     const canvas = mapRef.current?.getCanvas();
     if (!canvas) return;
-    canvas.style.cursor = partnerHoverInfo ? 'pointer' : '';
-  }, [partnerHoverInfo]);
+    canvas.style.cursor = partnerHoverInfo || siteHoverInfo ? 'pointer' : '';
+  }, [partnerHoverInfo, siteHoverInfo]);
 
   useEffect(() => {
     if (!speciesFlyTarget) return;
@@ -390,6 +421,8 @@ export function GridMap({
         interactiveLayerIds={[
           'grid-fill',
           'grid-highlight',
+          'local-sites',
+          'local-sites-inner',
           'partner-locations',
           'partner-locations-inner',
           ...(speciesLayerEnabled && activeSpeciesId
@@ -405,6 +438,12 @@ export function GridMap({
             ),
           } as MapMouseEvent);
 
+          const siteFeature = evt.features?.find(
+            (f) =>
+              f.layer?.id === 'local-sites' ||
+              f.layer?.id === 'local-sites-inner',
+          );
+
           const speciesFeature = evt.features?.find(
             (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,
           );
@@ -415,8 +454,19 @@ export function GridMap({
               f.layer?.id === 'partner-locations-inner',
           );
 
-          // Partner tooltip takes priority over species when overlapping
-          if (partnerFeature) {
+          // Site tooltip takes priority, then partner, then species
+          if (siteFeature) {
+            setSiteHoverInfo({
+              x: evt.point.x,
+              y: evt.point.y,
+              id: siteFeature.properties?.id ?? '',
+              name: siteFeature.properties?.name ?? '',
+              country: siteFeature.properties?.country ?? '',
+            });
+            onSiteHover(siteFeature.properties?.id ?? null);
+            setPartnerHoverInfo(null);
+            setSpeciesHoverInfo(null);
+          } else if (partnerFeature) {
             setPartnerHoverInfo({
               x: evt.point.x,
               y: evt.point.y,
@@ -425,6 +475,8 @@ export function GridMap({
               city: partnerFeature.properties?.city ?? '',
               country: partnerFeature.properties?.country ?? '',
             });
+            setSiteHoverInfo(null);
+            onSiteHover(null);
             setSpeciesHoverInfo(null);
           } else if (speciesFeature) {
             setSpeciesHoverInfo({
@@ -435,9 +487,13 @@ export function GridMap({
               datasetName: speciesFeature.properties?.datasetName ?? '',
             });
             setPartnerHoverInfo(null);
+            setSiteHoverInfo(null);
+            onSiteHover(null);
           } else {
             setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
+            setSiteHoverInfo(null);
+            onSiteHover(null);
           }
         }}
         onClick={handleMapClick}
@@ -485,6 +541,24 @@ export function GridMap({
           selectedCell={selectedCell}
           hoveredPartnerId={partnerHoverInfo?.id ?? null}
         />
+
+        <LocalSiteLayer
+          enabled={localSiteLayerEnabled}
+          localSites={localSites}
+          hoveredSiteId={hoveredSiteId}
+          selectedSiteId={selectedSiteId}
+        />
+
+        {siteHoverInfo && (
+          <div
+            className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
+            style={{ left: siteHoverInfo.x, top: siteHoverInfo.y }}
+          >
+            <div className="font-bold text-gray-900">{siteHoverInfo.name}</div>
+            <div className="text-gray-600">{siteHoverInfo.country}</div>
+            <div className="text-xs text-[#0f6e56] mt-1">Monitoring Site</div>
+          </div>
+        )}
 
         {partnerHoverInfo && (
           <div

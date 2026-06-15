@@ -122,6 +122,15 @@ function AppShell() {
     setMangroveLayerEnabled(enabled);
   }, []);
 
+  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(true);
+
+  const handleLocalSiteLayerToggle = useCallback((enabled: boolean) => {
+    setLocalSiteLayerEnabled(enabled);
+  }, []);
+
+  const [hoveredSiteId, setHoveredSiteId] = useState<string | null>(null);
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
 
@@ -135,6 +144,7 @@ function AppShell() {
 
   const handleSiteSelect = useCallback(
     (siteId: string) => {
+      setSelectedSiteId(siteId);
       const site = localSites.find((s) => s.id === siteId);
       if (site && gridCells?.length) {
         const nearest = findNearestGridCell(
@@ -213,6 +223,7 @@ function AppShell() {
   const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
     setClickedPartnerId(null);
+    setSelectedSiteId(null);
   }, [setSelectedCellId]);
 
   // Render map area
@@ -239,6 +250,12 @@ function AppShell() {
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
           onPartnerClick={handlePartnerClick}
+          localSites={localSites}
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          hoveredSiteId={hoveredSiteId}
+          selectedSiteId={selectedSiteId}
+          onSiteClick={handleSiteSelect}
+          onSiteHover={setHoveredSiteId}
         />
       ),
     [
@@ -257,6 +274,11 @@ function AppShell() {
       mangroveLayerEnabled,
       speciesFlyTarget,
       handlePartnerClick,
+      localSites,
+      localSiteLayerEnabled,
+      hoveredSiteId,
+      selectedSiteId,
+      handleSiteSelect,
     ],
   );
 
@@ -284,6 +306,8 @@ function AppShell() {
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
         onSiteSelect={handleSiteSelect}
+        localSiteLayerEnabled={localSiteLayerEnabled}
+        onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
       />
     ),
     [
@@ -307,6 +331,8 @@ function AppShell() {
       clickedPartnerId,
       localSites,
       handleSiteSelect,
+      localSiteLayerEnabled,
+      handleLocalSiteLayerToggle,
     ],
   );
 

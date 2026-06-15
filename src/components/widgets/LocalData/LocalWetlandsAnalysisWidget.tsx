@@ -222,9 +222,13 @@ export function LocalWetlandsAnalysisWidget({
 
   return (
     <div className="space-y-3">
-      {/* Site selector in chart mode —
-          changing country auto-selects the first site
-          in that country immediately. */}
+      {/* Section header */}
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+        Local Wetlands Analysis
+      </p>
+
+      {/* Site selectors — changing country auto-selects
+          the first site in that country immediately. */}
       <div className="flex gap-2">
         <select
           value={associatedSite.country}
@@ -250,35 +254,30 @@ export function LocalWetlandsAnalysisWidget({
         </select>
       </div>
 
-      {/* Section header */}
-      <div className="space-y-0.5">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Local Wetlands Analysis
-        </p>
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-gray-900">
-              {associatedSite.name}
-            </p>
-            <p className="text-xs text-gray-500">{associatedSite.country}</p>
-          </div>
-          {/* Only render https:// URLs — http:// links are
-              silently dropped as a security precaution.
-              Partner URLs from the API are expected to be
-              https:// — if a link is missing, check the
-              partner registry data. */}
-          {partner?.websiteUrl?.startsWith('https://') && (
-            <a
-              href={partner.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors shrink-0"
-            >
-              <ExternalLink size={10} />
-              {partner.institution}
-            </a>
-          )}
+      {/* Site name + partner link */}
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">
+            {associatedSite.name}
+          </p>
+          <p className="text-xs text-gray-500">{associatedSite.country}</p>
         </div>
+        {/* Only render https:// URLs — http:// links are
+            silently dropped as a security precaution.
+            Partner URLs from the API are expected to be
+            https:// — if a link is missing, check the
+            partner registry data. */}
+        {partner?.websiteUrl?.startsWith('https://') && (
+          <a
+            href={partner.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors shrink-0"
+          >
+            <ExternalLink size={10} />
+            {partner.institution}
+          </a>
+        )}
       </div>
 
       {/* Inactive year slider — scaffolding for future time series feature */}

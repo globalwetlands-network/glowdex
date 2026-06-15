@@ -41,6 +41,8 @@ interface SidePanelProps {
   clickedPartnerId: string | null;
   localSites: LocalSite[];
   onSiteSelect: (siteId: string) => void;
+  localSiteLayerEnabled: boolean;
+  onLocalSiteLayerToggle: (enabled: boolean) => void;
 }
 
 /**
@@ -68,6 +70,8 @@ export function SidePanel({
   clickedPartnerId,
   localSites,
   onSiteSelect,
+  localSiteLayerEnabled,
+  onLocalSiteLayerToggle,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -212,6 +216,8 @@ export function SidePanel({
           partnerLayerEnabled={partnerLayerEnabled}
           onMangroveLayerToggle={onMangroveLayerToggle}
           mangroveLayerEnabled={mangroveLayerEnabled}
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          onLocalSiteLayerToggle={onLocalSiteLayerToggle}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
         />

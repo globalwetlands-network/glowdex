@@ -17,6 +17,8 @@ interface BiodiversityPanelProps {
   partnerLayerEnabled: boolean;
   onMangroveLayerToggle: (enabled: boolean) => void;
   mangroveLayerEnabled: boolean;
+  localSiteLayerEnabled: boolean;
+  onLocalSiteLayerToggle: (enabled: boolean) => void;
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
   clickedPartnerId: string | null;
 }
@@ -28,6 +30,8 @@ export function BiodiversityPanel({
   partnerLayerEnabled,
   onMangroveLayerToggle,
   mangroveLayerEnabled,
+  localSiteLayerEnabled,
+  onLocalSiteLayerToggle,
   onSpeciesSelect,
   clickedPartnerId,
 }: BiodiversityPanelProps) {
@@ -46,6 +50,40 @@ export function BiodiversityPanel({
           partnerLayerEnabled={partnerLayerEnabled}
           clickedPartnerId={clickedPartnerId}
         />
+      </div>
+
+      {/* Local Monitoring Sites container */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Local Monitoring Sites
+          </h3>
+          <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
+              <span className="text-xs text-gray-600 leading-snug">
+                Show monitoring sites on map
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={localSiteLayerEnabled}
+              onClick={() => {
+                onLocalSiteLayerToggle(!localSiteLayerEnabled);
+              }}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                localSiteLayerEnabled ? 'bg-[#1d9e75]' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  localSiteLayerEnabled ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mangrove Habitat Extent container */}
