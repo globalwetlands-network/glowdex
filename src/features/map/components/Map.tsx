@@ -267,8 +267,7 @@ export function GridMap({
   const handleMapClick = useCallback(
     (evt: MapMouseEvent) => {
       const siteFeature = evt.features?.find(
-        (f) =>
-          f.layer?.id === 'local-sites' || f.layer?.id === 'local-sites-inner',
+        (f) => f.layer?.id === 'local-sites',
       );
 
       if (siteFeature?.properties?.id) {
@@ -383,7 +382,6 @@ export function GridMap({
       'grid-fill',
       'grid-highlight',
       'local-sites',
-      'local-sites-inner',
       'partner-locations',
       'partner-locations-inner',
       ...(speciesLayerEnabled && activeSpeciesId
@@ -458,9 +456,7 @@ export function GridMap({
           } as MapMouseEvent);
 
           const siteFeature = evt.features?.find(
-            (f) =>
-              f.layer?.id === 'local-sites' ||
-              f.layer?.id === 'local-sites-inner',
+            (f) => f.layer?.id === 'local-sites',
           );
 
           const speciesFeature = evt.features?.find(

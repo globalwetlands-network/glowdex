@@ -10,12 +10,11 @@ export function LocalSiteMarkerIcon({ size = 14 }: { size?: number }) {
       <circle
         cx="7"
         cy="7"
-        r="6"
+        r="5.5"
         fill="#3b82f6"
-        stroke="#1d9e75"
+        stroke="#1d4ed8"
         strokeWidth="1.5"
       />
-      <circle cx="7" cy="7" r="2.5" fill="#ffffff" />
     </svg>
   );
 }
