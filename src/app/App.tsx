@@ -315,14 +315,17 @@ function AppShell() {
   ]);
 
   /**
-   * True only when an effective site is selected and the partners
-   * API hasn't resolved yet — prevents the AI query
-   * firing without local context then re-firing with it.
-   * False for plain cell selections with no associated
-   * site so those queries are not delayed.
+   * True only when the effective site has a partnerId that
+   * requires partner data to resolve — sites with no partner
+   * mapping are already complete without it.
+   * False for plain cell selections with no associated site
+   * so those queries are not delayed.
    */
-  const isLocalContextPending =
-    (!!selectedSiteId || !!proximityAssociatedSiteId) && isPartnersLoading;
+  const pendingSiteId = selectedSiteId ?? proximityAssociatedSiteId;
+  const pendingSite = pendingSiteId
+    ? localSites.find((s) => s.id === pendingSiteId)
+    : null;
+  const isLocalContextPending = !!pendingSite?.partnerId && isPartnersLoading;
 
   // Analytics hooks
   useSelectionAnalytics(selectedCell);

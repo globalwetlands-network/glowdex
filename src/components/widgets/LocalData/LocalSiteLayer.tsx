@@ -14,8 +14,11 @@
  * Analysis tab. Same interaction pattern as partner dots.
  *
  * Data comes from DataContext (localSites) — no API
- * call needed. Layer is always mounted when enabled;
- * hidden via early return when disabled.
+ * call needed. Source is always mounted; the Layer uses
+ * Mapbox layout visibility to show/hide without triggering
+ * a GeoJSON re-upload on every toggle. When disabled, an
+ * empty feature collection is emitted to avoid the .map()
+ * cost while keeping the source mounted.
  */
 
 import { useMemo } from 'react';
@@ -36,8 +39,11 @@ export function LocalSiteLayer({
   hoveredSiteId,
   selectedSiteId,
 }: LocalSiteLayerProps) {
-  const geojsonData = useMemo<FeatureCollection<Point>>(
-    () => ({
+  const geojsonData = useMemo<FeatureCollection<Point>>(() => {
+    if (!enabled) {
+      return { type: 'FeatureCollection', features: [] };
+    }
+    return {
       type: 'FeatureCollection',
       features: localSites.map((site) => ({
         type: 'Feature' as const,
@@ -52,17 +58,17 @@ export function LocalSiteLayer({
           coordinates: site.coordinates,
         },
       })),
-    }),
-    [localSites, selectedSiteId],
-  );
-
-  if (!enabled) return null;
+    };
+  }, [enabled, localSites, selectedSiteId]);
 
   return (
     <Source id="local-sites-source" type="geojson" data={geojsonData}>
       <Layer
         id="local-sites"
         type="circle"
+        layout={{
+          visibility: enabled ? 'visible' : 'none',
+        }}
         paint={{
           'circle-radius': [
             'case',

@@ -142,8 +142,12 @@ export function findCellContainingPoint(
   for (const feature of geojson.features) {
     try {
       if (booleanPointInPolygon(pt, feature)) {
-        // Cast safely — ID may be string in GeoJSON
-        return Number(feature.properties.ID);
+        const id = Number(feature.properties?.ID);
+        if (Number.isFinite(id)) return id;
+        console.warn(
+          'findCellContainingPoint: matched feature ' + 'with non-numeric ID:',
+          feature.properties?.ID,
+        );
       }
     } catch (err) {
       // Skip malformed features rather than aborting

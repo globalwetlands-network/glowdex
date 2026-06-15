@@ -381,14 +381,14 @@ export function GridMap({
     () => [
       'grid-fill',
       'grid-highlight',
-      'local-sites',
+      ...(localSiteLayerEnabled ? ['local-sites'] : []),
       'partner-locations',
       'partner-locations-inner',
       ...(speciesLayerEnabled && activeSpeciesId
         ? [`species-${activeSpeciesId}-pins`]
         : []),
     ],
-    [speciesLayerEnabled, activeSpeciesId],
+    [localSiteLayerEnabled, speciesLayerEnabled, activeSpeciesId],
   );
 
   if (!MAPBOX_TOKEN) {
@@ -447,6 +447,13 @@ export function GridMap({
         mapboxAccessToken={MAPBOX_TOKEN}
         interactiveLayerIds={interactiveLayerIds}
         onMouseMove={(evt) => {
+          // Clear site hover immediately when layer is disabled —
+          // prevents a stale tooltip reappearing if the layer is
+          // toggled back on before the next mouse move.
+          if (!localSiteLayerEnabled) {
+            setSiteHoverInfo(null);
+          }
+
           onHover({
             ...evt,
             features: evt.features?.filter(

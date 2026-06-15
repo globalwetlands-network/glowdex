@@ -87,6 +87,15 @@ export function deriveLocalWetlands(
       continue;
     }
 
+    if (!row.Location_name || !row.Country_name) {
+      console.warn(
+        'deriveLocalWetlands: skipping malformed row ' +
+          `— Location_name="${row.Location_name ?? 'undefined'}"` +
+          `, Country_name="${row.Country_name ?? 'undefined'}"`,
+      );
+      continue;
+    }
+
     // Trim whitespace — CSV values may have trailing spaces
     const locationName = row.Location_name.trim();
     const countryName = row.Country_name.trim();
