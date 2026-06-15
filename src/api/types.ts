@@ -3,6 +3,27 @@ export interface ConversationMessage {
   content: string;
 }
 
+export interface LocalSiteConditionContext {
+  siteType: 'Reference' | 'Degraded' | 'Rehabilitated';
+  totalDensity: number;
+  combinedSE: number;
+  samplesN: number;
+}
+
+/**
+ * Local field monitoring context passed to the AI when
+ * a monitoring site is associated with the selected cell.
+ * Mirrors LocalSiteContextDto on the backend.
+ */
+export interface LocalSiteContext {
+  siteName: string;
+  country: string;
+  /** Full institution name from the partners API. */
+  partner: string;
+  year: number;
+  conditions: LocalSiteConditionContext[];
+}
+
 export interface InsightRequest {
   gridCellId: number;
   /** Legacy single-turn question. Prefer messages[] for multi-turn conversations. */
@@ -10,6 +31,13 @@ export interface InsightRequest {
   /** Multi-turn conversation history including the current user message as the last entry. */
   messages?: ConversationMessage[];
   contextId?: string;
+  /**
+   * Local field monitoring data for the site associated
+   * with this grid cell. When present, the AI synthesises
+   * both global modelled data and ground-truthed field
+   * measurements.
+   */
+  localSiteContext?: LocalSiteContext;
 }
 
 export interface InsightResponse {

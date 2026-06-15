@@ -16,6 +16,13 @@ export interface DataContextValue {
   dimensions: IndicatorDimension[];
   localSites: LocalSite[];
   isLoading: boolean;
+  /**
+   * Error from indicatorData only. useScientificData and
+   * useLocalWetlands handle errors internally by logging
+   * and returning empty state. If uniform error surfacing
+   * is needed post-conference, expose errors from all three
+   * hooks here.
+   */
   error: Error | null;
 }
 

@@ -14,7 +14,9 @@ import { useMapInteraction } from '../hooks/useMapInteraction';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import { PartnerLayer } from '@/components/widgets/Partner';
+import { LocalSiteLayer } from '@/components/widgets/LocalData';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 import MapTooltip from './MapTooltip';
 import { SearchMarkerIcon } from '@/components/map/markers';
 import { MapLayerLegend } from './MapLayerLegend';
@@ -46,6 +48,12 @@ interface MapProps {
    */
   onSpeciesFlyComplete: () => void;
   onPartnerClick: (partnerId: string) => void;
+  localSites: LocalSite[];
+  localSiteLayerEnabled: boolean;
+  selectedSiteId: string | null;
+  onSiteClick: (siteId: string) => void;
+  siteFlyTarget: { lng: number; lat: number } | null;
+  onSiteFlyComplete: () => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -154,11 +162,13 @@ function enrichGeoJsonFeatures(
  *
  * ─── Layer rendering order ──────────────────────────────────────
  * 1. GridLayer — base typology grid (always rendered)
- * 2. SpeciesDistributionLayer — GBIF observations (conditional)
- * 3. PartnerLayer — partner markers (conditional)
- * 4. Search marker — teardrop SVG Marker (conditional)
- * 5. MapTooltip — hover tooltip (conditional)
- * 6. MapLayerLegend — bottom-left overlay (conditional)
+ * 2. MangroveExtentLayer — habitat raster (conditional)
+ * 3. SpeciesDistributionLayer — GBIF observations (conditional)
+ * 4. PartnerLayer — partner markers (conditional)
+ * 5. LocalSiteLayer — monitoring site pins (conditional)
+ * 6. Search marker — teardrop SVG Marker (conditional)
+ * 7. MapTooltip — hover tooltip (conditional)
+ * 8. MapLayerLegend — bottom-left overlay (conditional)
  */
 export function GridMap({
   allGridCells,
@@ -178,6 +188,12 @@ export function GridMap({
   speciesFlyTarget,
   onSpeciesFlyComplete,
   onPartnerClick,
+  localSites,
+  localSiteLayerEnabled,
+  selectedSiteId,
+  onSiteClick,
+  siteFlyTarget,
+  onSiteFlyComplete,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -215,6 +231,13 @@ export function GridMap({
     date: string;
     datasetName: string;
   } | null>(null);
+  const [siteHoverInfo, setSiteHoverInfo] = useState<{
+    x: number;
+    y: number;
+    id: string;
+    name: string;
+    country: string;
+  } | null>(null);
 
   const filteredGeoJson = useMemo(
     () =>
@@ -243,6 +266,15 @@ export function GridMap({
 
   const handleMapClick = useCallback(
     (evt: MapMouseEvent) => {
+      const siteFeature = evt.features?.find(
+        (f) => f.layer?.id === 'local-sites',
+      );
+
+      if (siteFeature?.properties?.id) {
+        onSiteClick(siteFeature.properties.id);
+        return;
+      }
+
       const partnerFeature = evt.features?.find(
         (f) =>
           f.layer?.id === 'partner-locations' ||
@@ -254,7 +286,7 @@ export function GridMap({
       }
       onClick(evt);
     },
-    [onClick, onPartnerClick],
+    [onClick, onPartnerClick, onSiteClick],
   );
 
   const hoveredCell = hoveredCellId
@@ -272,8 +304,8 @@ export function GridMap({
   useEffect(() => {
     const canvas = mapRef.current?.getCanvas();
     if (!canvas) return;
-    canvas.style.cursor = partnerHoverInfo ? 'pointer' : '';
-  }, [partnerHoverInfo]);
+    canvas.style.cursor = partnerHoverInfo || siteHoverInfo ? 'pointer' : '';
+  }, [partnerHoverInfo, siteHoverInfo]);
 
   useEffect(() => {
     if (!speciesFlyTarget) return;
@@ -284,6 +316,16 @@ export function GridMap({
     });
     onSpeciesFlyComplete();
   }, [speciesFlyTarget, onSpeciesFlyComplete]);
+
+  useEffect(() => {
+    if (!siteFlyTarget) return;
+    mapRef.current?.flyTo({
+      center: [siteFlyTarget.lng, siteFlyTarget.lat],
+      zoom: 8,
+      duration: 1000,
+    });
+    onSiteFlyComplete();
+  }, [siteFlyTarget, onSiteFlyComplete]);
 
   /**
    * Handles a confirmed search result from SearchBox.
@@ -335,6 +377,20 @@ export function GridMap({
     onCellSelect(null);
   }, [onCellSelect]);
 
+  const interactiveLayerIds = useMemo(
+    () => [
+      'grid-fill',
+      'grid-highlight',
+      ...(localSiteLayerEnabled ? ['local-sites'] : []),
+      'partner-locations',
+      'partner-locations-inner',
+      ...(speciesLayerEnabled && activeSpeciesId
+        ? [`species-${activeSpeciesId}-pins`]
+        : []),
+    ],
+    [localSiteLayerEnabled, speciesLayerEnabled, activeSpeciesId],
+  );
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
@@ -378,6 +434,8 @@ export function GridMap({
           activeObservations.length > 0
         }
         mangroveLayerEnabled={mangroveLayerEnabled}
+        localSiteLayerEnabled={localSiteLayerEnabled}
+        localSitesCount={localSites.length}
         searchMarkerVisible={searchMarker !== null}
         activeSpeciesName={activeSpeciesName}
       />
@@ -387,16 +445,15 @@ export function GridMap({
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
         mapboxAccessToken={MAPBOX_TOKEN}
-        interactiveLayerIds={[
-          'grid-fill',
-          'grid-highlight',
-          'partner-locations',
-          'partner-locations-inner',
-          ...(speciesLayerEnabled && activeSpeciesId
-            ? [`species-${activeSpeciesId}-pins`]
-            : []),
-        ]}
+        interactiveLayerIds={interactiveLayerIds}
         onMouseMove={(evt) => {
+          // Clear site hover immediately when layer is disabled —
+          // prevents a stale tooltip reappearing if the layer is
+          // toggled back on before the next mouse move.
+          if (!localSiteLayerEnabled) {
+            setSiteHoverInfo(null);
+          }
+
           onHover({
             ...evt,
             features: evt.features?.filter(
@@ -404,6 +461,10 @@ export function GridMap({
                 f.layer?.id === 'grid-fill' || f.layer?.id === 'grid-highlight',
             ),
           } as MapMouseEvent);
+
+          const siteFeature = evt.features?.find(
+            (f) => f.layer?.id === 'local-sites',
+          );
 
           const speciesFeature = evt.features?.find(
             (f) => f.layer?.id === `species-${activeSpeciesId}-pins`,
@@ -415,8 +476,18 @@ export function GridMap({
               f.layer?.id === 'partner-locations-inner',
           );
 
-          // Partner tooltip takes priority over species when overlapping
-          if (partnerFeature) {
+          // Site tooltip takes priority, then partner, then species
+          if (siteFeature) {
+            setSiteHoverInfo({
+              x: evt.point.x,
+              y: evt.point.y,
+              id: siteFeature.properties?.id ?? '',
+              name: siteFeature.properties?.name ?? '',
+              country: siteFeature.properties?.country ?? '',
+            });
+            setPartnerHoverInfo(null);
+            setSpeciesHoverInfo(null);
+          } else if (partnerFeature) {
             setPartnerHoverInfo({
               x: evt.point.x,
               y: evt.point.y,
@@ -425,6 +496,7 @@ export function GridMap({
               city: partnerFeature.properties?.city ?? '',
               country: partnerFeature.properties?.country ?? '',
             });
+            setSiteHoverInfo(null);
             setSpeciesHoverInfo(null);
           } else if (speciesFeature) {
             setSpeciesHoverInfo({
@@ -435,9 +507,11 @@ export function GridMap({
               datasetName: speciesFeature.properties?.datasetName ?? '',
             });
             setPartnerHoverInfo(null);
+            setSiteHoverInfo(null);
           } else {
             setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
+            setSiteHoverInfo(null);
           }
         }}
         onClick={handleMapClick}
@@ -485,6 +559,26 @@ export function GridMap({
           selectedCell={selectedCell}
           hoveredPartnerId={partnerHoverInfo?.id ?? null}
         />
+
+        <LocalSiteLayer
+          enabled={localSiteLayerEnabled}
+          localSites={localSites}
+          hoveredSiteId={siteHoverInfo?.id ?? null}
+          selectedSiteId={selectedSiteId}
+        />
+
+        {siteHoverInfo && (
+          <div
+            className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
+            style={{ left: siteHoverInfo.x, top: siteHoverInfo.y }}
+          >
+            <div className="font-bold text-gray-900">{siteHoverInfo.name}</div>
+            <div className="text-gray-600">{siteHoverInfo.country}</div>
+            <div className="text-xs text-[#0f6e56] mt-1">
+              Local Monitoring Site
+            </div>
+          </div>
+        )}
 
         {partnerHoverInfo && (
           <div
@@ -534,7 +628,7 @@ export function GridMap({
           </div>
         )}
 
-        {hoverInfo && hoveredCell && !partnerHoverInfo && (
+        {hoverInfo && hoveredCell && !partnerHoverInfo && !siteHoverInfo && (
           <MapTooltip
             x={hoverInfo.x}
             y={hoverInfo.y}

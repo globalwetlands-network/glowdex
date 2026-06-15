@@ -8,9 +8,11 @@ import { useSelection } from '@/context/SelectionContext';
 
 // Types
 import type { ObservationPoint } from '@/api/species';
+import type { LocalSiteContext } from '@/api/types';
 
 // Data
 import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
+import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
 
 // Feature Hooks & Components
 import {
@@ -20,7 +22,14 @@ import {
 import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
-import { useStatistics } from '@/data/hooks/useStatistics';
+import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
+import { usePartners } from '@/api/hooks/usePartners';
+import {
+  calculateDistance,
+  findCellContainingPoint,
+  getFeatureCenterCoords,
+} from '@/utils/geo';
+import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -41,8 +50,15 @@ import type { MobileTab } from './types/app.types';
  */
 function AppShell() {
   // Context consumption
-  const { gridCells, geojson, typologies, indicators, isLoading, error } =
-    useData();
+  const {
+    gridCells,
+    geojson,
+    typologies,
+    indicators,
+    localSites,
+    isLoading,
+    error,
+  } = useData();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
@@ -114,6 +130,22 @@ function AppShell() {
     setMangroveLayerEnabled(enabled);
   }, []);
 
+  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(true);
+
+  const handleLocalSiteLayerToggle = useCallback((enabled: boolean) => {
+    setLocalSiteLayerEnabled(enabled);
+  }, []);
+
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [proximityAssociatedSiteId, setProximityAssociatedSiteId] = useState<
+    string | null
+  >(null);
+
+  const [siteFlyTarget, setSiteFlyTarget] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
+
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
 
@@ -125,11 +157,175 @@ function AppShell() {
     }
   }, []);
 
+  const handleSiteSelect = useCallback(
+    (siteId: string) => {
+      setSelectedSiteId(siteId);
+      setPanelActiveTab('analysis');
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('analysis');
+      }
+
+      const site = localSites.find((s) => s.id === siteId);
+      if (!site) return;
+
+      setSiteFlyTarget({
+        lng: site.coordinates[0],
+        lat: site.coordinates[1],
+      });
+
+      // geojson is stable after initial load — set once
+      // in useScientificData setState and never updated.
+      // Safe to include in the dependency array without
+      // risk of unnecessary re-creation.
+      if (geojson) {
+        // Use point-in-polygon against GeoJSON features
+        // to find the containing cell — more reliable
+        // than distance-based lookup since RichGridCell
+        // has no centerCoords populated at App level.
+        const cellId = findCellContainingPoint(
+          site.coordinates[1], // latitude
+          site.coordinates[0], // longitude
+          geojson,
+        );
+
+        if (cellId !== null) {
+          setSelectedCellId(cellId);
+        } else {
+          // Site coordinates don't fall within any grid
+          // cell (e.g. coastal edge case). Local data
+          // widget still shows correctly without a cell.
+          console.warn(
+            `handleSiteSelect: no grid cell found ` +
+              `containing site "${siteId}" at ` +
+              `[${site.coordinates[1]}, ` +
+              `${site.coordinates[0]}]`,
+          );
+        }
+      }
+    },
+    [localSites, geojson, setSelectedCellId],
+  );
+
+  const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
+
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
 
   // Derived selection object
   const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
+
+  /**
+   * Derives the local site context for the AI assistant
+   * when a monitoring site is selected or proximity-associated.
+   * Uses the most recent available year. Returns null when no
+   * site is selected, no data is available, the site is
+   * geographically distant from the selected cell, or all
+   * conditions have zero samples (no field data collected).
+   *
+   * Partner institution name is resolved from the partners
+   * API — the AI receives the full name rather than the
+   * partner ID slug.
+   */
+  const localSiteContext = useMemo((): LocalSiteContext | null => {
+    const effectiveSiteId = selectedSiteId ?? proximityAssociatedSiteId;
+    if (!effectiveSiteId || !localSites.length) return null;
+
+    const site = localSites.find((s) => s.id === effectiveSiteId);
+    if (!site || !site.observations.length) return null;
+
+    // Guard: only send local context when the site is
+    // geographically relevant to the selected cell.
+    // Use selectedCell.centerCoords when available,
+    // fall back to the GeoJSON feature bbox center.
+    // If neither is available, skip the guard — this
+    // is a known limitation when geojson is not yet
+    // loaded.
+    let cellLat: number | null = null;
+    let cellLng: number | null = null;
+
+    if (selectedCell?.centerCoords) {
+      cellLat = selectedCell.centerCoords.latitude;
+      cellLng = selectedCell.centerCoords.longitude;
+    } else if (geojson && selectedCellId) {
+      const feature = geojson.features.find(
+        (f) => f.properties.ID === selectedCellId,
+      );
+      if (feature) {
+        const center = getFeatureCenterCoords(feature);
+        cellLat = center.latitude;
+        cellLng = center.longitude;
+      }
+    }
+
+    if (cellLat !== null && cellLng !== null) {
+      const distanceKm = calculateDistance(
+        cellLat,
+        cellLng,
+        site.coordinates[1], // latitude
+        site.coordinates[0], // longitude
+      );
+      if (distanceKm > MAX_SITE_ASSOCIATION_DISTANCE_KM) {
+        return null;
+      }
+    }
+
+    // availableYears is sorted ascending in
+    // deriveLocalWetlands — .at(-1) safely returns
+    // the most recent year.
+    const year = site.availableYears.at(-1) ?? null;
+    if (!year) return null;
+
+    // Filter out conditions with no samples — zero samplesN indicates
+    // no field data was collected for that condition in this year.
+    const conditions = aggregateByCondition(site.observations, year).filter(
+      (c) => c.samplesN > 0,
+    );
+
+    if (!conditions.length) return null;
+
+    // Wait for partners data to load before sending
+    // local context to the AI — prevents the AI
+    // receiving a partner ID slug instead of the full
+    // institution name. Once loaded the memo re-runs
+    // with the correct name and the query updates.
+    if (site.partnerId && !partnersData?.partners) {
+      return null;
+    }
+
+    const partnerName = site.partnerId
+      ? (partnersData?.partners.find((p) => p.id === site.partnerId)
+          ?.institution ?? site.name)
+      : site.name;
+
+    return {
+      siteName: site.name,
+      country: site.country,
+      partner: partnerName,
+      year,
+      conditions,
+    };
+  }, [
+    selectedSiteId,
+    proximityAssociatedSiteId,
+    localSites,
+    partnersData,
+    selectedCell,
+    selectedCellId,
+    geojson,
+  ]);
+
+  /**
+   * True only when the effective site has a partnerId that
+   * requires partner data to resolve — sites with no partner
+   * mapping are already complete without it.
+   * False for plain cell selections with no associated site
+   * so those queries are not delayed.
+   */
+  const pendingSiteId = selectedSiteId ?? proximityAssociatedSiteId;
+  const pendingSite = pendingSiteId
+    ? localSites.find((s) => s.id === pendingSiteId)
+    : null;
+  const isLocalContextPending = !!pendingSite?.partnerId && isPartnersLoading;
 
   // Analytics hooks
   useSelectionAnalytics(selectedCell);
@@ -139,7 +335,7 @@ function AppShell() {
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
 
   // 1a. Fetch backend statistics for the selected cell (Single Source of Truth)
-  const { data: cellStats } = useStatistics(selectedCellId);
+  const { data: cellStats } = useGlobalStatistics(selectedCellId);
 
   // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
@@ -157,6 +353,8 @@ function AppShell() {
     (id: number | null) => {
       setSelectedCellId(id);
       setClickedPartnerId(null);
+      setSelectedSiteId(null);
+      setProximityAssociatedSiteId(null);
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
@@ -188,6 +386,8 @@ function AppShell() {
   const handleClearSelection = useCallback(() => {
     setSelectedCellId(null);
     setClickedPartnerId(null);
+    setSelectedSiteId(null);
+    setProximityAssociatedSiteId(null);
   }, [setSelectedCellId]);
 
   // Render map area
@@ -214,6 +414,12 @@ function AppShell() {
           speciesFlyTarget={speciesFlyTarget}
           onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
           onPartnerClick={handlePartnerClick}
+          localSites={localSites}
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          selectedSiteId={selectedSiteId}
+          onSiteClick={handleSiteSelect}
+          siteFlyTarget={siteFlyTarget}
+          onSiteFlyComplete={() => setSiteFlyTarget(null)}
         />
       ),
     [
@@ -232,6 +438,11 @@ function AppShell() {
       mangroveLayerEnabled,
       speciesFlyTarget,
       handlePartnerClick,
+      localSites,
+      localSiteLayerEnabled,
+      selectedSiteId,
+      handleSiteSelect,
+      siteFlyTarget,
     ],
   );
 
@@ -257,6 +468,18 @@ function AppShell() {
         activeTab={panelActiveTab}
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
+        localSites={localSites}
+        selectedSiteId={selectedSiteId}
+        onSiteSelect={handleSiteSelect}
+        localSiteLayerEnabled={localSiteLayerEnabled}
+        onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
+        // Intentionally aliases onSiteSelect — both trigger the same site
+        // selection and tab switch. If these use cases ever diverge (e.g.
+        // onViewLocalData should not fly-to the site), split the callback.
+        onViewLocalData={handleSiteSelect}
+        localSiteContext={localSiteContext}
+        isLocalContextPending={isLocalContextPending}
+        onSiteAssociated={setProximityAssociatedSiteId}
       />
     ),
     [
@@ -278,6 +501,13 @@ function AppShell() {
       panelActiveTab,
       handlePanelTabChange,
       clickedPartnerId,
+      localSites,
+      selectedSiteId,
+      handleSiteSelect,
+      localSiteLayerEnabled,
+      handleLocalSiteLayerToggle,
+      localSiteContext,
+      isLocalContextPending,
     ],
   );
 

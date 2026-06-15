@@ -1,22 +1,49 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
+import type { LocalSiteContext } from '@/api/types';
 
 interface AnalysisAssistantWidgetProps {
   selectedCellId?: number | null;
+  localSiteContext?: LocalSiteContext | null;
+  /**
+   * True when a monitoring site is selected but partner
+   * data (needed for the full institution name) has not
+   * yet loaded. Delays the AI query to prevent a double
+   * fetch — first without local context, then with it.
+   * Only true for ~1s on first session load.
+   * Defaults to false — safe for callers that do not
+   * pass local site context.
+   */
+  isLocalContextPending?: boolean;
 }
 
 export function AnalysisAssistantWidget({
   selectedCellId,
+  localSiteContext,
+  isLocalContextPending,
 }: AnalysisAssistantWidgetProps) {
   const {
     data: initialInsight,
     isLoading: isInsightLoading,
     error: initialError,
   } = useQuery({
-    queryKey: ['insight', { gridCellId: selectedCellId }],
-    queryFn: () => fetchInsight({ gridCellId: selectedCellId! }),
-    enabled: !!selectedCellId,
+    queryKey: [
+      'insight',
+      {
+        gridCellId: selectedCellId,
+        localSiteContext: localSiteContext ? localSiteContext.siteName : null,
+      },
+    ],
+    queryFn: () =>
+      fetchInsight({
+        gridCellId: selectedCellId!,
+        localSiteContext: localSiteContext ?? undefined,
+      }),
+    // Only blocks the query when a monitoring site is
+    // selected and partners data is still loading —
+    // plain cell selections (no site) are unaffected.
+    enabled: !!selectedCellId && !isLocalContextPending,
   });
 
   if (isInsightLoading && !initialInsight) {
@@ -29,10 +56,11 @@ export function AnalysisAssistantWidget({
 
   return (
     <ChatInterface
-      key={selectedCellId ?? 'empty'}
+      key={`${selectedCellId ?? 'empty'}-${localSiteContext?.siteName ?? 'no-site'}`}
       selectedCellId={selectedCellId}
       initialInsight={initialInsight}
       initialError={initialError}
+      localSiteContext={localSiteContext}
     />
   );
 }

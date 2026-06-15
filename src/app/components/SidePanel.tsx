@@ -5,12 +5,15 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
 import type { ObservationPoint } from '@/api/species';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { LocalSiteContext } from '@/api/types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
+import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
@@ -37,6 +40,15 @@ interface SidePanelProps {
   activeTab: 'analysis' | 'biodiversity';
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
+  localSites: LocalSite[];
+  selectedSiteId: string | null;
+  onSiteSelect: (siteId: string) => void;
+  localSiteLayerEnabled: boolean;
+  onLocalSiteLayerToggle: (enabled: boolean) => void;
+  onViewLocalData: (siteId: string) => void;
+  localSiteContext: LocalSiteContext | null;
+  isLocalContextPending: boolean;
+  onSiteAssociated?: (siteId: string | null) => void;
 }
 
 /**
@@ -62,6 +74,15 @@ export function SidePanel({
   activeTab,
   onTabChange,
   clickedPartnerId,
+  localSites,
+  selectedSiteId,
+  onSiteSelect,
+  localSiteLayerEnabled,
+  onLocalSiteLayerToggle,
+  onViewLocalData,
+  localSiteContext,
+  isLocalContextPending,
+  onSiteAssociated,
 }: SidePanelProps) {
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -91,22 +112,6 @@ export function SidePanel({
         </button>
       </div>
 
-      {/* Empty state — no location selected */}
-      {!selectedCell && (
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-          <div className="bg-teal-50 border border-teal-100 rounded-full p-4 mb-4">
-            <MapPin className="w-6 h-6 text-teal-600" />
-          </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">
-            Search for a location on the map to get started
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            Use the search box in the top left of the map, or click any cell to
-            explore the data
-          </p>
-        </div>
-      )}
-
       {/* Tab Content */}
       <div
         className={
@@ -115,7 +120,7 @@ export function SidePanel({
             : 'hidden'
         }
       >
-        {/* Content — only shown when a cell is selected */}
+        {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (
           <div className="space-y-4">
             {/* Location card */}
@@ -153,6 +158,8 @@ export function SidePanel({
                     selectedCellId={
                       activeTab === 'analysis' ? selectedCell?.id : null
                     }
+                    localSiteContext={localSiteContext}
+                    isLocalContextPending={isLocalContextPending}
                   />
                 </CollapsibleSection>
               </div>
@@ -160,24 +167,25 @@ export function SidePanel({
           </div>
         )}
 
-        {/* Section: Filters */}
-        <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
-          <div className="p-4">
-            <CollapsibleSection
-              title="Filters"
-              icon={Filter}
-              defaultOpen={true}
-              childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-            >
-              <FilterControls
-                filterState={filterState}
-                onFilterChange={onFilterChange}
-              />
-            </CollapsibleSection>
+        {/* Filters + Global Wetlands Analysis — only shown when a cell is selected */}
+        {selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Filters"
+                icon={Filter}
+                defaultOpen={true}
+                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+              >
+                <FilterControls
+                  filterState={filterState}
+                  onFilterChange={onFilterChange}
+                />
+              </CollapsibleSection>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Indicators card */}
         {selectedCell && (
           <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
             <div className="p-4">
@@ -196,6 +204,21 @@ export function SidePanel({
             </div>
           </div>
         )}
+
+        {/* Local Wetlands Analysis card — always visible */}
+        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div className="p-4">
+            <LocalWetlandsAnalysisWidget
+              localSites={localSites}
+              selectedCell={selectedCell}
+              selectedSiteId={selectedSiteId}
+              onSiteSelect={onSiteSelect}
+              localSiteLayerEnabled={localSiteLayerEnabled}
+              onLocalSiteLayerToggle={onLocalSiteLayerToggle}
+              onSiteAssociated={onSiteAssociated}
+            />
+          </div>
+        </div>
       </div>
 
       <div
@@ -210,8 +233,12 @@ export function SidePanel({
           partnerLayerEnabled={partnerLayerEnabled}
           onMangroveLayerToggle={onMangroveLayerToggle}
           mangroveLayerEnabled={mangroveLayerEnabled}
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          onLocalSiteLayerToggle={onLocalSiteLayerToggle}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
+          localSites={localSites}
+          onViewLocalData={onViewLocalData}
         />
       </div>
 

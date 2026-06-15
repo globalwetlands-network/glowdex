@@ -1,14 +1,29 @@
 import { useMemo } from 'react';
-import { MapPin, ExternalLink, Building2 } from 'lucide-react';
+import { MapPin, ExternalLink, Building2, BarChart2 } from 'lucide-react';
 import { usePartners } from '@/api/hooks/usePartners';
 import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
 
 interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
   onPartnerLayerToggle: (enabled: boolean) => void;
   partnerLayerEnabled: boolean;
   clickedPartnerId: string | null;
+  /**
+   * Local monitoring sites — used to check whether the
+   * displayed partner has an associated monitoring site.
+   * When a matching site exists, a link is shown to
+   * navigate to the local data in the Analysis tab.
+   */
+  localSites: LocalSite[];
+  /**
+   * Called when the user clicks "View local monitoring
+   * data" — switches to Analysis tab and selects the
+   * associated site. Pass handleSiteSelect from App.tsx
+   * directly — it already handles tab switching.
+   */
+  onViewLocalData: (siteId: string) => void;
 }
 
 export function PartnerWidget({
@@ -16,6 +31,8 @@ export function PartnerWidget({
   onPartnerLayerToggle,
   partnerLayerEnabled,
   clickedPartnerId,
+  localSites,
+  onViewLocalData,
 }: PartnerWidgetProps) {
   const { data: partnersData, isLoading, isError } = usePartners();
 
@@ -56,6 +73,16 @@ export function PartnerWidget({
 
     return nearest;
   }, [partnersData, clickedPartnerId, nearest, selectedCell]);
+
+  const associatedLocalSite = useMemo(() => {
+    if (!displayedPartner?.partner.id) return null;
+    // partnerId: null sites are implicitly excluded —
+    // equality with a non-empty string never matches null.
+    return (
+      localSites.find((s) => s.partnerId === displayedPartner.partner.id) ??
+      null
+    );
+  }, [localSites, displayedPartner]);
 
   const handleToggle = () => {
     onPartnerLayerToggle(!partnerLayerEnabled);
@@ -137,33 +164,56 @@ export function PartnerWidget({
           </p>
         </div>
 
-        <div className="border-t border-gray-100" />
-
-        <div className="flex flex-col gap-2">
-          <a
-            href={displayedPartner.partner.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
-          >
-            <ExternalLink size={10} />
-            Visit website
-          </a>
-          <div className="border-t border-gray-100 pt-2">
-            <p className="text-[10px] text-gray-400 mb-1">
-              Learn more about the project
-            </p>
+        {/* Only render https:// URLs — see
+            LocalWetlandsAnalysisWidget for policy note.
+            Divider is inside the condition so it only
+            renders when the link block is visible. */}
+        {displayedPartner.partner.websiteUrl.startsWith('https://') && (
+          <>
+            <div className="border-t border-gray-100" />
             <a
-              href="https://globalwetlandsproject.org"
+              href={displayedPartner.partner.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
             >
               <ExternalLink size={10} />
-              Global Wetlands Project
+              Visit website
             </a>
-          </div>
+          </>
+        )}
+
+        {/* Always shown — hardcoded https:// URL, not from the API */}
+        <div className="border-t border-gray-100 pt-2">
+          <p className="text-[10px] text-gray-400 mb-1">
+            Learn more about the project
+          </p>
+          <a
+            href="https://globalwetlandsproject.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
+          >
+            <ExternalLink size={10} />
+            Global Wetlands Project
+          </a>
         </div>
+
+        {associatedLocalSite && (
+          <div className="border-t border-gray-100 pt-2">
+            <p className="text-[10px] text-gray-400 mb-1">
+              Field monitoring data
+            </p>
+            <button
+              type="button"
+              onClick={() => onViewLocalData(associatedLocalSite.id)}
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
+            >
+              <BarChart2 size={10} />
+              View local monitoring data
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="rounded-lg border border-teal-100 bg-teal-50/50 p-3 flex items-center justify-between gap-3">

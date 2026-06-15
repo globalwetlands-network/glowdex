@@ -3,6 +3,10 @@
  * All fields are strings because parseCsv uses dynamicTyping: false.
  */
 export interface LocalObservationRaw {
+  Country_name: string;
+  Location_name: string;
+  Location_lat: string;
+  Location_long: string;
   Year: string;
   Site_Type: string;
   Species: string;
@@ -22,38 +26,25 @@ export interface LocalObservation {
   samplesN: number;
 }
 
-/**
- * Metadata for a single monitoring site.
- * Separated from LocalSite so it can be used in
- * SITE_METADATA without the derived fields.
- */
 export interface LocalSiteMetadata {
   id: string;
   name: string;
   country: string;
-  countryCode: string;
-  partner: string;
   /**
    * [longitude, latitude] — GeoJSON convention.
-   * TODO: Replace placeholder coordinates with verified
-   * Mgazana geolocation before release.
+   * Derived from Location_long / Location_lat in CSV.
    */
   coordinates: [number, number];
+  /**
+   * Partner organisation ID matching PARTNER_REGISTRY.
+   * null when no partner association is available.
+   * TODO: Replace hardcoded mapping with Partner_id
+   * column from CSV once it is available.
+   */
+  partnerId: string | null;
 }
 
-/**
- * A monitoring site with its full observation dataset and
- * the global max density across all conditions and years —
- * used to fix the Y-axis for honest cross-condition
- * comparison. Mirrors Nelson Miranda's fixed_y_limit.
- */
 export interface LocalSite extends LocalSiteMetadata {
   availableYears: number[];
   observations: LocalObservation[];
-  /**
-   * Fixed Y-axis maximum across all years and conditions.
-   * Computed once in deriveLocalWetlands. Minimum floor of 5
-   * prevents a zero-height chart when all densities are zero.
-   */
-  globalMaxDensity: number;
 }
