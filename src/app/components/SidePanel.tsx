@@ -219,6 +219,7 @@ export function SidePanel({
                 <FilterControls
                   filterState={filterState}
                   onFilterChange={onFilterChange}
+                  typologies={typologies}
                 />
               </CollapsibleSection>
             </div>
