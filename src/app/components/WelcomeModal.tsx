@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import logo from '@/assets/globalwetlands.png';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
 
 const STORAGE_KEY = 'glowdex_welcome_dismissed';
@@ -89,13 +89,45 @@ export function WelcomeModal() {
           monitoring.
         </p>
 
+        {/* How to get started */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <div className="w-3 h-3 rounded-sm bg-[#4CAF82] shrink-0" />
+            <p className="text-xs text-gray-700">
+              Select a colored tile on the map to get started
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <Search className="w-3 h-3 text-[#0f6e56] shrink-0" />
+            <p className="text-xs text-gray-700">
+              Use the search box to navigate to a specific location
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <div className="relative w-3 h-3 shrink-0">
+              <div className="absolute inset-0 rounded-full bg-[#1d9e75]" />
+              <div className="absolute inset-[2px] rounded-full bg-white" />
+              <div className="absolute inset-[4px] rounded-full bg-[#3b82f6]" />
+            </div>
+            <p className="text-xs text-gray-700">
+              Dots on the map show partner organisation locations
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <div className="w-3 h-3 rounded-full bg-[#3b82f6] shrink-0" />
+            <p className="text-xs text-gray-700">
+              Pins on the map show local monitoring locations
+            </p>
+          </div>
+        </div>
+
         {/* Dismiss button */}
         <button
           type="button"
           onClick={() => handleDismiss('button')}
           className="w-full py-2.5 px-4 bg-[#0f6e56] text-white text-sm font-medium rounded-lg hover:bg-[#085041] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f6e56]/50"
         >
-          Explore the map
+          Get started
         </button>
       </div>
     </div>

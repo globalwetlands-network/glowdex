@@ -164,6 +164,20 @@ export function SidePanel({
             : 'hidden'
         }
       >
+        {!selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col items-center text-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#0f6e56]/10 flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-[#0f6e56]" />
+            </div>
+            <p className="text-sm font-semibold text-gray-700">
+              Select a colored tile on the map to get started
+            </p>
+            <p className="text-xs text-gray-500">
+              Use the search box to navigate to a specific location
+            </p>
+          </div>
+        )}
+
         {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (
           <div className="space-y-4">
