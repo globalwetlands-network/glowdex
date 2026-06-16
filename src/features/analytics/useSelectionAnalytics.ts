@@ -29,6 +29,7 @@ export const useSelectionAnalytics = (
         cell_id: String(selectedCell.id),
         country: selectedCell.country,
         habitats: habitats,
+        has_mangrove: selectedCell.mangroves,
         typology_5: selectedCell.cluster5,
         typology_18: selectedCell.cluster18,
       });

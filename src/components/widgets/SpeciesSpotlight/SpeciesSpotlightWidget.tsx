@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { Info } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
 import {
   SPECIES_SPOTLIGHT_DATA,
@@ -71,6 +72,7 @@ export function SpeciesSpotlightWidget({
   partners,
   onSpeciesSelect,
 }: SpeciesSpotlightWidgetProps) {
+  const posthog = usePostHog();
   const [activeIndex, setActiveIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   // Tracks which species ID has its observation layer enabled.
@@ -103,6 +105,21 @@ export function SpeciesSpotlightWidget({
       setManualSelection(
         selectedCell ? { cellId: selectedCell.id, index: idx } : null,
       );
+      const newSpecies = species[idx];
+      if (newSpecies) {
+        try {
+          posthog?.capture('species_tab_selected', {
+            species_id: newSpecies.id,
+            species_common_name: newSpecies.commonName,
+            previous_species_id: activeSpecies?.id ?? null,
+            selection_type: 'manual',
+            cell_id:
+              selectedCell?.id !== undefined ? String(selectedCell.id) : null,
+          });
+        } catch (error) {
+          console.error('Failed to capture species_tab_selected event:', error);
+        }
+      }
     }
   };
 
@@ -155,6 +172,24 @@ export function SpeciesSpotlightWidget({
     // Tier 3: No match
     return -1;
   }, [selectedCell, partners, species, speciesConfigData]);
+
+  // Tracks which tier resolved the auto-selection — used for analytics only.
+  const autoTier = useMemo((): 'partner_match' | 'region_bounds' | null => {
+    if (autoIndex === -1 || !selectedCell?.centerCoords || !speciesConfigData)
+      return null;
+    const { latitude: lat, longitude: lng } = selectedCell.centerCoords;
+    if (partners.length) {
+      const nearest = findNearestPartner(lat, lng, partners);
+      if (nearest) {
+        const matched = species.some((s) => {
+          const config = speciesConfigData.species.find((c) => c.id === s.id);
+          return config?.partnerIds.includes(nearest.partner.id) ?? false;
+        });
+        if (matched) return 'partner_match';
+      }
+    }
+    return 'region_bounds';
+  }, [autoIndex, selectedCell, partners, species, speciesConfigData]);
 
   /**
    * Effective active tab index — single source of truth for
@@ -241,6 +276,28 @@ export function SpeciesSpotlightWidget({
     if (!config) return;
     const center = getSpeciesPrimaryCenter(config.regionBounds);
     if (center) onSpeciesSelect(center);
+
+    // Fire auto-selection analytics only when the effective index
+    // came from auto-selection — manual selections are tracked in handleTabChange.
+    const isAutoSelection =
+      autoTier !== null &&
+      !(
+        manualSelection !== null &&
+        manualSelection.cellId === selectedCell.id &&
+        manualSelection.index === effectiveIndex
+      );
+    if (isAutoSelection) {
+      try {
+        posthog?.capture('species_auto_selected', {
+          species_id: currentSpecies.id,
+          species_common_name: currentSpecies.commonName,
+          selection_tier: autoTier,
+          cell_id: String(selectedCell.id),
+        });
+      } catch (error) {
+        console.error('Failed to capture species_auto_selected event:', error);
+      }
+    }
   }, [
     effectiveIndex,
     onSpeciesSelect,
@@ -248,6 +305,9 @@ export function SpeciesSpotlightWidget({
     speciesConfigData,
     selectedCell,
     species,
+    autoTier,
+    manualSelection,
+    posthog,
   ]);
 
   return (
@@ -325,6 +385,19 @@ export function SpeciesSpotlightWidget({
           onLayerToggle={(speciesId, observations, enabled) => {
             setLayerEnabledForSpecies(enabled ? speciesId : null);
             onSpeciesLayerToggle(speciesId, observations, enabled);
+            try {
+              posthog?.capture('species_layer_toggled', {
+                species_id: speciesId,
+                species_common_name: activeSpecies.commonName,
+                enabled,
+                observation_count: observations.length,
+              });
+            } catch (error) {
+              console.error(
+                'Failed to capture species_layer_toggled event:',
+                error,
+              );
+            }
           }}
           infoOpen={infoOpen}
           setInfoOpen={setInfoOpen}

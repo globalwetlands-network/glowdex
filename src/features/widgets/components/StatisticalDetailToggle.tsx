@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BarChart2, ChevronDown, ChevronUp } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 import type {
   AIStatisticalContextV1,
   AIStatisticalIndicatorSummary,
@@ -216,11 +217,14 @@ function Section({
 
 interface StatisticalDetailToggleProps {
   statistics: AIStatisticalContextV1;
+  selectedCellId?: number | null;
 }
 
 export function StatisticalDetailToggle({
   statistics,
+  selectedCellId,
 }: StatisticalDetailToggleProps) {
+  const posthog = usePostHog();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!statistics.summaries || statistics.summaries.length === 0) {
@@ -246,7 +250,24 @@ export function StatisticalDetailToggle({
         type="button"
         aria-expanded={isOpen}
         data-testid="toggle-button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          const next = !isOpen;
+          setIsOpen(next);
+          try {
+            posthog?.capture('statistical_detail_toggled', {
+              expanded: next,
+              cell_id:
+                selectedCellId !== null && selectedCellId !== undefined
+                  ? String(selectedCellId)
+                  : null,
+            });
+          } catch (error) {
+            console.error(
+              'Failed to capture statistical_detail_toggled event:',
+              error,
+            );
+          }
+        }}
         className="flex items-center gap-1.5 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors pt-2 border-t border-gray-100 w-full"
       >
         <BarChart2 size={13} />

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
+import { useAIAnalytics } from '@/features/analytics';
 import type { Message } from './useChatMessages';
 import type { LocalSiteContext } from '@/api/types';
 
@@ -24,6 +25,12 @@ export function useAskMutation({
   setMessages,
   localSiteContext,
 }: Options) {
+  const {
+    captureFollowupAsked,
+    captureResponseReceived,
+    captureErrorOccurred,
+  } = useAIAnalytics({ selectedCellId, localSiteContext });
+
   const askMutation = useMutation({
     mutationFn: (question: string) => {
       if (!selectedCellId) {
@@ -55,6 +62,10 @@ export function useAskMutation({
     },
 
     onSuccess: (data) => {
+      // conversationMessages in this closure is the value from the last render
+      // before the question was submitted — Math.ceil gives the correct turn number
+      const turn = Math.ceil(conversationMessages.length / 2);
+      captureResponseReceived(data.text, turn);
       setMessages((prev) => [
         ...prev,
         {
@@ -66,6 +77,7 @@ export function useAskMutation({
     },
 
     onError: () => {
+      captureErrorOccurred('followup');
       setMessages((prev) => [
         ...prev,
         {
@@ -82,6 +94,12 @@ export function useAskMutation({
     (question: string) => {
       if (askMutation.isPending) return;
 
+      // conversationMessages is the value from the last render — includes the
+      // initial AI message and all previous Q/A pairs but not the new question.
+      // Math.ceil gives the correct 1-based turn number.
+      const turn = Math.ceil(conversationMessages.length / 2);
+      captureFollowupAsked(question, turn);
+
       setMessages((prev) => [
         ...prev,
         {
@@ -93,7 +111,7 @@ export function useAskMutation({
 
       askMutation.mutate(question);
     },
-    [askMutation, setMessages],
+    [askMutation, setMessages, conversationMessages, captureFollowupAsked],
   );
 
   return { askMutation, handleAsk };

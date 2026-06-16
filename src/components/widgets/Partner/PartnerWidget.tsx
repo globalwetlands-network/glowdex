@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { MapPin, ExternalLink, Building2, BarChart2 } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 import { usePartners } from '@/api/hooks/usePartners';
 import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
@@ -34,6 +35,7 @@ export function PartnerWidget({
   localSites,
   onViewLocalData,
 }: PartnerWidgetProps) {
+  const posthog = usePostHog();
   const { data: partnersData, isLoading, isError } = usePartners();
 
   const nearest = useMemo(() => {
@@ -206,7 +208,30 @@ export function PartnerWidget({
             </p>
             <button
               type="button"
-              onClick={() => onViewLocalData(associatedLocalSite.id)}
+              onClick={() => {
+                try {
+                  posthog?.capture('view_local_data_clicked', {
+                    site_id: associatedLocalSite.id,
+                    partner_id: displayedPartner?.partner.id ?? null,
+                    partner_institution:
+                      displayedPartner?.partner.institution ?? null,
+                  });
+                  posthog?.capture('local_site_selected', {
+                    site_id: associatedLocalSite.id,
+                    site_name: associatedLocalSite.name,
+                    site_country: associatedLocalSite.country,
+                    partner_id: associatedLocalSite.partnerId ?? null,
+                    trigger_source: 'partner_link',
+                    had_cell_selected: !!selectedCell,
+                  });
+                } catch (error) {
+                  console.error(
+                    'Failed to capture local data click analytics events:',
+                    error,
+                  );
+                }
+                onViewLocalData(associatedLocalSite.id);
+              }}
               className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
             >
               <BarChart2 size={10} />

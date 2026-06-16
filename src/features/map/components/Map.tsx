@@ -54,6 +54,8 @@ interface MapProps {
   onSiteClick: (siteId: string) => void;
   siteFlyTarget: { lng: number; lat: number } | null;
   onSiteFlyComplete: () => void;
+  onLocationSearched?: (coords: { lng: number; lat: number }) => void;
+  onLocationSearchCleared?: () => void;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -194,6 +196,8 @@ export function GridMap({
   onSiteClick,
   siteFlyTarget,
   onSiteFlyComplete,
+  onLocationSearched,
+  onLocationSearchCleared,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
   // Temporary marker shown at the search result location.
@@ -341,26 +345,30 @@ export function GridMap({
    * 3–5 grid cells (each 100×100km) around the searched location,
    * giving enough regional context without zooming to street level.
    */
-  const handleSearchRetrieve = useCallback((result: unknown) => {
-    const feature = (
-      result as {
-        features?: Array<{
-          geometry?: { coordinates?: [number, number] };
-        }>;
-      }
-    )?.features?.[0];
+  const handleSearchRetrieve = useCallback(
+    (result: unknown) => {
+      const feature = (
+        result as {
+          features?: Array<{
+            geometry?: { coordinates?: [number, number] };
+          }>;
+        }
+      )?.features?.[0];
 
-    const coords = feature?.geometry?.coordinates;
-    if (!coords) return;
+      const coords = feature?.geometry?.coordinates;
+      if (!coords) return;
 
-    mapRef.current?.flyTo({
-      center: [coords[0], coords[1]],
-      zoom: 5,
-      duration: 1000,
-    });
+      mapRef.current?.flyTo({
+        center: [coords[0], coords[1]],
+        zoom: 5,
+        duration: 1000,
+      });
 
-    setSearchMarker({ lng: coords[0], lat: coords[1] });
-  }, []);
+      setSearchMarker({ lng: coords[0], lat: coords[1] });
+      onLocationSearched?.({ lng: coords[0], lat: coords[1] });
+    },
+    [onLocationSearched],
+  );
 
   /**
    * Resets the map to the initial global view when the search is cleared.
@@ -375,7 +383,8 @@ export function GridMap({
     });
     setSearchMarker(null);
     onCellSelect(null);
-  }, [onCellSelect]);
+    onLocationSearchCleared?.();
+  }, [onCellSelect, onLocationSearchCleared]);
 
   const interactiveLayerIds = useMemo(
     () => [
