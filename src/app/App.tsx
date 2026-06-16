@@ -182,12 +182,16 @@ function AppShell() {
           tab: 'biodiversity',
           trigger: 'partner_click',
           is_mobile: window.innerWidth < MOBILE_BREAKPOINT,
+          had_cell_selected: selectedCellId !== null,
         });
       } catch (error) {
-        console.error('Failed to capture partner_marker_clicked event:', error);
+        console.error(
+          'Failed to capture partner click analytics events:',
+          error,
+        );
       }
     },
-    [posthog],
+    [posthog, selectedCellId],
   );
 
   const handleSiteSelect = useCallback(
@@ -202,6 +206,7 @@ function AppShell() {
           tab: 'analysis',
           trigger: 'site_select',
           is_mobile: window.innerWidth < MOBILE_BREAKPOINT,
+          had_cell_selected: selectedCellId !== null,
         });
       } catch (error) {
         console.error('Failed to capture panel_tab_changed event:', error);
@@ -245,7 +250,7 @@ function AppShell() {
         }
       }
     },
-    [localSites, geojson, setSelectedCellId, posthog],
+    [localSites, geojson, setSelectedCellId, posthog, selectedCellId],
   );
 
   const handleSiteClickFromMap = useCallback(
@@ -429,6 +434,7 @@ function AppShell() {
             tab: 'analysis',
             trigger: 'auto_cell_select',
             is_mobile: true,
+            had_cell_selected: id !== null,
           });
         } catch (error) {
           console.error('Failed to capture panel_tab_changed event:', error);
@@ -448,6 +454,7 @@ function AppShell() {
         tab,
         trigger: 'manual_click',
         is_mobile: true,
+        had_cell_selected: selectedCellId !== null,
       });
     } catch (error) {
       console.error('Failed to capture panel_tab_changed event:', error);
@@ -464,13 +471,14 @@ function AppShell() {
         posthog?.capture('panel_tab_changed', {
           tab,
           trigger: 'manual_click',
-          is_mobile: false,
+          is_mobile: window.innerWidth < MOBILE_BREAKPOINT,
+          had_cell_selected: selectedCellId !== null,
         });
       } catch (error) {
         console.error('Failed to capture panel_tab_changed event:', error);
       }
     },
-    [posthog],
+    [posthog, selectedCellId],
   );
 
   const handleClearSelection = useCallback(() => {

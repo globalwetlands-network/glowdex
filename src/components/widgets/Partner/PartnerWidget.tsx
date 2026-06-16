@@ -226,7 +226,7 @@ export function PartnerWidget({
                   });
                 } catch (error) {
                   console.error(
-                    'Failed to capture view_local_data_clicked event:',
+                    'Failed to capture local data click analytics events:',
                     error,
                   );
                 }
