@@ -52,6 +52,17 @@ export function BiodiversityPanel({
 
   return (
     <div className="p-4 space-y-4">
+      {/* Species Spotlight container */}
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <SpeciesSpotlightWidget
+          onSpeciesLayerToggle={onSpeciesLayerToggle}
+          selectedCell={selectedCell}
+          partners={partnersData?.partners ?? []}
+          onSpeciesSelect={onSpeciesSelect}
+          clickedPartnerId={clickedPartnerId}
+        />
+      </div>
+
       {/* Partner container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <PartnerWidget
@@ -210,17 +221,6 @@ export function BiodiversityPanel({
             </a>
           </p>
         </div>
-      </div>
-
-      {/* Species Spotlight container */}
-      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-        <SpeciesSpotlightWidget
-          onSpeciesLayerToggle={onSpeciesLayerToggle}
-          selectedCell={selectedCell}
-          partners={partnersData?.partners ?? []}
-          onSpeciesSelect={onSpeciesSelect}
-          clickedPartnerId={clickedPartnerId}
-        />
       </div>
     </div>
   );
