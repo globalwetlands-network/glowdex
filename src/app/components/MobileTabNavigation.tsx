@@ -25,7 +25,7 @@ export function MobileTabNavigation({
   ];
 
   return (
-    <div className="bg-white border-t border-gray-200 flex">
+    <div className="bg-white border-t border-gray-200 flex pb-[env(safe-area-inset-bottom)]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
