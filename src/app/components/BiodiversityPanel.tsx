@@ -1,4 +1,5 @@
-import { MapPin } from 'lucide-react';
+import { Info, MapPin } from 'lucide-react';
+import { useState } from 'react';
 import { usePostHog } from 'posthog-js/react';
 
 import type { ObservationPoint } from '@/api/species';
@@ -43,6 +44,8 @@ export function BiodiversityPanel({
 }: BiodiversityPanelProps) {
   const posthog = usePostHog();
   const { data: partnersData } = usePartners();
+  const [mangroveInfoOpen, setMangroveInfoOpen] = useState(false);
+  const [localSiteInfoOpen, setLocalSiteInfoOpen] = useState(false);
   // usePartners() is also called in PartnerWidget and PartnerLayer.
   // TanStack Query deduplicates requests — no additional network
   // call is made.
@@ -64,9 +67,31 @@ export function BiodiversityPanel({
       {/* Local Monitoring Sites container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Local Monitoring Locations
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Local Monitoring Locations
+            </h3>
+            <button
+              onClick={() => setLocalSiteInfoOpen((prev) => !prev)}
+              className={`p-1 rounded-md transition-colors ${
+                localSiteInfoOpen
+                  ? 'bg-teal-100 text-teal-700'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-label="Toggle monitoring locations information"
+              title="Monitoring locations information"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          {localSiteInfoOpen && (
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Shows verified field monitoring locations submitted by partner
+              organisations. Each pin represents an active or historical
+              sampling site where biodiversity and habitat data has been
+              collected on the ground.
+            </p>
+          )}
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
@@ -110,9 +135,23 @@ export function BiodiversityPanel({
       {/* Mangrove Habitat Extent container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Mangrove Habitat Extent
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Mangrove Habitat Extent
+            </h3>
+            <button
+              onClick={() => setMangroveInfoOpen((prev) => !prev)}
+              className={`p-1 rounded-md transition-colors ${
+                mangroveInfoOpen
+                  ? 'bg-teal-100 text-teal-700'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-label="Toggle mangrove layer information"
+              title="Mangrove layer information"
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
@@ -138,6 +177,15 @@ export function BiodiversityPanel({
               />
             </button>
           </div>
+          {mangroveInfoOpen && (
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Shows the spatial extent of mangrove habitat from the Global
+              Mangrove Watch dataset, providing a visual reference for where
+              mangroves occur within each grid cell. GLOWdex uses this layer to
+              contextualise modelled indicators against observed habitat
+              distribution.
+            </p>
+          )}
           <p className="text-[10px] text-gray-400 leading-relaxed">
             Global Mangrove Watch v4 · CC-BY 4.0 ·{' '}
             <a
