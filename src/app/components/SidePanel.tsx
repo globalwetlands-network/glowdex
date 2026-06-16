@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Filter, MapPin, Bot, BarChart2, Leaf } from 'lucide-react';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
@@ -49,6 +50,7 @@ interface SidePanelProps {
   localSiteContext: LocalSiteContext | null;
   isLocalContextPending: boolean;
   onSiteAssociated?: (siteId: string | null) => void;
+  scrollToLocalDataSignal?: number;
 }
 
 /**
@@ -83,7 +85,43 @@ export function SidePanel({
   localSiteContext,
   isLocalContextPending,
   onSiteAssociated,
+  scrollToLocalDataSignal,
 }: SidePanelProps) {
+  const localDataRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollToLocalDataSignal || activeTab !== 'analysis') return;
+    const target = localDataRef.current;
+    if (!target) return;
+
+    let rafId: number;
+    const doScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
+    doScroll();
+
+    // Re-scroll if cards above expand after async data loads (e.g. cellStats).
+    // Debounced per animation frame to avoid multiple smooth-scroll conflicts.
+    const observer = new ResizeObserver(doScroll);
+    let sibling = target.previousElementSibling;
+    while (sibling) {
+      observer.observe(sibling);
+      sibling = sibling.previousElementSibling;
+    }
+
+    const timeout = setTimeout(() => observer.disconnect(), 1500);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
+  }, [scrollToLocalDataSignal, activeTab]);
+
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
       {/* Tab Strip */}
@@ -207,7 +245,10 @@ export function SidePanel({
         )}
 
         {/* Local Wetlands Analysis card — always visible */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div
+          ref={localDataRef}
+          className="rounded-xl border border-gray-100 bg-white shadow-sm"
+        >
           <div className="p-4">
             <LocalWetlandsAnalysisWidget
               localSites={localSites}

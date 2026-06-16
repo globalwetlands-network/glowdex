@@ -71,6 +71,7 @@ function AppShell() {
   const [panelActiveTab, setPanelActiveTab] = useState<
     'analysis' | 'biodiversity'
   >('biodiversity');
+  const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
 
   // Species layer state
   const [speciesLayerState, setSpeciesLayerState] = useState<{
@@ -197,6 +198,7 @@ function AppShell() {
     (siteId: string) => {
       setSelectedSiteId(siteId);
       setPanelActiveTab('analysis');
+      setScrollToLocalDataSignal((c) => c + 1);
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
       }
@@ -648,6 +650,7 @@ function AppShell() {
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
         onSiteAssociated={setProximityAssociatedSiteId}
+        scrollToLocalDataSignal={scrollToLocalDataSignal}
       />
     ),
     [
@@ -676,6 +679,7 @@ function AppShell() {
       handleLocalSiteLayerToggle,
       localSiteContext,
       isLocalContextPending,
+      scrollToLocalDataSignal,
     ],
   );
 
