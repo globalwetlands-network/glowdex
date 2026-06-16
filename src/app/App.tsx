@@ -67,8 +67,7 @@ function AppShell() {
   const { selectedCellId, setSelectedCellId } = useSelection();
 
   // Local UI state (layout only)
-  const [mobileActiveTab, setMobileActiveTab] =
-    useState<MobileTab>('biodiversity');
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('map');
   const [panelActiveTab, setPanelActiveTab] = useState<
     'analysis' | 'biodiversity'
   >('biodiversity');
