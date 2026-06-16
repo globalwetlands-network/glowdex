@@ -54,6 +54,8 @@ interface MapProps {
   onSiteClick: (siteId: string) => void;
   siteFlyTarget: { lng: number; lat: number } | null;
   onSiteFlyComplete: () => void;
+  partnerFlyTarget: { lng: number; lat: number } | null;
+  onPartnerFlyComplete: () => void;
   onLocationSearched?: (coords: { lng: number; lat: number }) => void;
   onLocationSearchCleared?: () => void;
 }
@@ -196,6 +198,8 @@ export function GridMap({
   onSiteClick,
   siteFlyTarget,
   onSiteFlyComplete,
+  partnerFlyTarget,
+  onPartnerFlyComplete,
   onLocationSearched,
   onLocationSearchCleared,
 }: MapProps) {
@@ -331,6 +335,16 @@ export function GridMap({
     });
     onSiteFlyComplete();
   }, [siteFlyTarget, onSiteFlyComplete]);
+
+  useEffect(() => {
+    if (!partnerFlyTarget) return;
+    mapRef.current?.flyTo({
+      center: [partnerFlyTarget.lng, partnerFlyTarget.lat],
+      zoom: 8,
+      duration: 1000,
+    });
+    onPartnerFlyComplete();
+  }, [partnerFlyTarget, onPartnerFlyComplete]);
 
   /**
    * Handles a confirmed search result from SearchBox.
