@@ -262,13 +262,13 @@ export function LocalWetlandsAnalysisWidget({
             }`}
             aria-label={
               localSiteLayerEnabled
-                ? 'Hide monitoring sites on map'
-                : 'Show monitoring sites on map'
+                ? 'Hide monitoring locations on map'
+                : 'Show monitoring locations on map'
             }
             title={
               localSiteLayerEnabled
-                ? 'Hide monitoring sites on map'
-                : 'Show monitoring sites on map'
+                ? 'Hide monitoring locations on map'
+                : 'Show monitoring locations on map'
             }
           >
             <span
@@ -279,7 +279,7 @@ export function LocalWetlandsAnalysisWidget({
           </button>
         </div>
         <p className="text-xs text-gray-500">
-          Select a monitoring site to view local field data.
+          Select a monitoring location to view local field data.
         </p>
 
         {/* Country selector */}
@@ -303,14 +303,14 @@ export function LocalWetlandsAnalysisWidget({
         {associatedSite && (
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-gray-500">
-              Monitoring site
+              Monitoring location
             </label>
             <select
               value={selectedSiteId ?? ''}
               onChange={(e) => handleSiteSelect(e.target.value)}
               className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             >
-              <option value="">Select site...</option>
+              <option value="">Select location...</option>
               {activeSitesForSelector.map((site) => (
                 <option key={site.id} value={site.id}>
                   {site.name}
@@ -357,13 +357,13 @@ export function LocalWetlandsAnalysisWidget({
           }`}
           aria-label={
             localSiteLayerEnabled
-              ? 'Hide monitoring sites on map'
-              : 'Show monitoring sites on map'
+              ? 'Hide monitoring locations on map'
+              : 'Show monitoring locations on map'
           }
           title={
             localSiteLayerEnabled
-              ? 'Hide monitoring sites on map'
-              : 'Show monitoring sites on map'
+              ? 'Hide monitoring locations on map'
+              : 'Show monitoring locations on map'
           }
         >
           <span

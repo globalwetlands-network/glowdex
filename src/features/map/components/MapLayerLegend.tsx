@@ -50,7 +50,7 @@ export function MapLayerLegend({
   if (localSiteLayerEnabled && localSitesCount > 0) {
     items.push({
       icon: <LocalSiteMarkerIcon size={14} />,
-      label: 'Local monitoring site',
+      label: 'Local monitoring location',
     });
   }
 

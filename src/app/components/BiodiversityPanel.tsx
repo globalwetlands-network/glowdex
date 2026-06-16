@@ -65,13 +65,13 @@ export function BiodiversityPanel({
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Local Monitoring Sites
+            Local Monitoring Locations
           </h3>
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
               <span className="text-xs text-gray-600 leading-snug">
-                Show monitoring sites on map
+                Show monitoring locations on map
               </span>
             </div>
             <button
