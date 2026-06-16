@@ -293,7 +293,7 @@ export function SidePanel({
 
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-        {visibleCellCount.toLocaleString()} Grid Cells Visible
+        {visibleCellCount.toLocaleString()} Tiles Visible
       </div>
     </div>
   );

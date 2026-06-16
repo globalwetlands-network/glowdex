@@ -204,7 +204,7 @@ export function BiodiversityPanel({
             >
               Shows the spatial extent of mangrove habitat from the Global
               Mangrove Watch dataset, providing a visual reference for where
-              mangroves occur within each grid cell. GLOWdex uses this layer to
+              mangroves occur within each tile. GLOWdex uses this layer to
               contextualise modelled indicators against observed habitat
               distribution.
             </p>

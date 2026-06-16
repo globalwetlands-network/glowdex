@@ -127,7 +127,7 @@ export function PartnerWidget({
         >
           <MapPin size={18} className="text-gray-300" />
           <p className="text-sm text-gray-400">
-            Select a cell to find your nearest partner organisation
+            Select a colored tile or partner organisation to get started
           </p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export function PartnerWidget({
         <div className="flex items-center gap-1.5 text-xs text-gray-400">
           <MapPin size={10} className="shrink-0" />
           <span>
-            Cell {selectedCell.id}
+            Tile {selectedCell.id}
             {selectedCell.country ? ` · ${selectedCell.country}` : ''}
           </span>
         </div>
@@ -166,7 +166,7 @@ export function PartnerWidget({
           {selectedCell && (
             <p className="text-xs text-gray-400">
               {displayedPartner.distanceKm.toLocaleString()} km from selected
-              cell
+              tile
             </p>
           )}
         </div>
