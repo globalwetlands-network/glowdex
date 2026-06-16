@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
+import { usePostHog } from 'posthog-js/react';
 
 // Context
 import { AppProviders } from '@/app/AppProviders';
@@ -49,6 +50,9 @@ import type { MobileTab } from './types/app.types';
  * Handles derived state and layout orchestration
  */
 function AppShell() {
+  const posthog = usePostHog();
+  const cellCountInSession = useRef(0);
+
   // Context consumption
   const {
     gridCells,
@@ -119,16 +123,32 @@ function AppShell() {
   // Partner layer state
   const [partnerLayerEnabled, setPartnerLayerEnabled] = useState(true);
 
-  const handlePartnerLayerToggle = useCallback((enabled: boolean) => {
-    setPartnerLayerEnabled(enabled);
-  }, []);
+  const handlePartnerLayerToggle = useCallback(
+    (enabled: boolean) => {
+      setPartnerLayerEnabled(enabled);
+      try {
+        posthog?.capture('partner_layer_toggled', { enabled });
+      } catch (error) {
+        console.error('Failed to capture partner_layer_toggled event:', error);
+      }
+    },
+    [posthog],
+  );
 
   // Mangrove layer state
   const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(false);
 
-  const handleMangroveLayerToggle = useCallback((enabled: boolean) => {
-    setMangroveLayerEnabled(enabled);
-  }, []);
+  const handleMangroveLayerToggle = useCallback(
+    (enabled: boolean) => {
+      setMangroveLayerEnabled(enabled);
+      try {
+        posthog?.capture('mangrove_layer_toggled', { enabled });
+      } catch (error) {
+        console.error('Failed to capture mangrove_layer_toggled event:', error);
+      }
+    },
+    [posthog],
+  );
 
   const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(true);
 
@@ -149,13 +169,26 @@ function AppShell() {
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
 
-  const handlePartnerClick = useCallback((partnerId: string) => {
-    setClickedPartnerId(partnerId);
-    setPanelActiveTab('biodiversity');
-    if (window.innerWidth < MOBILE_BREAKPOINT) {
-      setMobileActiveTab('biodiversity');
-    }
-  }, []);
+  const handlePartnerClick = useCallback(
+    (partnerId: string) => {
+      setClickedPartnerId(partnerId);
+      setPanelActiveTab('biodiversity');
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('biodiversity');
+      }
+      try {
+        posthog?.capture('partner_marker_clicked', { partner_id: partnerId });
+        posthog?.capture('panel_tab_changed', {
+          tab: 'biodiversity',
+          trigger: 'partner_click',
+          is_mobile: window.innerWidth < MOBILE_BREAKPOINT,
+        });
+      } catch (error) {
+        console.error('Failed to capture partner_marker_clicked event:', error);
+      }
+    },
+    [posthog],
+  );
 
   const handleSiteSelect = useCallback(
     (siteId: string) => {
@@ -163,6 +196,15 @@ function AppShell() {
       setPanelActiveTab('analysis');
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
+      }
+      try {
+        posthog?.capture('panel_tab_changed', {
+          tab: 'analysis',
+          trigger: 'site_select',
+          is_mobile: window.innerWidth < MOBILE_BREAKPOINT,
+        });
+      } catch (error) {
+        console.error('Failed to capture panel_tab_changed event:', error);
       }
 
       const site = localSites.find((s) => s.id === siteId);
@@ -203,7 +245,27 @@ function AppShell() {
         }
       }
     },
-    [localSites, geojson, setSelectedCellId],
+    [localSites, geojson, setSelectedCellId, posthog],
+  );
+
+  const handleSiteClickFromMap = useCallback(
+    (siteId: string) => {
+      const site = localSites.find((s) => s.id === siteId);
+      try {
+        posthog?.capture('local_site_selected', {
+          site_id: siteId,
+          site_name: site?.name ?? null,
+          site_country: site?.country ?? null,
+          partner_id: site?.partnerId ?? null,
+          trigger_source: 'map_pin',
+          had_cell_selected: selectedCellId !== null,
+        });
+      } catch (error) {
+        console.error('Failed to capture local_site_selected event:', error);
+      }
+      handleSiteSelect(siteId);
+    },
+    [localSites, posthog, selectedCellId, handleSiteSelect],
   );
 
   const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
@@ -355,40 +417,105 @@ function AppShell() {
       setClickedPartnerId(null);
       setSelectedSiteId(null);
       setProximityAssociatedSiteId(null);
+      if (id) {
+        cellCountInSession.current += 1;
+      }
       // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
         setPanelActiveTab('analysis');
+        try {
+          posthog?.capture('panel_tab_changed', {
+            tab: 'analysis',
+            trigger: 'auto_cell_select',
+            is_mobile: true,
+          });
+        } catch (error) {
+          console.error('Failed to capture panel_tab_changed event:', error);
+        }
       }
     },
-    [setSelectedCellId],
+    [setSelectedCellId, posthog],
   );
 
   const handleMobileTabChange = (tab: MobileTab) => {
     setMobileActiveTab(tab);
-    // Sync panel tab state when switching mobile tabs
     if (tab === 'biodiversity' || tab === 'analysis') {
       setPanelActiveTab(tab);
+    }
+    try {
+      posthog?.capture('panel_tab_changed', {
+        tab,
+        trigger: 'manual_click',
+        is_mobile: true,
+      });
+    } catch (error) {
+      console.error('Failed to capture panel_tab_changed event:', error);
     }
   };
 
   const handlePanelTabChange = useCallback(
     (tab: 'analysis' | 'biodiversity') => {
       setPanelActiveTab(tab);
-      // On mobile, sync the bottom nav when panel tabs are switched
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab(tab);
       }
+      try {
+        posthog?.capture('panel_tab_changed', {
+          tab,
+          trigger: 'manual_click',
+          is_mobile: false,
+        });
+      } catch (error) {
+        console.error('Failed to capture panel_tab_changed event:', error);
+      }
     },
-    [],
+    [posthog],
   );
 
   const handleClearSelection = useCallback(() => {
+    try {
+      posthog?.capture('cell_selection_cleared', {
+        previous_cell_id:
+          selectedCellId !== null ? String(selectedCellId) : null,
+        previous_cell_country: selectedCell?.country ?? null,
+        cell_count_in_session: cellCountInSession.current,
+        active_tab: panelActiveTab,
+      });
+    } catch (error) {
+      console.error('Failed to capture cell_selection_cleared event:', error);
+    }
+    cellCountInSession.current = 0;
     setSelectedCellId(null);
     setClickedPartnerId(null);
     setSelectedSiteId(null);
     setProximityAssociatedSiteId(null);
-  }, [setSelectedCellId]);
+  }, [
+    setSelectedCellId,
+    posthog,
+    selectedCellId,
+    selectedCell,
+    panelActiveTab,
+  ]);
+
+  const handleLocationSearched = useCallback(
+    (coords: { lng: number; lat: number }) => {
+      try {
+        posthog?.capture('location_searched', { result_coordinates: coords });
+      } catch (error) {
+        console.error('Failed to capture location_searched event:', error);
+      }
+    },
+    [posthog],
+  );
+
+  const handleLocationSearchCleared = useCallback(() => {
+    try {
+      posthog?.capture('location_search_cleared');
+    } catch (error) {
+      console.error('Failed to capture location_search_cleared event:', error);
+    }
+  }, [posthog]);
 
   // Render map area
   const mapArea = useMemo(
@@ -417,9 +544,11 @@ function AppShell() {
           localSites={localSites}
           localSiteLayerEnabled={localSiteLayerEnabled}
           selectedSiteId={selectedSiteId}
-          onSiteClick={handleSiteSelect}
+          onSiteClick={handleSiteClickFromMap}
           siteFlyTarget={siteFlyTarget}
           onSiteFlyComplete={() => setSiteFlyTarget(null)}
+          onLocationSearched={handleLocationSearched}
+          onLocationSearchCleared={handleLocationSearchCleared}
         />
       ),
     [
@@ -441,8 +570,10 @@ function AppShell() {
       localSites,
       localSiteLayerEnabled,
       selectedSiteId,
-      handleSiteSelect,
+      handleSiteClickFromMap,
       siteFlyTarget,
+      handleLocationSearched,
+      handleLocationSearchCleared,
     ],
   );
 

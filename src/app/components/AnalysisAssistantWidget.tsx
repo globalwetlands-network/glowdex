@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
 import type { LocalSiteContext } from '@/api/types';
+import { useAIAnalytics } from '@/features/analytics';
 
 interface AnalysisAssistantWidgetProps {
   selectedCellId?: number | null;
@@ -16,13 +18,21 @@ interface AnalysisAssistantWidgetProps {
    * pass local site context.
    */
   isLocalContextPending?: boolean;
+  hasMangrove?: boolean;
 }
 
 export function AnalysisAssistantWidget({
   selectedCellId,
   localSiteContext,
   isLocalContextPending,
+  hasMangrove,
 }: AnalysisAssistantWidgetProps) {
+  const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
+    selectedCellId,
+    localSiteContext,
+    cellHasMangrove: hasMangrove,
+  });
+
   const {
     data: initialInsight,
     isLoading: isInsightLoading,
@@ -45,6 +55,18 @@ export function AnalysisAssistantWidget({
     // plain cell selections (no site) are unaffected.
     enabled: !!selectedCellId && !isLocalContextPending,
   });
+
+  useEffect(() => {
+    if (initialInsight?.text) {
+      captureInsightLoaded(initialInsight.text);
+    }
+  }, [initialInsight, captureInsightLoaded]);
+
+  useEffect(() => {
+    if (initialError) {
+      captureErrorOccurred('initial_insight');
+    }
+  }, [initialError, captureErrorOccurred]);
 
   if (isInsightLoading && !initialInsight) {
     return (

@@ -1,8 +1,18 @@
 import { useState } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2 } from 'lucide-react';
+import { Send, Bot, User, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import type { InsightResponse, LocalSiteContext } from '@/api/types';
+
+const AI_SUGGESTIONS_ENABLED =
+  import.meta.env.VITE_PUBLIC_FEATURE_AI_SUGGESTIONS === 'true';
+
+const BASE_SUGGESTIONS = [
+  'What are the main ecological signals here?',
+  'How does this compare to similar systems?',
+] as const;
+
+const LOCAL_DATA_SUGGESTION = 'What does the local field data show?';
 import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
 import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
@@ -181,6 +191,7 @@ export function ChatInterface({
               initialInsight?.statistics && (
                 <StatisticalDetailToggle
                   statistics={initialInsight.statistics}
+                  selectedCellId={selectedCellId}
                 />
               )}
           </div>
@@ -192,6 +203,32 @@ export function ChatInterface({
           </div>
         )}
       </div>
+
+      {/* Prompt suggestions — shown before first follow-up when feature flag is on.
+          The local field data suggestion is only included when localSiteContext
+          is present — showing it without data would be misleading. */}
+      {AI_SUGGESTIONS_ENABLED && messages.length === 0 && !!initialInsight && (
+        <div className="px-3 pt-2 pb-1 bg-white border-t border-gray-100 flex flex-wrap gap-1.5 shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-gray-400 w-full">
+            <Sparkles className="w-3 h-3" />
+            Suggested questions
+          </span>
+          {[
+            ...BASE_SUGGESTIONS,
+            ...(localSiteContext ? [LOCAL_DATA_SUGGESTION] : []),
+          ].map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              disabled={isLoading}
+              onClick={() => handleAsk(suggestion)}
+              className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors disabled:opacity-50"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input */}
       <div className="p-3 bg-white border-t border-gray-200 shrink-0">

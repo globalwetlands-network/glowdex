@@ -160,6 +160,7 @@ export function SidePanel({
                     }
                     localSiteContext={localSiteContext}
                     isLocalContextPending={isLocalContextPending}
+                    hasMangrove={selectedCell?.mangroves ?? false}
                   />
                 </CollapsibleSection>
               </div>

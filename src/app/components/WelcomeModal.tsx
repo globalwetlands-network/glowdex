@@ -1,28 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 
 const STORAGE_KEY = 'glowdex_welcome_dismissed';
 
 export function WelcomeModal() {
+  const posthog = usePostHog();
   const [visible, setVisible] = useState(
     () => !localStorage.getItem(STORAGE_KEY),
   );
 
-  const handleDismiss = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'true');
-    setVisible(false);
-  }, []);
+  const handleDismiss = useCallback(
+    (method: 'button' | 'escape_key' | 'backdrop_click') => {
+      localStorage.setItem(STORAGE_KEY, 'true');
+      setVisible(false);
+      try {
+        posthog?.capture('welcome_modal_dismissed', { dismiss_method: method });
+      } catch (error) {
+        console.error(
+          'Failed to capture welcome_modal_dismissed event:',
+          error,
+        );
+      }
+    },
+    [posthog],
+  );
 
   useEffect(() => {
     if (!visible) return;
+    try {
+      posthog?.capture('welcome_modal_shown', { is_first_visit: true });
+    } catch (error) {
+      console.error('Failed to capture welcome_modal_shown event:', error);
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleDismiss();
+      if (e.key === 'Escape') handleDismiss('escape_key');
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [visible, handleDismiss]);
+  }, [visible, handleDismiss, posthog]);
 
   if (!visible) return null;
 
@@ -36,14 +54,14 @@ export function WelcomeModal() {
       <button
         type="button"
         aria-label="Close welcome message"
-        onClick={handleDismiss}
+        onClick={() => handleDismiss('backdrop_click')}
         className="absolute inset-0 w-full h-full bg-black/40 backdrop-blur-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
       />
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-4">
         {/* Close button */}
         <button
           type="button"
-          onClick={handleDismiss}
+          onClick={() => handleDismiss('button')}
           aria-label="Close welcome message"
           className="absolute top-4 right-4 p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
         >
@@ -72,7 +90,7 @@ export function WelcomeModal() {
         {/* Dismiss button */}
         <button
           type="button"
-          onClick={handleDismiss}
+          onClick={() => handleDismiss('button')}
           className="w-full py-2.5 px-4 bg-[#0f6e56] text-white text-sm font-medium rounded-lg hover:bg-[#085041] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f6e56]/50"
         >
           Explore the map

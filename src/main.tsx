@@ -8,6 +8,7 @@ import App from './app/App';
 const POSTHOG_ENABLED = import.meta.env.VITE_PUBLIC_POSTHOG_ENABLED === 'true';
 const POSTHOG_KEY = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
 const POSTHOG_HOST = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
+const CONFERENCE_MODE = import.meta.env.VITE_PUBLIC_CONFERENCE_MODE === 'true';
 
 const isPostHogConfigured = Boolean(
   POSTHOG_ENABLED && POSTHOG_KEY && POSTHOG_HOST,
@@ -22,6 +23,10 @@ if (isPostHogConfigured) {
       maskAllInputs: true,
     },
   });
+
+  if (CONFERENCE_MODE) {
+    posthog.group('conference', 'mmm7_2026');
+  }
 }
 
 createRoot(document.getElementById('root')!).render(

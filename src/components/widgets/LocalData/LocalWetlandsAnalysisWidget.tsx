@@ -28,6 +28,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import { findNearestSite } from '@/utils/geo';
@@ -77,6 +78,7 @@ export function LocalWetlandsAnalysisWidget({
   onLocalSiteLayerToggle,
   onSiteAssociated,
 }: LocalWetlandsAnalysisWidgetProps) {
+  const posthog = usePostHog();
   const { data: partnersData } = usePartners();
 
   /**
@@ -90,13 +92,17 @@ export function LocalWetlandsAnalysisWidget({
    */
   const [selectedYear] = useState<number | null>(null);
 
-  // associatedSite must be defined before activeSitesForSelector
-  const associatedSite = useMemo(() => {
+  // associatedSiteResult must be defined before activeSitesForSelector.
+  // Returns the site and distanceKm when proximity-associated so the
+  // analytics event can include the distance; distanceKm is null for
+  // explicit (non-proximity) selections.
+  const associatedSiteResult = useMemo(() => {
     // External selection (map pin click or dropdown)
     // takes priority — fully controlled by App.tsx
     // via selectedSiteId prop.
     if (selectedSiteId) {
-      return localSites.find((s) => s.id === selectedSiteId) ?? null;
+      const site = localSites.find((s) => s.id === selectedSiteId) ?? null;
+      return site ? { site, distanceKm: null, isProximity: false } : null;
     }
 
     // Fall back to proximity association when no
@@ -115,8 +121,14 @@ export function LocalWetlandsAnalysisWidget({
       return null;
     }
 
-    return result.site;
+    return {
+      site: result.site,
+      distanceKm: result.distanceKm,
+      isProximity: true,
+    };
   }, [selectedCell, localSites, selectedSiteId]);
+
+  const associatedSite = associatedSiteResult?.site ?? null;
 
   const availableCountries = useMemo(() => {
     return [...new Set(localSites.map((s) => s.country))].sort();
@@ -147,9 +159,22 @@ export function LocalWetlandsAnalysisWidget({
   const handleSiteSelect = useCallback(
     (siteId: string) => {
       if (!siteId) return;
+      const site = localSites.find((s) => s.id === siteId);
+      try {
+        posthog?.capture('local_site_selected', {
+          site_id: siteId,
+          site_name: site?.name ?? null,
+          site_country: site?.country ?? null,
+          partner_id: site?.partnerId ?? null,
+          trigger_source: 'site_dropdown',
+          had_cell_selected: !!selectedCell,
+        });
+      } catch (error) {
+        console.error('Failed to capture local_site_selected event:', error);
+      }
       onSiteSelect(siteId);
     },
-    [onSiteSelect],
+    [localSites, onSiteSelect, posthog, selectedCell],
   );
 
   const handleCountryChange = useCallback(
@@ -157,12 +182,24 @@ export function LocalWetlandsAnalysisWidget({
       if (!country) return;
       const firstSite = localSites.find((s) => s.country === country);
       if (firstSite) {
+        try {
+          posthog?.capture('local_site_selected', {
+            site_id: firstSite.id,
+            site_name: firstSite.name,
+            site_country: firstSite.country,
+            partner_id: firstSite.partnerId ?? null,
+            trigger_source: 'country_dropdown',
+            had_cell_selected: !!selectedCell,
+          });
+        } catch (error) {
+          console.error('Failed to capture local_site_selected event:', error);
+        }
         onSiteSelect(firstSite.id);
       } else {
         console.warn(`No sites found for country "${country}"`);
       }
     },
-    [localSites, onSiteSelect],
+    [localSites, onSiteSelect, posthog, selectedCell],
   );
 
   useEffect(() => {
@@ -175,6 +212,26 @@ export function LocalWetlandsAnalysisWidget({
     }
   }, [associatedSite, selectedSiteId, onSiteAssociated]);
 
+  useEffect(() => {
+    if (!associatedSiteResult?.isProximity || !associatedSite) return;
+    try {
+      posthog?.capture('local_site_proximity_associated', {
+        site_id: associatedSite.id,
+        site_name: associatedSite.name,
+        site_country: associatedSite.country,
+        partner_id: associatedSite.partnerId ?? null,
+        distance_km: associatedSiteResult.distanceKm,
+        cell_id:
+          selectedCell?.id !== undefined ? String(selectedCell.id) : null,
+      });
+    } catch (error) {
+      console.error(
+        'Failed to capture local_site_proximity_associated event:',
+        error,
+      );
+    }
+  }, [associatedSiteResult, associatedSite, selectedCell, posthog]);
+
   if (!associatedSite || !activeYear) {
     return (
       <div className="space-y-3">
@@ -185,7 +242,21 @@ export function LocalWetlandsAnalysisWidget({
           <button
             role="switch"
             aria-checked={localSiteLayerEnabled}
-            onClick={() => onLocalSiteLayerToggle(!localSiteLayerEnabled)}
+            onClick={() => {
+              const next = !localSiteLayerEnabled;
+              try {
+                posthog?.capture('local_site_layer_toggled', {
+                  enabled: next,
+                  source: 'local_data_widget',
+                });
+              } catch (error) {
+                console.error(
+                  'Failed to capture local_site_layer_toggled event:',
+                  error,
+                );
+              }
+              onLocalSiteLayerToggle(next);
+            }}
             className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
               localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
             }`}
@@ -266,7 +337,21 @@ export function LocalWetlandsAnalysisWidget({
         <button
           role="switch"
           aria-checked={localSiteLayerEnabled}
-          onClick={() => onLocalSiteLayerToggle(!localSiteLayerEnabled)}
+          onClick={() => {
+            const next = !localSiteLayerEnabled;
+            try {
+              posthog?.capture('local_site_layer_toggled', {
+                enabled: next,
+                source: 'local_data_widget',
+              });
+            } catch (error) {
+              console.error(
+                'Failed to capture local_site_layer_toggled event:',
+                error,
+              );
+            }
+            onLocalSiteLayerToggle(next);
+          }}
           className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
             localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
           }`}

@@ -1,5 +1,5 @@
 import { Habitat } from '@/types/enums/habitat.enum';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 
@@ -13,6 +13,7 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
  */
 export const useFilterAnalytics = (filterState: FilterState) => {
   const posthog = usePostHog();
+  const initialised = useRef(false);
 
   // Depend on individual primitive values (or joined strings) to avoid deep object checking
   // and accidental refire loops
@@ -34,6 +35,12 @@ export const useFilterAnalytics = (filterState: FilterState) => {
       [Habitat.SALTMARSH]: habitatsList.includes(Habitat.SALTMARSH),
       [Habitat.SEAGRASS]: habitatsList.includes(Habitat.SEAGRASS),
     };
+
+    // Skip the first effect execution — default filter state on mount is not a user action
+    if (!initialised.current) {
+      initialised.current = true;
+      return;
+    }
 
     // Debounce the analytics event to prevent spamming when dragging sliders
     const timeoutId = setTimeout(() => {
