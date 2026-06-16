@@ -308,8 +308,9 @@ export function GridMap({
   useEffect(() => {
     const canvas = mapRef.current?.getCanvas();
     if (!canvas) return;
-    canvas.style.cursor = partnerHoverInfo || siteHoverInfo ? 'pointer' : '';
-  }, [partnerHoverInfo, siteHoverInfo]);
+    canvas.style.cursor =
+      partnerHoverInfo || siteHoverInfo || hoveredCellId ? 'pointer' : '';
+  }, [partnerHoverInfo, siteHoverInfo, hoveredCellId]);
 
   useEffect(() => {
     if (!speciesFlyTarget) return;
