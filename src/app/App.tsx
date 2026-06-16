@@ -505,6 +505,36 @@ function AppShell() {
     panelActiveTab,
   ]);
 
+  const handleReset = useCallback(() => {
+    try {
+      posthog?.capture('cell_selection_cleared', {
+        previous_cell_id:
+          selectedCellId !== null ? String(selectedCellId) : null,
+        previous_cell_country: selectedCell?.country ?? null,
+        cell_count_in_session: cellCountInSession.current,
+        active_tab: panelActiveTab,
+      });
+    } catch (error) {
+      console.error('Failed to capture cell_selection_cleared event:', error);
+    }
+    cellCountInSession.current = 0;
+    setSelectedCellId(null);
+    setClickedPartnerId(null);
+    setSelectedSiteId(null);
+    setProximityAssociatedSiteId(null);
+    setMobileActiveTab('map');
+    setPanelActiveTab('biodiversity');
+    setSpeciesLayerState({ speciesId: '', observations: [], enabled: false });
+    setSpeciesFlyTarget(null);
+    setSiteFlyTarget(null);
+  }, [
+    posthog,
+    selectedCellId,
+    selectedCell,
+    panelActiveTab,
+    setSelectedCellId,
+  ]);
+
   const handleLocationSearched = useCallback(
     (coords: { lng: number; lat: number }) => {
       try {
@@ -666,7 +696,7 @@ function AppShell() {
     <>
       <WelcomeModal />
       <AppLayout
-        topBar={<TopBar />}
+        topBar={<TopBar onLogoClick={handleReset} />}
         mapArea={mapArea}
         sidePanel={sidePanel}
         mobileActiveTab={mobileActiveTab}

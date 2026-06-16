@@ -68,8 +68,13 @@ export function WelcomeModal() {
           <X className="w-4 h-4" />
         </button>
 
-        {/* Heading */}
-        <div className="space-y-1">
+        {/* Logo + Heading */}
+        <div className="flex flex-col items-center text-center space-y-1">
+          <img
+            src="/globalwetlands.png"
+            alt="GLOWdex logo"
+            className="w-14 h-14 mb-2"
+          />
           <p className="text-xs font-semibold text-[#0f6e56] uppercase tracking-wider">
             Welcome to
           </p>

@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Layers, Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
+import { Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
 import type { MenuItemKey } from '@/app/content/menuContent';
 
-export function TopBar() {
+interface TopBarProps {
+  onLogoClick?: () => void;
+}
+
+export function TopBar({ onLogoClick }: TopBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<MenuItemKey | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,14 +69,14 @@ export function TopBar() {
       style={{ backgroundColor: '#0a5c47' }}
     >
       {/* Left side: Logo and branding */}
-      <div className="flex items-center gap-3">
-        {/* Logo tile */}
-        <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ backgroundColor: '#1d9e75' }}
-        >
-          <Layers size={16} className="text-white" />
-        </div>
+      <button
+        type="button"
+        onClick={onLogoClick}
+        aria-label="Return to home"
+        className="flex items-center gap-3 rounded-md px-1 py-0.5 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+      >
+        {/* Logo */}
+        <img src="/globalwetlands.png" alt="GLOWdex logo" className="w-7 h-7" />
 
         {/* Branding text */}
         <div className="flex flex-col gap-0.5">
@@ -83,7 +87,7 @@ export function TopBar() {
             Mangrove Ecosystem Analysis
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Right side: Action buttons */}
       <div className="flex items-center gap-2">
