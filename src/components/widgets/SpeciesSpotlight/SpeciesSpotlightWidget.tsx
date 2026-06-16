@@ -30,6 +30,12 @@ interface SpeciesSpotlightWidgetProps {
    * Optional — no fly behaviour if not provided.
    */
   onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
+  /**
+   * ID of a partner clicked directly on the map. When set,
+   * the spotlight immediately shows the species associated
+   * with that partner without requiring a cell selection.
+   */
+  clickedPartnerId?: string | null;
 }
 
 /**
@@ -71,6 +77,7 @@ export function SpeciesSpotlightWidget({
   selectedCell,
   partners,
   onSpeciesSelect,
+  clickedPartnerId,
 }: SpeciesSpotlightWidgetProps) {
   const posthog = usePostHog();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -141,13 +148,22 @@ export function SpeciesSpotlightWidget({
    * a premature empty state flash before config has arrived.
    */
   const autoIndex = useMemo(() => {
+    // Tier 1a: Direct partner click — exact ID, no cell coordinates needed
+    if (clickedPartnerId && speciesConfigData) {
+      const directMatchIdx = species.findIndex((s) => {
+        const config = speciesConfigData.species.find((c) => c.id === s.id);
+        return config?.partnerIds.includes(clickedPartnerId) ?? false;
+      });
+      if (directMatchIdx !== -1) return directMatchIdx;
+    }
+
     if (!selectedCell?.centerCoords) return -1;
     // Defer until config is loaded to avoid empty state flash
     if (!speciesConfigData) return -1;
 
     const { latitude: lat, longitude: lng } = selectedCell.centerCoords;
 
-    // Tier 1: Partner match
+    // Tier 1b: Nearest partner match via cell coordinates
     if (partners.length) {
       const nearest = findNearestPartner(lat, lng, partners);
       if (nearest) {
@@ -171,12 +187,22 @@ export function SpeciesSpotlightWidget({
 
     // Tier 3: No match
     return -1;
-  }, [selectedCell, partners, species, speciesConfigData]);
+  }, [selectedCell, partners, species, speciesConfigData, clickedPartnerId]);
 
   // Tracks which tier resolved the auto-selection — used for analytics only.
   const autoTier = useMemo((): 'partner_match' | 'region_bounds' | null => {
-    if (autoIndex === -1 || !selectedCell?.centerCoords || !speciesConfigData)
-      return null;
+    if (autoIndex === -1 || !speciesConfigData) return null;
+
+    // Tier 1a: Direct partner click
+    if (clickedPartnerId) {
+      const matched = species.some((s) => {
+        const config = speciesConfigData.species.find((c) => c.id === s.id);
+        return config?.partnerIds.includes(clickedPartnerId) ?? false;
+      });
+      if (matched) return 'partner_match';
+    }
+
+    if (!selectedCell?.centerCoords) return null;
     const { latitude: lat, longitude: lng } = selectedCell.centerCoords;
     if (partners.length) {
       const nearest = findNearestPartner(lat, lng, partners);
@@ -189,7 +215,14 @@ export function SpeciesSpotlightWidget({
       }
     }
     return 'region_bounds';
-  }, [autoIndex, selectedCell, partners, species, speciesConfigData]);
+  }, [
+    autoIndex,
+    selectedCell,
+    partners,
+    species,
+    speciesConfigData,
+    clickedPartnerId,
+  ]);
 
   /**
    * Effective active tab index — single source of truth for

@@ -159,6 +159,7 @@ export function BiodiversityPanel({
           selectedCell={selectedCell}
           partners={partnersData?.partners ?? []}
           onSpeciesSelect={onSpeciesSelect}
+          clickedPartnerId={clickedPartnerId}
         />
       </div>
     </div>
