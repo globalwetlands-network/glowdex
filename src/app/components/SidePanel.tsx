@@ -106,18 +106,24 @@ export function SidePanel({
 
     // Re-scroll if cards above expand after async data loads (e.g. cellStats).
     // Debounced per animation frame to avoid multiple smooth-scroll conflicts.
-    const observer = new ResizeObserver(doScroll);
-    let sibling = target.previousElementSibling;
-    while (sibling) {
-      observer.observe(sibling);
-      sibling = sibling.previousElementSibling;
+    const observer =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(doScroll)
+        : null;
+
+    if (observer) {
+      let sibling = target.previousElementSibling;
+      while (sibling) {
+        observer.observe(sibling);
+        sibling = sibling.previousElementSibling;
+      }
     }
 
-    const timeout = setTimeout(() => observer.disconnect(), 1500);
+    const timeout = setTimeout(() => observer?.disconnect(), 1500);
 
     return () => {
       cancelAnimationFrame(rafId);
-      observer.disconnect();
+      observer?.disconnect();
       clearTimeout(timeout);
     };
   }, [scrollToLocalDataSignal, activeTab]);

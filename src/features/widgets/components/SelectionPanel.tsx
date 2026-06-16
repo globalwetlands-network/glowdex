@@ -93,7 +93,11 @@ export function SelectionPanel({
         </div>
         <div className="relative flex items-center space-x-1 group/typology-tip">
           <span className="text-xs font-medium text-gray-500">Typology</span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200 cursor-help">
+          <span
+            tabIndex={0}
+            aria-describedby="typology-pill-tooltip"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200 cursor-help"
+          >
             {typologyColor && (
               <span
                 className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
@@ -103,8 +107,9 @@ export function SelectionPanel({
             {clusterId}
           </span>
           <div
+            id="typology-pill-tooltip"
             role="tooltip"
-            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/typology-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/typology-tip:opacity-100 group-focus-within/typology-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
           >
             {typologyInfo ? (
               <>

@@ -72,6 +72,9 @@ export function BiodiversityPanel({
               Local Monitoring Locations
             </h3>
             <button
+              type="button"
+              aria-expanded={localSiteInfoOpen}
+              aria-controls="local-site-info"
               onClick={() => setLocalSiteInfoOpen((prev) => !prev)}
               className={`p-1 rounded-md transition-colors ${
                 localSiteInfoOpen
@@ -85,7 +88,10 @@ export function BiodiversityPanel({
             </button>
           </div>
           {localSiteInfoOpen && (
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p
+              id="local-site-info"
+              className="text-xs text-gray-500 leading-relaxed"
+            >
               Shows verified field monitoring locations submitted by partner
               organisations. Each pin represents an active or historical
               sampling site where biodiversity and habitat data has been
@@ -140,6 +146,9 @@ export function BiodiversityPanel({
               Mangrove Habitat Extent
             </h3>
             <button
+              type="button"
+              aria-expanded={mangroveInfoOpen}
+              aria-controls="mangrove-info"
               onClick={() => setMangroveInfoOpen((prev) => !prev)}
               className={`p-1 rounded-md transition-colors ${
                 mangroveInfoOpen
@@ -178,7 +187,10 @@ export function BiodiversityPanel({
             </button>
           </div>
           {mangroveInfoOpen && (
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p
+              id="mangrove-info"
+              className="text-xs text-gray-500 leading-relaxed"
+            >
               Shows the spatial extent of mangrove habitat from the Global
               Mangrove Watch dataset, providing a visual reference for where
               mangroves occur within each grid cell. GLOWdex uses this layer to

@@ -64,6 +64,8 @@ export function FilterControls({
         <div className="border border-gray-100 rounded-md overflow-hidden">
           <button
             type="button"
+            aria-expanded={explainerOpen}
+            aria-controls="typology-explainer"
             onClick={() => setExplainerOpen(!explainerOpen)}
             className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-[#0f6e56] hover:bg-gray-50 transition-colors"
           >
@@ -76,7 +78,10 @@ export function FilterControls({
           </button>
 
           {explainerOpen && (
-            <div className="px-3 pb-3 space-y-4 text-xs text-gray-600 leading-relaxed border-t border-gray-100">
+            <div
+              id="typology-explainer"
+              className="px-3 pb-3 space-y-4 text-xs text-gray-600 leading-relaxed border-t border-gray-100"
+            >
               <p className="pt-3">
                 Typologies group coastal wetland grid cells by shared ecological
                 characteristics — including habitat condition, species profiles,
