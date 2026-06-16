@@ -23,7 +23,7 @@ export function AppLayout({
   onMobileTabChange,
 }: AppLayoutProps) {
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-gray-100">
+    <div className="h-dvh w-screen flex flex-col overflow-hidden bg-gray-100">
       {/* Top Bar - Visible on all screen sizes */}
       {topBar}
 

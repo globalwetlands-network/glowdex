@@ -106,7 +106,7 @@ export function PartnerWidget({
     );
   }
 
-  if (!selectedCell || !displayedPartner) {
+  if (!displayedPartner) {
     return (
       <div className="space-y-3">
         <div
@@ -136,13 +136,15 @@ export function PartnerWidget({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-1.5 text-xs text-gray-400">
-        <MapPin size={10} className="shrink-0" />
-        <span>
-          Cell {selectedCell.id}
-          {selectedCell.country ? ` · ${selectedCell.country}` : ''}
-        </span>
-      </div>
+      {selectedCell && (
+        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+          <MapPin size={10} className="shrink-0" />
+          <span>
+            Cell {selectedCell.id}
+            {selectedCell.country ? ` · ${selectedCell.country}` : ''}
+          </span>
+        </div>
+      )}
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
         {clickedPartnerId
           ? 'SELECTED PARTNER ORGANISATION'
@@ -161,9 +163,12 @@ export function PartnerWidget({
           <p className="text-xs text-gray-500">
             {displayedPartner.partner.city}, {displayedPartner.partner.country}
           </p>
-          <p className="text-xs text-gray-400">
-            {displayedPartner.distanceKm.toLocaleString()} km from selected cell
-          </p>
+          {selectedCell && (
+            <p className="text-xs text-gray-400">
+              {displayedPartner.distanceKm.toLocaleString()} km from selected
+              cell
+            </p>
+          )}
         </div>
 
         {/* Only render https:// URLs — see

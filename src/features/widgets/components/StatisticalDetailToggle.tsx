@@ -6,6 +6,10 @@ import type {
   AIStatisticalIndicatorSummary,
 } from '@/api/types';
 
+function formatGroupingLabel(raw: string): string {
+  return raw.replace(/^(?:Cluster|Typology)_?(\d+)$/i, 'Typology $1');
+}
+
 const CURRENT_PRESSURE_KEYS = new Set([
   'pressure_mangrove_climate_current',
   'pressure_mangrove_land_current',
@@ -241,8 +245,9 @@ export function StatisticalDetailToggle({
     RATE_PRESSURE_KEYS.has(s.key),
   );
 
-  const groupingLabel =
-    statistics.summaries[0]?.groupingLabel ?? 'this typology';
+  const groupingLabel = formatGroupingLabel(
+    statistics.summaries[0]?.groupingLabel ?? 'this typology',
+  );
 
   return (
     <div data-testid="statistical-detail-toggle" className="mt-2">

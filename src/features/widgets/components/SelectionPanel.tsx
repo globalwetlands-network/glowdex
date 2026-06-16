@@ -2,7 +2,7 @@ import type { RichGridCell } from '@/data/types/grid.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import { formatCoordinate } from '@/utils/coordinates';
 import { Info, MapPin } from 'lucide-react';
-import { TypologyLegend } from '@/components/TypologyLegend';
+import { TYPOLOGY_5_INFO } from '@/data/constants/typology.constants';
 
 interface SelectionPanelProps {
   selectedCell: RichGridCell | null;
@@ -33,6 +33,10 @@ export function SelectionPanel({
 
   const { id, country, cluster5, cluster18, lat, lng } = selectedCell;
   const clusterId = (currentScale === 'scale5' ? cluster5 : cluster18) || 0;
+  const typologyColor = typologies[currentScale]?.[clusterId]?.color;
+
+  const typologyInfo =
+    currentScale === 'scale5' ? TYPOLOGY_5_INFO[clusterId] : null;
 
   // Format coordinates
   // Use centerCoords if available (from GeoJSON bbox), otherwise fallback to lat/lng
@@ -87,24 +91,44 @@ export function SelectionPanel({
             {id}
           </span>
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="relative flex items-center space-x-1 group/typology-tip">
           <span className="text-xs font-medium text-gray-500">Typology</span>
-          <span className="inline-block px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200">
+          <span
+            tabIndex={0}
+            aria-describedby="typology-pill-tooltip"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200 cursor-help"
+          >
+            {typologyColor && (
+              <span
+                className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
+                style={{ backgroundColor: typologyColor }}
+              />
+            )}
             {clusterId}
           </span>
+          <div
+            id="typology-pill-tooltip"
+            role="tooltip"
+            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/typology-tip:opacity-100 group-focus-within/typology-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+          >
+            {typologyInfo ? (
+              <>
+                <p className="font-semibold">
+                  Typology {clusterId} — {typologyInfo.name}
+                </p>
+                <p className="mt-0.5 text-white/80">
+                  {typologyInfo.description}
+                </p>
+              </>
+            ) : (
+              <p>
+                Typology {clusterId}
+                {currentScale === 'scale18' &&
+                  ' — see Sievers et al. (2021) for full descriptions'}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Typology Legend */}
-      <div className="space-y-1.5">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Typology Guide
-        </p>
-        <TypologyLegend
-          typologies={typologies}
-          currentScale={currentScale}
-          activeClusterId={clusterId}
-        />
       </div>
     </div>
   );

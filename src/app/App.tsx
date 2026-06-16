@@ -67,11 +67,11 @@ function AppShell() {
   const { selectedCellId, setSelectedCellId } = useSelection();
 
   // Local UI state (layout only)
-  const [mobileActiveTab, setMobileActiveTab] =
-    useState<MobileTab>('biodiversity');
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('map');
   const [panelActiveTab, setPanelActiveTab] = useState<
     'analysis' | 'biodiversity'
   >('biodiversity');
+  const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
 
   // Species layer state
   const [speciesLayerState, setSpeciesLayerState] = useState<{
@@ -198,6 +198,7 @@ function AppShell() {
     (siteId: string) => {
       setSelectedSiteId(siteId);
       setPanelActiveTab('analysis');
+      setScrollToLocalDataSignal((c) => c + 1);
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
       }
@@ -506,6 +507,36 @@ function AppShell() {
     panelActiveTab,
   ]);
 
+  const handleReset = useCallback(() => {
+    try {
+      posthog?.capture('cell_selection_cleared', {
+        previous_cell_id:
+          selectedCellId !== null ? String(selectedCellId) : null,
+        previous_cell_country: selectedCell?.country ?? null,
+        cell_count_in_session: cellCountInSession.current,
+        active_tab: panelActiveTab,
+      });
+    } catch (error) {
+      console.error('Failed to capture cell_selection_cleared event:', error);
+    }
+    cellCountInSession.current = 0;
+    setSelectedCellId(null);
+    setClickedPartnerId(null);
+    setSelectedSiteId(null);
+    setProximityAssociatedSiteId(null);
+    setMobileActiveTab('map');
+    setPanelActiveTab('biodiversity');
+    setSpeciesLayerState({ speciesId: '', observations: [], enabled: false });
+    setSpeciesFlyTarget(null);
+    setSiteFlyTarget(null);
+  }, [
+    posthog,
+    selectedCellId,
+    selectedCell,
+    panelActiveTab,
+    setSelectedCellId,
+  ]);
+
   const handleLocationSearched = useCallback(
     (coords: { lng: number; lat: number }) => {
       try {
@@ -619,6 +650,7 @@ function AppShell() {
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
         onSiteAssociated={setProximityAssociatedSiteId}
+        scrollToLocalDataSignal={scrollToLocalDataSignal}
       />
     ),
     [
@@ -647,6 +679,7 @@ function AppShell() {
       handleLocalSiteLayerToggle,
       localSiteContext,
       isLocalContextPending,
+      scrollToLocalDataSignal,
     ],
   );
 
@@ -667,7 +700,7 @@ function AppShell() {
     <>
       <WelcomeModal />
       <AppLayout
-        topBar={<TopBar />}
+        topBar={<TopBar onLogoClick={handleReset} />}
         mapArea={mapArea}
         sidePanel={sidePanel}
         mobileActiveTab={mobileActiveTab}
