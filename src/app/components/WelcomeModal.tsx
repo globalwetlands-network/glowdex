@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import logo from '@/assets/globalwetlands.png';
 import { X } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
 
@@ -70,11 +71,7 @@ export function WelcomeModal() {
 
         {/* Logo + Heading */}
         <div className="flex flex-col items-center text-center space-y-1">
-          <img
-            src="/globalwetlands.png"
-            alt="GLOWdex logo"
-            className="w-14 h-14 mb-2"
-          />
+          <img src={logo} alt="GLOWdex logo" className="w-14 h-14 mb-2" />
           <p className="text-xs font-semibold text-[#0f6e56] uppercase tracking-wider">
             Welcome to
           </p>
