@@ -5,6 +5,7 @@ import { usePostHog } from 'posthog-js/react';
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import { useScrollToSignal } from '@/app/hooks/useScrollToSignal';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import { PartnerWidget } from '@/components/widgets/Partner';
 import { usePartners } from '@/api/hooks/usePartners';
@@ -26,6 +27,7 @@ interface BiodiversityPanelProps {
   clickedPartnerId: string | null;
   localSites: LocalSite[];
   onViewLocalData: (siteId: string) => void;
+  scrollToPartnerSignal?: number;
 }
 
 export function BiodiversityPanel({
@@ -41,8 +43,10 @@ export function BiodiversityPanel({
   clickedPartnerId,
   localSites,
   onViewLocalData,
+  scrollToPartnerSignal,
 }: BiodiversityPanelProps) {
   const posthog = usePostHog();
+  const partnerRef = useScrollToSignal(scrollToPartnerSignal);
   const { data: partnersData } = usePartners();
   const [mangroveInfoOpen, setMangroveInfoOpen] = useState(false);
   const [localSiteInfoOpen, setLocalSiteInfoOpen] = useState(false);
@@ -78,7 +82,10 @@ export function BiodiversityPanel({
       </div>
 
       {/* Partner container */}
-      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div
+        ref={partnerRef}
+        className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+      >
         <PartnerWidget
           selectedCell={selectedCell}
           onPartnerLayerToggle={onPartnerLayerToggle}
