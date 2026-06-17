@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
+import { usePostHog } from 'posthog-js/react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl';
 import type { MapRef, MapMouseEvent, MapTouchEvent } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
@@ -203,6 +204,7 @@ export function GridMap({
   onLocationSearched,
   onLocationSearchCleared,
 }: MapProps) {
+  const posthog = usePostHog();
   const mapRef = useRef<MapRef>(null);
   const touchStartTime = useRef<number>(0);
   const touchStartPoint = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -339,19 +341,34 @@ export function GridMap({
       : null;
   }, []);
 
-  const handleTouchEnd = useCallback((evt: MapTouchEvent) => {
-    const elapsed = performance.now() - touchStartTime.current;
+  const handleTouchEnd = useCallback(
+    (evt: MapTouchEvent) => {
+      const elapsed = performance.now() - touchStartTime.current;
 
-    if (elapsed >= 500 && touchedPartner.current) {
-      longPressActive.current = true;
-      setPartnerHoverInfo({
-        ...touchedPartner.current,
-        x: touchStartPoint.current.x,
-        y: touchStartPoint.current.y,
-      });
-      evt.originalEvent.preventDefault();
-    }
-  }, []);
+      if (elapsed >= 500 && touchedPartner.current) {
+        longPressActive.current = true;
+        setPartnerHoverInfo({
+          ...touchedPartner.current,
+          x: touchStartPoint.current.x,
+          y: touchStartPoint.current.y,
+        });
+        try {
+          posthog?.capture('partner_long_press_shown', {
+            partner_id: touchedPartner.current?.id ?? null,
+            institution: touchedPartner.current?.institution ?? null,
+            is_mobile: true,
+          });
+        } catch (error) {
+          console.error(
+            'Failed to capture partner_long_press_shown event:',
+            error,
+          );
+        }
+        evt.originalEvent.preventDefault();
+      }
+    },
+    [posthog],
+  );
 
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)

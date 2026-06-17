@@ -160,7 +160,22 @@ export function PartnerWidget({
         <div className="relative group/tile-tip inline-block">
           <button
             type="button"
-            onClick={onNavigateToAnalysis}
+            onClick={() => {
+              try {
+                posthog?.capture('partner_tile_capsule_clicked', {
+                  cell_id: selectedCell?.id ? String(selectedCell.id) : null,
+                  cluster_id: clusterId ?? null,
+                  country: selectedCell?.country ?? null,
+                  current_tab: 'biodiversity',
+                });
+              } catch (error) {
+                console.error(
+                  'Failed to capture partner_tile_capsule_clicked event:',
+                  error,
+                );
+              }
+              onNavigateToAnalysis();
+            }}
             className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
           >
             <span>Tile {selectedCell.id}</span>

@@ -502,6 +502,7 @@ function AppShell() {
         previous_cell_country: selectedCell?.country ?? null,
         cell_count_in_session: cellCountInSession.current,
         active_tab: panelActiveTab,
+        trigger: 'clear_button',
       });
     } catch (error) {
       console.error('Failed to capture cell_selection_cleared event:', error);
@@ -527,6 +528,7 @@ function AppShell() {
         previous_cell_country: selectedCell?.country ?? null,
         cell_count_in_session: cellCountInSession.current,
         active_tab: panelActiveTab,
+        trigger: 'logo_reset',
       });
     } catch (error) {
       console.error('Failed to capture cell_selection_cleared event:', error);
