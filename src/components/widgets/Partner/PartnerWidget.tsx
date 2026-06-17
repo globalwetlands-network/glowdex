@@ -164,6 +164,12 @@ export function PartnerWidget({
             className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
           >
             <span>Tile {selectedCell.id}</span>
+            {selectedCell.country && (
+              <>
+                <span className="text-gray-400">·</span>
+                <span>{selectedCell.country}</span>
+              </>
+            )}
             <span className="text-gray-400">·</span>
             {typologyColor && (
               <span
