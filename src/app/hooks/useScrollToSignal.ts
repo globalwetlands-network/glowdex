@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 
 /**
- * Scrolls a target element into view whenever `signal` increments.
+ * Scrolls a target element into view whenever `signal` changes to a truthy value.
  * Uses a RAF-debounced scroll with a ResizeObserver on preceding
  * siblings to re-scroll if content above the target expands after
  * async data loads (e.g. while cards are rendering).

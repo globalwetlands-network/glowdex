@@ -365,6 +365,7 @@ export function SpeciesSpotlightWidget({
           Species Spotlight
         </h3>
         <button
+          type="button"
           onClick={() => setInfoOpen((prev) => !prev)}
           className={`p-1 rounded-md transition-colors ${
             infoOpen

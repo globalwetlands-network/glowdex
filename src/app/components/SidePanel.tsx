@@ -18,6 +18,7 @@ import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import { SelectTilePrompt } from './SelectTilePrompt';
 import { useScrollToSignal } from '../hooks/useScrollToSignal';
+import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
 interface SidePanelProps {
@@ -131,7 +132,7 @@ export function SidePanel({
             : 'hidden'
         }
       >
-        {!selectedCell && <SelectTilePrompt tileColor="#3b82f6" />}
+        {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
 
         {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (

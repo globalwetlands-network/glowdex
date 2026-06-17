@@ -1,16 +1,14 @@
 /**
  * Canonical import hub for map marker icons used across UI surfaces.
  *
- * Colours match the corresponding Mapbox layer definitions:
- * - `MONITORING_COLOUR` — `LocalSiteLayer.tsx` `circle-color`
- * - `TILE_COLOUR` — tile square in `SelectTilePrompt` and `WelcomeModal`
+ * Colours match the corresponding Mapbox layer definitions — see
+ * `src/constants/map-colours.ts` for the authoritative values.
  *
  * `PartnerMarkerIcon` and `MangroveExtentIcon` are re-exported from
  * `src/components/map/markers/` where their colours are defined.
  */
 
-const MONITORING_COLOUR = '#3b82f6';
-const TILE_COLOUR = '#4CAF82';
+import { MONITORING_COLOUR, TILE_COLOUR } from '@/constants/map-colours';
 
 export { PartnerMarkerIcon } from '@/components/map/markers/PartnerMarkerIcon';
 export { MangroveExtentIcon } from '@/components/map/markers/MangroveExtentIcon';

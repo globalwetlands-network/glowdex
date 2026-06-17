@@ -32,6 +32,8 @@ interface PartnerWidgetProps {
   currentScale: 'scale5' | 'scale18';
   /** Switches the panel to the Analysis tab when the tile capsule is clicked. */
   onNavigateToAnalysis: () => void;
+  /** Current active panel tab — passed through to PostHog for accurate tab attribution. */
+  currentTab?: string;
 }
 
 export function PartnerWidget({
@@ -44,6 +46,7 @@ export function PartnerWidget({
   typologies,
   currentScale,
   onNavigateToAnalysis,
+  currentTab = 'biodiversity',
 }: PartnerWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData, isLoading, isError } = usePartners();
@@ -99,13 +102,14 @@ export function PartnerWidget({
   const clusterId = selectedCell
     ? ((currentScale === 'scale5'
         ? selectedCell.cluster5
-        : selectedCell.cluster18) ?? 0)
-    : 0;
-  const typologyColor = selectedCell
-    ? typologies[currentScale]?.[clusterId]?.color
+        : selectedCell.cluster18) ?? undefined)
     : undefined;
+  const typologyColor =
+    clusterId !== undefined
+      ? typologies[currentScale]?.[clusterId]?.color
+      : undefined;
   const typologyInfo =
-    selectedCell && currentScale === 'scale5'
+    clusterId !== undefined && currentScale === 'scale5'
       ? TYPOLOGY_5_INFO[clusterId]
       : null;
 
@@ -146,6 +150,8 @@ export function PartnerWidget({
           py-4 text-center gap-1.5"
         >
           <MapPin size={18} className="text-gray-300" />
+          {/* Intentionally mentions both entry points since this empty state is
+              shown when neither a tile nor a partner is selected */}
           <p className="text-sm text-gray-400">
             Select a colored tile or partner organisation to get started
           </p>
@@ -156,17 +162,18 @@ export function PartnerWidget({
 
   return (
     <div className="space-y-3">
-      {selectedCell && (
+      {selectedCell && clusterId !== undefined && (
         <div className="relative group/tile-tip inline-block">
           <button
             type="button"
+            aria-describedby="tile-capsule-tooltip"
             onClick={() => {
               try {
                 posthog?.capture('partner_tile_capsule_clicked', {
                   cell_id: selectedCell?.id ? String(selectedCell.id) : null,
                   cluster_id: clusterId ?? null,
                   country: selectedCell?.country ?? null,
-                  current_tab: 'biodiversity',
+                  current_tab: currentTab,
                 });
               } catch (error) {
                 console.error(
@@ -185,16 +192,19 @@ export function PartnerWidget({
                 <span>{selectedCell.country}</span>
               </>
             )}
-            <span className="text-gray-400">·</span>
             {typologyColor && (
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
-                style={{ backgroundColor: typologyColor }}
-              />
+              <>
+                <span className="text-gray-400">·</span>
+                <span
+                  className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
+                  style={{ backgroundColor: typologyColor }}
+                />
+              </>
             )}
             <span>{clusterId}</span>
           </button>
           <div
+            id="tile-capsule-tooltip"
             role="tooltip"
             className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
           >

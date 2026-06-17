@@ -370,6 +370,11 @@ export function GridMap({
     [posthog],
   );
 
+  const handleTouchCancel = useCallback(() => {
+    touchedPartner.current = null;
+    longPressActive.current = false;
+  }, []);
+
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
     : undefined;
@@ -413,7 +418,7 @@ export function GridMap({
     if (!partnerFlyTarget) return;
     mapRef.current?.flyTo({
       center: [partnerFlyTarget.lng, partnerFlyTarget.lat],
-      zoom: 8,
+      zoom: Math.max(8, mapRef.current.getZoom()),
       duration: 1000,
     });
     onPartnerFlyComplete();
@@ -614,6 +619,7 @@ export function GridMap({
         onClick={handleMapClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onMoveEnd={(evt) =>
           setMapCenter({
             lng: evt.viewState.longitude,

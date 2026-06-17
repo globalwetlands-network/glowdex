@@ -26,11 +26,6 @@ export function CrabIcon({ size = 20, className }: CrabIconProps) {
       strokeLinejoin="round"
       className={className}
     >
-      {/* Body — hexagonal top-down carapace */}
-      {/* Big left claw — arm + upper + lower finger (oversized, defining feature) */}
-      {/* Small right claw — arm + upper + lower finger */}
-      {/* Left walking legs × 3 */}
-      {/* Right walking legs × 3 */}
       <path d="M8 12 L16 12 L17 15 L16 17 L8 17 L7 15 Z M8 12 L2 6 M2 6 L0.5 4 M2 6 L1 8.5 M16 12 L21 9 M21 9 L22.5 7.5 M21 9 L22.5 10.5 M8 13.5 L4 16 M7.5 15.5 L3.5 18.5 M8 17 L5 21 M16 13.5 L20 16 M16.5 15.5 L20.5 18.5 M16 17 L19 21" />
     </svg>
   );

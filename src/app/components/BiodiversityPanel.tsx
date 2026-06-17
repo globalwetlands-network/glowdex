@@ -4,6 +4,7 @@ import {
   MangroveExtentIcon,
   MonitoringLocationIcon,
 } from '@/components/icons/MapMarkers';
+import { TILE_COLOUR } from '@/constants/map-colours';
 import { useState } from 'react';
 import { usePostHog } from 'posthog-js/react';
 
@@ -70,7 +71,7 @@ export function BiodiversityPanel({
 
   return (
     <div className="p-4 space-y-4">
-      {!selectedCell && <SelectTilePrompt tileColor="#4CAF82" />}
+      {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
 
       {/* Species Spotlight container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
