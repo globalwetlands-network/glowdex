@@ -9,12 +9,14 @@ interface FilterControlsProps {
   filterState: FilterState;
   onFilterChange: (newState: FilterState) => void;
   typologies: TypologyMap;
+  activeClusterId?: number;
 }
 
 export function FilterControls({
   filterState,
   onFilterChange,
   typologies,
+  activeClusterId,
 }: FilterControlsProps) {
   const [explainerOpen, setExplainerOpen] = useState(false);
 
@@ -165,6 +167,7 @@ export function FilterControls({
           <TypologyLegend
             typologies={typologies}
             currentScale={filterState.typologyScale}
+            activeClusterId={activeClusterId}
           />
         </div>
       )}

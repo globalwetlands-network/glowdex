@@ -194,6 +194,13 @@ export function SidePanel({
                   filterState={filterState}
                   onFilterChange={onFilterChange}
                   typologies={typologies}
+                  activeClusterId={
+                    selectedCell
+                      ? ((filterState.typologyScale === 'scale5'
+                          ? selectedCell.cluster5
+                          : selectedCell.cluster18) ?? undefined)
+                      : undefined
+                  }
                 />
               </CollapsibleSection>
             </div>
