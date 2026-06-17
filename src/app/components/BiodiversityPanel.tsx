@@ -10,6 +10,7 @@ import { usePostHog } from 'posthog-js/react';
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { TypologyMap } from '@/data/types/cluster.types';
 import { useScrollToSignal } from '@/app/hooks/useScrollToSignal';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import { PartnerWidget } from '@/components/widgets/Partner';
@@ -34,6 +35,9 @@ interface BiodiversityPanelProps {
   onViewLocalData: (siteId: string) => void;
   scrollToPartnerSignal?: number;
   suppressAutoFlyTo?: boolean;
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  onNavigateToAnalysis: () => void;
 }
 
 export function BiodiversityPanel({
@@ -51,6 +55,9 @@ export function BiodiversityPanel({
   onViewLocalData,
   scrollToPartnerSignal,
   suppressAutoFlyTo,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
 }: BiodiversityPanelProps) {
   const posthog = usePostHog();
   const partnerRef = useScrollToSignal(scrollToPartnerSignal);
@@ -89,6 +96,9 @@ export function BiodiversityPanel({
           clickedPartnerId={clickedPartnerId}
           localSites={localSites}
           onViewLocalData={onViewLocalData}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
         />
       </div>
 

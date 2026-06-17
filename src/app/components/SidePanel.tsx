@@ -265,6 +265,9 @@ export function SidePanel({
           onViewLocalData={onViewLocalData}
           scrollToPartnerSignal={scrollToPartnerSignal}
           suppressAutoFlyTo={!!selectedSiteId}
+          typologies={typologies}
+          currentScale={filterState.typologyScale}
+          onNavigateToAnalysis={() => onTabChange('analysis')}
         />
       </div>
 

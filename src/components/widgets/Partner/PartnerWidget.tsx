@@ -6,6 +6,8 @@ import { usePartners } from '@/api/hooks/usePartners';
 import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { TypologyMap } from '@/data/types/cluster.types';
+import { TYPOLOGY_5_INFO } from '@/data/constants/typology.constants';
 
 interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
@@ -26,6 +28,10 @@ interface PartnerWidgetProps {
    * directly — it already handles tab switching.
    */
   onViewLocalData: (siteId: string) => void;
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  /** Switches the panel to the Analysis tab when the tile capsule is clicked. */
+  onNavigateToAnalysis: () => void;
 }
 
 export function PartnerWidget({
@@ -35,6 +41,9 @@ export function PartnerWidget({
   clickedPartnerId,
   localSites,
   onViewLocalData,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
 }: PartnerWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData, isLoading, isError } = usePartners();
@@ -87,6 +96,19 @@ export function PartnerWidget({
     );
   }, [localSites, displayedPartner]);
 
+  const clusterId = selectedCell
+    ? ((currentScale === 'scale5'
+        ? selectedCell.cluster5
+        : selectedCell.cluster18) ?? 0)
+    : 0;
+  const typologyColor = selectedCell
+    ? typologies[currentScale]?.[clusterId]?.color
+    : undefined;
+  const typologyInfo =
+    selectedCell && currentScale === 'scale5'
+      ? TYPOLOGY_5_INFO[clusterId]
+      : null;
+
   const handleToggle = () => {
     onPartnerLayerToggle(!partnerLayerEnabled);
   };
@@ -135,12 +157,46 @@ export function PartnerWidget({
   return (
     <div className="space-y-3">
       {selectedCell && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-          <MapPin size={10} className="shrink-0" />
-          <span>
-            Tile {selectedCell.id}
-            {selectedCell.country ? ` · ${selectedCell.country}` : ''}
-          </span>
+        <div className="relative group/tile-tip inline-block">
+          <button
+            type="button"
+            onClick={onNavigateToAnalysis}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
+          >
+            <span>Tile {selectedCell.id}</span>
+            <span className="text-gray-400">·</span>
+            {typologyColor && (
+              <span
+                className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
+                style={{ backgroundColor: typologyColor }}
+              />
+            )}
+            <span>{clusterId}</span>
+          </button>
+          <div
+            role="tooltip"
+            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+          >
+            {typologyInfo ? (
+              <>
+                <p className="font-semibold">
+                  Typology {clusterId} — {typologyInfo.name}
+                </p>
+                <p className="mt-0.5 text-white/80">
+                  {typologyInfo.description}
+                </p>
+              </>
+            ) : (
+              <p>
+                Typology {clusterId}
+                {currentScale === 'scale18' &&
+                  ' — see Sievers et al. (2021) for full descriptions'}
+              </p>
+            )}
+            <p className="mt-1 text-white/60">
+              Click to view full tile analysis
+            </p>
+          </div>
         </div>
       )}
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
