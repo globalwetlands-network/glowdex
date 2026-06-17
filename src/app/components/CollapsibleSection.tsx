@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, type ComponentType } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface CollapsibleSectionProps {
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   defaultOpen?: boolean;
   headerAction?: ReactNode;
   children: ReactNode;

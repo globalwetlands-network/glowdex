@@ -206,7 +206,7 @@ export function PartnerWidget({
           <div
             id="tile-capsule-tooltip"
             role="tooltip"
-            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 group-focus-within/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
           >
             {typologyInfo ? (
               <>
