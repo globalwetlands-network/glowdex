@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { Send, User, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { CrabIcon } from '@/components/icons/CrabIcon';
 import ReactMarkdown from 'react-markdown';
 
 import type { InsightResponse, LocalSiteContext } from '@/api/types';
@@ -88,7 +89,7 @@ export function ChatInterface({
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50 rounded-lg border border-gray-100 p-6 text-center shadow-inner">
         <div className="bg-gray-100 p-3 rounded-full mb-3">
-          <Bot className="w-8 h-8 opacity-40 text-gray-600" />
+          <CrabIcon size={32} className="opacity-40 text-gray-600" />
         </div>
 
         <p className="text-sm font-semibold text-gray-700">
@@ -107,7 +108,7 @@ export function ChatInterface({
       {/* Header */}
       <div className="flex items-center space-x-2 bg-gray-50 p-3 border-b border-gray-200 shrink-0">
         <div className="bg-blue-100 p-1.5 rounded-md">
-          <Bot className="w-4 h-4 text-blue-700" />
+          <CrabIcon size={16} className="text-blue-700" />
         </div>
 
         <div>
@@ -151,7 +152,7 @@ export function ChatInterface({
                 {msg.role === 'user' ? (
                   <User className="w-3.5 h-3.5" />
                 ) : (
-                  <Bot className="w-3.5 h-3.5" />
+                  <CrabIcon size={14} />
                 )}
               </div>
 

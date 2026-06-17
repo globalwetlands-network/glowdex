@@ -1,4 +1,5 @@
-import { Filter, MapPin, Bot, BarChart2, Leaf } from 'lucide-react';
+import { Filter, MapPin, BarChart2, Leaf } from 'lucide-react';
+import { CrabIcon } from '@/components/icons/CrabIcon';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -163,7 +164,7 @@ export function SidePanel({
               <div className="p-4">
                 <CollapsibleSection
                   title="Assistant"
-                  icon={Bot}
+                  icon={CrabIcon}
                   defaultOpen={true}
                 >
                   <AnalysisAssistantWidget
