@@ -1,4 +1,9 @@
-import { Info, MapPin } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { SelectTilePrompt } from './SelectTilePrompt';
+import {
+  MangroveExtentIcon,
+  MonitoringLocationIcon,
+} from '@/components/icons/MapMarkers';
 import { useState } from 'react';
 import { usePostHog } from 'posthog-js/react';
 
@@ -56,19 +61,7 @@ export function BiodiversityPanel({
 
   return (
     <div className="p-4 space-y-4">
-      {!selectedCell && (
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col items-center text-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#0f6e56]/10 flex items-center justify-center">
-            <MapPin className="w-4 h-4 text-[#0f6e56]" />
-          </div>
-          <p className="text-sm font-semibold text-gray-700">
-            Select a colored tile on the map to get started
-          </p>
-          <p className="text-xs text-gray-500">
-            Use the search box to navigate to a specific location
-          </p>
-        </div>
-      )}
+      {!selectedCell && <SelectTilePrompt tileColor="#4CAF82" />}
 
       {/* Species Spotlight container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -132,7 +125,7 @@ export function BiodiversityPanel({
           )}
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
+              <MonitoringLocationIcon size={12} />
               <span className="text-xs text-gray-600 leading-snug">
                 Show monitoring locations on map
               </span>
@@ -195,7 +188,7 @@ export function BiodiversityPanel({
           </div>
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
+              <MangroveExtentIcon size={14} />
               <span className="text-xs text-gray-600 leading-snug">
                 Show mangrove habitat extent
               </span>

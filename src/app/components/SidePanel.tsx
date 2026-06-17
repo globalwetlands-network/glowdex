@@ -15,6 +15,7 @@ import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
 import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
+import { SelectTilePrompt } from './SelectTilePrompt';
 import { useScrollToSignal } from '../hooks/useScrollToSignal';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
@@ -129,19 +130,7 @@ export function SidePanel({
             : 'hidden'
         }
       >
-        {!selectedCell && (
-          <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col items-center text-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#0f6e56]/10 flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-[#0f6e56]" />
-            </div>
-            <p className="text-sm font-semibold text-gray-700">
-              Select a colored tile on the map to get started
-            </p>
-            <p className="text-xs text-gray-500">
-              Use the search box to navigate to a specific location
-            </p>
-          </div>
-        )}
+        {!selectedCell && <SelectTilePrompt tileColor="#3b82f6" />}
 
         {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (

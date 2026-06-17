@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { MapPin, ExternalLink, Building2, BarChart2 } from 'lucide-react';
+import { PartnerMarkerIcon } from '@/components/map/markers/PartnerMarkerIcon';
 import { usePostHog } from 'posthog-js/react';
 import { usePartners } from '@/api/hooks/usePartners';
 import { findNearestPartner } from '@/utils/geo';
@@ -113,10 +114,7 @@ export function PartnerWidget({
           className="rounded-lg border border-teal-100
           bg-teal-50/50 p-3 flex items-center gap-3"
         >
-          <div
-            className="w-2 h-2 rounded-full bg-[#0f6e56]
-            shrink-0"
-          />
+          <PartnerMarkerIcon size={14} />
           <p className="text-xs text-gray-600">
             Partner organisation locations are visible on the map.
           </p>
