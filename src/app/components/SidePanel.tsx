@@ -257,6 +257,7 @@ export function SidePanel({
           localSites={localSites}
           onViewLocalData={onViewLocalData}
           scrollToPartnerSignal={scrollToPartnerSignal}
+          suppressAutoFlyTo={!!selectedSiteId}
         />
       </div>
 

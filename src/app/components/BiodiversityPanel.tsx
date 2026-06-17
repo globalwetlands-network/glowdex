@@ -33,6 +33,7 @@ interface BiodiversityPanelProps {
   localSites: LocalSite[];
   onViewLocalData: (siteId: string) => void;
   scrollToPartnerSignal?: number;
+  suppressAutoFlyTo?: boolean;
 }
 
 export function BiodiversityPanel({
@@ -49,6 +50,7 @@ export function BiodiversityPanel({
   localSites,
   onViewLocalData,
   scrollToPartnerSignal,
+  suppressAutoFlyTo,
 }: BiodiversityPanelProps) {
   const posthog = usePostHog();
   const partnerRef = useScrollToSignal(scrollToPartnerSignal);
@@ -71,6 +73,7 @@ export function BiodiversityPanel({
           partners={partnersData?.partners ?? []}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
+          suppressAutoFlyTo={suppressAutoFlyTo}
         />
       </div>
 
