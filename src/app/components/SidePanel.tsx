@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Filter, MapPin, Bot, BarChart2, Leaf } from 'lucide-react';
+import { Filter, MapPin, BarChart2, Leaf } from 'lucide-react';
+import { CrabIcon } from '@/components/icons/CrabIcon';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
@@ -16,6 +16,9 @@ import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
 import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
+import { SelectTilePrompt } from './SelectTilePrompt';
+import { useScrollToSignal } from '../hooks/useScrollToSignal';
+import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
 interface SidePanelProps {
@@ -51,6 +54,7 @@ interface SidePanelProps {
   isLocalContextPending: boolean;
   onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
+  scrollToPartnerSignal?: number;
 }
 
 /**
@@ -86,47 +90,11 @@ export function SidePanel({
   isLocalContextPending,
   onSiteAssociated,
   scrollToLocalDataSignal,
+  scrollToPartnerSignal,
 }: SidePanelProps) {
-  const localDataRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!scrollToLocalDataSignal || activeTab !== 'analysis') return;
-    const target = localDataRef.current;
-    if (!target) return;
-
-    let rafId: number;
-    const doScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    };
-
-    doScroll();
-
-    // Re-scroll if cards above expand after async data loads (e.g. cellStats).
-    // Debounced per animation frame to avoid multiple smooth-scroll conflicts.
-    const observer =
-      typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(doScroll)
-        : null;
-
-    if (observer) {
-      let sibling = target.previousElementSibling;
-      while (sibling) {
-        observer.observe(sibling);
-        sibling = sibling.previousElementSibling;
-      }
-    }
-
-    const timeout = setTimeout(() => observer?.disconnect(), 1500);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      observer?.disconnect();
-      clearTimeout(timeout);
-    };
-  }, [scrollToLocalDataSignal, activeTab]);
+  const localDataRef = useScrollToSignal(
+    activeTab === 'analysis' ? scrollToLocalDataSignal : 0,
+  );
 
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
@@ -164,6 +132,8 @@ export function SidePanel({
             : 'hidden'
         }
       >
+        {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+
         {/* Location + Assistant cards — only shown when a cell is selected */}
         {selectedCell && (
           <div className="space-y-4">
@@ -195,7 +165,7 @@ export function SidePanel({
               <div className="p-4">
                 <CollapsibleSection
                   title="Assistant"
-                  icon={Bot}
+                  icon={CrabIcon}
                   defaultOpen={true}
                 >
                   <AnalysisAssistantWidget
@@ -226,6 +196,13 @@ export function SidePanel({
                   filterState={filterState}
                   onFilterChange={onFilterChange}
                   typologies={typologies}
+                  activeClusterId={
+                    selectedCell
+                      ? ((filterState.typologyScale === 'scale5'
+                          ? selectedCell.cluster5
+                          : selectedCell.cluster18) ?? undefined)
+                      : undefined
+                  }
                 />
               </CollapsibleSection>
             </div>
@@ -288,12 +265,17 @@ export function SidePanel({
           clickedPartnerId={clickedPartnerId}
           localSites={localSites}
           onViewLocalData={onViewLocalData}
+          scrollToPartnerSignal={scrollToPartnerSignal}
+          suppressAutoFlyTo={!!selectedSiteId}
+          typologies={typologies}
+          currentScale={filterState.typologyScale}
+          onNavigateToAnalysis={() => onTabChange('analysis')}
         />
       </div>
 
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-        {visibleCellCount.toLocaleString()} Grid Cells Visible
+        {visibleCellCount.toLocaleString()} Tiles Visible
       </div>
     </div>
   );

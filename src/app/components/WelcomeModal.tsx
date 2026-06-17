@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X } from 'lucide-react';
+import logo from '@/assets/globalwetlands.png';
+import { X, Search } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
+import {
+  TileMarkerIcon,
+  PartnerMarkerIcon,
+  MonitoringLocationIcon,
+} from '@/components/icons/MapMarkers';
 
 const STORAGE_KEY = 'glowdex_welcome_dismissed';
 
@@ -70,11 +76,7 @@ export function WelcomeModal() {
 
         {/* Logo + Heading */}
         <div className="flex flex-col items-center text-center space-y-1">
-          <img
-            src="/globalwetlands.png"
-            alt="GLOWdex logo"
-            className="w-14 h-14 mb-2"
-          />
+          <img src={logo} alt="GLOWdex logo" className="w-14 h-14 mb-2" />
           <p className="text-xs font-semibold text-[#0f6e56] uppercase tracking-wider">
             Welcome to
           </p>
@@ -92,13 +94,41 @@ export function WelcomeModal() {
           monitoring.
         </p>
 
+        {/* How to get started */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <TileMarkerIcon size={12} />
+            <p className="text-xs text-gray-700">
+              Select a colored tile on the map to get started
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <Search className="w-3 h-3 text-[#0f6e56] shrink-0" />
+            <p className="text-xs text-gray-700">
+              Use the search box to navigate to a specific location
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <PartnerMarkerIcon size={12} />
+            <p className="text-xs text-gray-700">
+              Dots on the map show partner organisation locations
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
+            <MonitoringLocationIcon size={12} />
+            <p className="text-xs text-gray-700">
+              Pins on the map show local monitoring locations
+            </p>
+          </div>
+        </div>
+
         {/* Dismiss button */}
         <button
           type="button"
           onClick={() => handleDismiss('button')}
           className="w-full py-2.5 px-4 bg-[#0f6e56] text-white text-sm font-medium rounded-lg hover:bg-[#085041] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f6e56]/50"
         >
-          Explore the map
+          Get started
         </button>
       </div>
     </div>

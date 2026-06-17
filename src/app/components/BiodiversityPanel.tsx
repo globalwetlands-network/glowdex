@@ -1,10 +1,18 @@
-import { Info, MapPin } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { SelectTilePrompt } from './SelectTilePrompt';
+import {
+  MangroveExtentIcon,
+  MonitoringLocationIcon,
+} from '@/components/icons/MapMarkers';
+import { TILE_COLOUR } from '@/constants/map-colours';
 import { useState } from 'react';
 import { usePostHog } from 'posthog-js/react';
 
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { TypologyMap } from '@/data/types/cluster.types';
+import { useScrollToSignal } from '@/app/hooks/useScrollToSignal';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import { PartnerWidget } from '@/components/widgets/Partner';
 import { usePartners } from '@/api/hooks/usePartners';
@@ -26,6 +34,11 @@ interface BiodiversityPanelProps {
   clickedPartnerId: string | null;
   localSites: LocalSite[];
   onViewLocalData: (siteId: string) => void;
+  scrollToPartnerSignal?: number;
+  suppressAutoFlyTo?: boolean;
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  onNavigateToAnalysis: () => void;
 }
 
 export function BiodiversityPanel({
@@ -41,8 +54,14 @@ export function BiodiversityPanel({
   clickedPartnerId,
   localSites,
   onViewLocalData,
+  scrollToPartnerSignal,
+  suppressAutoFlyTo,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
 }: BiodiversityPanelProps) {
   const posthog = usePostHog();
+  const partnerRef = useScrollToSignal(scrollToPartnerSignal);
   const { data: partnersData } = usePartners();
   const [mangroveInfoOpen, setMangroveInfoOpen] = useState(false);
   const [localSiteInfoOpen, setLocalSiteInfoOpen] = useState(false);
@@ -52,6 +71,8 @@ export function BiodiversityPanel({
 
   return (
     <div className="p-4 space-y-4">
+      {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+
       {/* Species Spotlight container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <SpeciesSpotlightWidget
@@ -60,11 +81,15 @@ export function BiodiversityPanel({
           partners={partnersData?.partners ?? []}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
+          suppressAutoFlyTo={suppressAutoFlyTo}
         />
       </div>
 
       {/* Partner container */}
-      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div
+        ref={partnerRef}
+        className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+      >
         <PartnerWidget
           selectedCell={selectedCell}
           onPartnerLayerToggle={onPartnerLayerToggle}
@@ -72,6 +97,9 @@ export function BiodiversityPanel({
           clickedPartnerId={clickedPartnerId}
           localSites={localSites}
           onViewLocalData={onViewLocalData}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
         />
       </div>
 
@@ -111,7 +139,7 @@ export function BiodiversityPanel({
           )}
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
+              <MonitoringLocationIcon size={12} />
               <span className="text-xs text-gray-600 leading-snug">
                 Show monitoring locations on map
               </span>
@@ -174,7 +202,7 @@ export function BiodiversityPanel({
           </div>
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1d9e75] shrink-0" />
+              <MangroveExtentIcon size={14} />
               <span className="text-xs text-gray-600 leading-snug">
                 Show mangrove habitat extent
               </span>
@@ -204,7 +232,7 @@ export function BiodiversityPanel({
             >
               Shows the spatial extent of mangrove habitat from the Global
               Mangrove Watch dataset, providing a visual reference for where
-              mangroves occur within each grid cell. GLOWdex uses this layer to
+              mangroves occur within each tile. GLOWdex uses this layer to
               contextualise modelled indicators against observed habitat
               distribution.
             </p>

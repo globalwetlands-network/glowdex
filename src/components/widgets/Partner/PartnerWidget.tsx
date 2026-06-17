@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { MapPin, ExternalLink, Building2, BarChart2 } from 'lucide-react';
+import { PartnerMarkerIcon } from '@/components/map/markers/PartnerMarkerIcon';
 import { usePostHog } from 'posthog-js/react';
 import { usePartners } from '@/api/hooks/usePartners';
 import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { TypologyMap } from '@/data/types/cluster.types';
+import { TYPOLOGY_5_INFO } from '@/data/constants/typology.constants';
 
 interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
@@ -25,6 +28,12 @@ interface PartnerWidgetProps {
    * directly — it already handles tab switching.
    */
   onViewLocalData: (siteId: string) => void;
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  /** Switches the panel to the Analysis tab when the tile capsule is clicked. */
+  onNavigateToAnalysis: () => void;
+  /** Current active panel tab — passed through to PostHog for accurate tab attribution. */
+  currentTab?: string;
 }
 
 export function PartnerWidget({
@@ -34,6 +43,10 @@ export function PartnerWidget({
   clickedPartnerId,
   localSites,
   onViewLocalData,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
+  currentTab = 'biodiversity',
 }: PartnerWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData, isLoading, isError } = usePartners();
@@ -86,6 +99,20 @@ export function PartnerWidget({
     );
   }, [localSites, displayedPartner]);
 
+  const clusterId = selectedCell
+    ? ((currentScale === 'scale5'
+        ? selectedCell.cluster5
+        : selectedCell.cluster18) ?? undefined)
+    : undefined;
+  const typologyColor =
+    clusterId !== undefined
+      ? typologies[currentScale]?.[clusterId]?.color
+      : undefined;
+  const typologyInfo =
+    clusterId !== undefined && currentScale === 'scale5'
+      ? TYPOLOGY_5_INFO[clusterId]
+      : null;
+
   const handleToggle = () => {
     onPartnerLayerToggle(!partnerLayerEnabled);
   };
@@ -113,10 +140,7 @@ export function PartnerWidget({
           className="rounded-lg border border-teal-100
           bg-teal-50/50 p-3 flex items-center gap-3"
         >
-          <div
-            className="w-2 h-2 rounded-full bg-[#0f6e56]
-            shrink-0"
-          />
+          <PartnerMarkerIcon size={14} />
           <p className="text-xs text-gray-600">
             Partner organisation locations are visible on the map.
           </p>
@@ -126,8 +150,10 @@ export function PartnerWidget({
           py-4 text-center gap-1.5"
         >
           <MapPin size={18} className="text-gray-300" />
+          {/* Intentionally mentions both entry points since this empty state is
+              shown when neither a tile nor a partner is selected */}
           <p className="text-sm text-gray-400">
-            Select a cell to find your nearest partner organisation
+            Select a colored tile or partner organisation to get started
           </p>
         </div>
       </div>
@@ -136,13 +162,72 @@ export function PartnerWidget({
 
   return (
     <div className="space-y-3">
-      {selectedCell && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-          <MapPin size={10} className="shrink-0" />
-          <span>
-            Cell {selectedCell.id}
-            {selectedCell.country ? ` · ${selectedCell.country}` : ''}
-          </span>
+      {selectedCell && clusterId !== undefined && (
+        <div className="relative group/tile-tip inline-block">
+          <button
+            type="button"
+            aria-describedby="tile-capsule-tooltip"
+            onClick={() => {
+              try {
+                posthog?.capture('partner_tile_capsule_clicked', {
+                  cell_id: selectedCell?.id ? String(selectedCell.id) : null,
+                  cluster_id: clusterId ?? null,
+                  country: selectedCell?.country ?? null,
+                  current_tab: currentTab,
+                });
+              } catch (error) {
+                console.error(
+                  'Failed to capture partner_tile_capsule_clicked event:',
+                  error,
+                );
+              }
+              onNavigateToAnalysis();
+            }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
+          >
+            <span>Tile {selectedCell.id}</span>
+            {selectedCell.country && (
+              <>
+                <span className="text-gray-400">·</span>
+                <span>{selectedCell.country}</span>
+              </>
+            )}
+            {typologyColor && (
+              <>
+                <span className="text-gray-400">·</span>
+                <span
+                  className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
+                  style={{ backgroundColor: typologyColor }}
+                />
+              </>
+            )}
+            <span>{clusterId}</span>
+          </button>
+          <div
+            id="tile-capsule-tooltip"
+            role="tooltip"
+            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 group-focus-within/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+          >
+            {typologyInfo ? (
+              <>
+                <p className="font-semibold">
+                  Typology {clusterId} — {typologyInfo.name}
+                </p>
+                <p className="mt-0.5 text-white/80">
+                  {typologyInfo.description}
+                </p>
+              </>
+            ) : (
+              <p>
+                Typology {clusterId}
+                {currentScale === 'scale18' &&
+                  ' — see Sievers et al. (2021) for full descriptions'}
+              </p>
+            )}
+            <p className="mt-1 text-white/60">
+              Click to view full tile analysis
+            </p>
+          </div>
         </div>
       )}
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
@@ -166,7 +251,7 @@ export function PartnerWidget({
           {selectedCell && (
             <p className="text-xs text-gray-400">
               {displayedPartner.distanceKm.toLocaleString()} km from selected
-              cell
+              tile
             </p>
           )}
         </div>

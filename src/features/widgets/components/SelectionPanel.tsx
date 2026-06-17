@@ -25,7 +25,7 @@ export function SelectionPanel({
           No location selected
         </p>
         <p className="text-xs mt-2 opacity-80 max-w-[200px]">
-          Click any cell on the map to explore the data.
+          Select a colored tile on the map to get started.
         </p>
       </div>
     );
@@ -54,11 +54,11 @@ export function SelectionPanel({
       <div className="space-y-0.5">
         <div className="flex items-center gap-1 group/cell-help relative">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Selected grid cell
+            Selected tile
           </p>
           <button
             type="button"
-            aria-label="What is a grid cell"
+            aria-label="What is a tile"
             aria-describedby={`cell-help-tooltip-${id}`}
             className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded"
           >
@@ -70,7 +70,7 @@ export function SelectionPanel({
             className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/cell-help:opacity-100 group-focus-within/cell-help:opacity-100 pointer-events-none transition-opacity whitespace-normal"
           >
             This panel summarises available biodiversity, habitat and
-            organisation information associated with the selected map cell.
+            organisation information associated with the selected tile.
           </div>
         </div>
         <h3 className="text-xl font-bold text-gray-900">
@@ -86,7 +86,7 @@ export function SelectionPanel({
       {/* ID + Typology Pills */}
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1">
-          <span className="text-xs font-medium text-gray-500">Cell ID</span>
+          <span className="text-xs font-medium text-gray-500">Tile ID</span>
           <span className="inline-block px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-900 text-xs font-semibold border border-gray-200">
             {id}
           </span>

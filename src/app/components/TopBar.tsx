@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import logo from '@/assets/globalwetlands.png';
 import { Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
 import type { MenuItemKey } from '@/app/content/menuContent';
@@ -76,7 +77,7 @@ export function TopBar({ onLogoClick }: TopBarProps) {
         className="flex items-center gap-3 rounded-md px-1 py-0.5 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         {/* Logo */}
-        <img src="/globalwetlands.png" alt="GLOWdex logo" className="w-7 h-7" />
+        <img src={logo} alt="GLOWdex logo" className="w-7 h-7" />
 
         {/* Branding text */}
         <div className="flex flex-col gap-0.5">

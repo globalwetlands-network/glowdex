@@ -72,6 +72,7 @@ function AppShell() {
     'analysis' | 'biodiversity'
   >('biodiversity');
   const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
+  const [scrollToPartnerSignal, setScrollToPartnerSignal] = useState(0);
 
   // Species layer state
   const [speciesLayerState, setSpeciesLayerState] = useState<{
@@ -165,14 +166,27 @@ function AppShell() {
     lng: number;
     lat: number;
   } | null>(null);
+  const [partnerFlyTarget, setPartnerFlyTarget] = useState<{
+    lng: number;
+    lat: number;
+  } | null>(null);
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
+  const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
 
   const handlePartnerClick = useCallback(
     (partnerId: string) => {
       setClickedPartnerId(partnerId);
       setPanelActiveTab('biodiversity');
+      setScrollToPartnerSignal((c) => c + 1);
+      const partner = partnersData?.partners.find((p) => p.id === partnerId);
+      if (partner) {
+        setPartnerFlyTarget({
+          lng: partner.coordinates[0],
+          lat: partner.coordinates[1],
+        });
+      }
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('biodiversity');
       }
@@ -191,7 +205,7 @@ function AppShell() {
         );
       }
     },
-    [posthog, selectedCellId],
+    [posthog, selectedCellId, partnersData],
   );
 
   const handleSiteSelect = useCallback(
@@ -273,8 +287,6 @@ function AppShell() {
     },
     [localSites, posthog, selectedCellId, handleSiteSelect],
   );
-
-  const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
 
   // Custom hooks for derived Logic (Thin Provider pattern)
   const typologyScaleNumber = useTypologyScale(filterState.typologyScale);
@@ -490,6 +502,7 @@ function AppShell() {
         previous_cell_country: selectedCell?.country ?? null,
         cell_count_in_session: cellCountInSession.current,
         active_tab: panelActiveTab,
+        trigger: 'clear_button',
       });
     } catch (error) {
       console.error('Failed to capture cell_selection_cleared event:', error);
@@ -515,6 +528,7 @@ function AppShell() {
         previous_cell_country: selectedCell?.country ?? null,
         cell_count_in_session: cellCountInSession.current,
         active_tab: panelActiveTab,
+        trigger: 'logo_reset',
       });
     } catch (error) {
       console.error('Failed to capture cell_selection_cleared event:', error);
@@ -586,6 +600,8 @@ function AppShell() {
           onSiteClick={handleSiteClickFromMap}
           siteFlyTarget={siteFlyTarget}
           onSiteFlyComplete={() => setSiteFlyTarget(null)}
+          partnerFlyTarget={partnerFlyTarget}
+          onPartnerFlyComplete={() => setPartnerFlyTarget(null)}
           onLocationSearched={handleLocationSearched}
           onLocationSearchCleared={handleLocationSearchCleared}
         />
@@ -611,6 +627,7 @@ function AppShell() {
       selectedSiteId,
       handleSiteClickFromMap,
       siteFlyTarget,
+      partnerFlyTarget,
       handleLocationSearched,
       handleLocationSearchCleared,
     ],
@@ -651,6 +668,7 @@ function AppShell() {
         isLocalContextPending={isLocalContextPending}
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
+        scrollToPartnerSignal={scrollToPartnerSignal}
       />
     ),
     [
@@ -680,6 +698,7 @@ function AppShell() {
       localSiteContext,
       isLocalContextPending,
       scrollToLocalDataSignal,
+      scrollToPartnerSignal,
     ],
   );
 

@@ -36,6 +36,16 @@ interface SpeciesSpotlightWidgetProps {
    * with that partner without requiring a cell selection.
    */
   clickedPartnerId?: string | null;
+  /**
+   * When true, suppresses the map fly-to triggered by
+   * auto-selection (cell change or partner match). Manual
+   * species tab clicks still fly the map.
+   *
+   * Set to true when a monitoring site pin was clicked so
+   * the site fly-to is not overridden by the species
+   * auto-select that fires when the associated cell is set.
+   */
+  suppressAutoFlyTo?: boolean;
 }
 
 /**
@@ -78,6 +88,7 @@ export function SpeciesSpotlightWidget({
   partners,
   onSpeciesSelect,
   clickedPartnerId,
+  suppressAutoFlyTo = false,
 }: SpeciesSpotlightWidgetProps) {
   const posthog = usePostHog();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -307,11 +318,6 @@ export function SpeciesSpotlightWidget({
       (c) => c.id === currentSpecies.id,
     );
     if (!config) return;
-    const center = getSpeciesPrimaryCenter(config.regionBounds);
-    if (center) onSpeciesSelect(center);
-
-    // Fire auto-selection analytics only when the effective index
-    // came from auto-selection — manual selections are tracked in handleTabChange.
     const isAutoSelection =
       autoTier !== null &&
       !(
@@ -319,6 +325,13 @@ export function SpeciesSpotlightWidget({
         manualSelection.cellId === selectedCell.id &&
         manualSelection.index === effectiveIndex
       );
+
+    const center = getSpeciesPrimaryCenter(config.regionBounds);
+    if (center && !(suppressAutoFlyTo && isAutoSelection))
+      onSpeciesSelect(center);
+
+    // Fire auto-selection analytics only when the effective index
+    // came from auto-selection — manual selections are tracked in handleTabChange.
     if (isAutoSelection) {
       try {
         posthog?.capture('species_auto_selected', {
@@ -340,6 +353,7 @@ export function SpeciesSpotlightWidget({
     species,
     autoTier,
     manualSelection,
+    suppressAutoFlyTo,
     posthog,
   ]);
 
@@ -351,6 +365,7 @@ export function SpeciesSpotlightWidget({
           Species Spotlight
         </h3>
         <button
+          type="button"
           onClick={() => setInfoOpen((prev) => !prev)}
           className={`p-1 rounded-md transition-colors ${
             infoOpen
