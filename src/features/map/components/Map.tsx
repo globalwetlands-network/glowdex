@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import MapGL, { NavigationControl, Marker } from 'react-map-gl';
-import type { MapRef, MapMouseEvent } from 'react-map-gl';
+import type { MapRef, MapMouseEvent, MapTouchEvent } from 'react-map-gl';
 import { SearchBox } from '@mapbox/search-js-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -204,6 +204,15 @@ export function GridMap({
   onLocationSearchCleared,
 }: MapProps) {
   const mapRef = useRef<MapRef>(null);
+  const touchStartTime = useRef<number>(0);
+  const touchStartPoint = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchedPartner = useRef<{
+    id: string;
+    institution: string;
+    city: string;
+    country: string;
+  } | null>(null);
+  const longPressActive = useRef<boolean>(false);
   // Temporary marker shown at the search result location.
   // Set when a search result is retrieved, cleared when the search
   // is cleared or when the user selects a grid cell.
@@ -274,6 +283,11 @@ export function GridMap({
 
   const handleMapClick = useCallback(
     (evt: MapMouseEvent) => {
+      if (longPressActive.current) {
+        longPressActive.current = false;
+        return;
+      }
+
       const siteFeature = evt.features?.find(
         (f) => f.layer?.id === 'local-sites',
       );
@@ -296,6 +310,48 @@ export function GridMap({
     },
     [onClick, onPartnerClick, onSiteClick],
   );
+
+  const handleTouchStart = useCallback((evt: MapTouchEvent) => {
+    setPartnerHoverInfo(null);
+    longPressActive.current = false;
+
+    if (evt.originalEvent.touches.length !== 1) {
+      touchedPartner.current = null;
+      return;
+    }
+
+    touchStartTime.current = performance.now();
+    touchStartPoint.current = { x: evt.point.x, y: evt.point.y };
+
+    const features =
+      mapRef.current?.queryRenderedFeatures(evt.point, {
+        layers: ['partner-locations', 'partner-locations-inner'],
+      }) ?? [];
+
+    const p = features[0]?.properties;
+    touchedPartner.current = p?.id
+      ? {
+          id: p.id,
+          institution: p.institution ?? '',
+          city: p.city ?? '',
+          country: p.country ?? '',
+        }
+      : null;
+  }, []);
+
+  const handleTouchEnd = useCallback((evt: MapTouchEvent) => {
+    const elapsed = performance.now() - touchStartTime.current;
+
+    if (elapsed >= 500 && touchedPartner.current) {
+      longPressActive.current = true;
+      setPartnerHoverInfo({
+        ...touchedPartner.current,
+        x: touchStartPoint.current.x,
+        y: touchStartPoint.current.y,
+      });
+      evt.originalEvent.preventDefault();
+    }
+  }, []);
 
   const hoveredCell = hoveredCellId
     ? allGridCells.find((c) => c.id === hoveredCellId)
@@ -539,6 +595,8 @@ export function GridMap({
           }
         }}
         onClick={handleMapClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         onMoveEnd={(evt) =>
           setMapCenter({
             lng: evt.viewState.longitude,
