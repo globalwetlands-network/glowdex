@@ -437,11 +437,11 @@ function AppShell() {
       setClickedPartnerId(null);
       setSelectedSiteId(null);
       setProximityAssociatedSiteId(null);
-      if (id) {
+      if (id !== null) {
         cellCountInSession.current += 1;
         setAnalysisTabVisited(false);
       }
-      if (id && window.innerWidth < MOBILE_BREAKPOINT) {
+      if (id !== null && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('biodiversity');
         setPanelActiveTab('biodiversity');
       }

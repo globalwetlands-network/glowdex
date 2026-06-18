@@ -46,7 +46,10 @@ export function MobileTabNavigation({
             <span className="relative">
               <Icon size={20} />
               {showAnalysisBadge && tab.id === 'analysis' && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse" />
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse motion-reduce:animate-none"
+                />
               )}
             </span>
             <span className="text-[10px] mt-1">{tab.label}</span>

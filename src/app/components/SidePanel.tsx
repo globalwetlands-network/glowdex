@@ -125,7 +125,10 @@ export function SidePanel({
           <span className="relative">
             Analysis
             {showAnalysisBadge && (
-              <span className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse" />
+              <span
+                aria-hidden="true"
+                className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse motion-reduce:animate-none"
+              />
             )}
           </span>
         </button>
