@@ -73,6 +73,7 @@ function AppShell() {
   >('biodiversity');
   const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
   const [scrollToPartnerSignal, setScrollToPartnerSignal] = useState(0);
+  const [analysisTabVisited, setAnalysisTabVisited] = useState(false);
 
   // Species layer state
   const [speciesLayerState, setSpeciesLayerState] = useState<{
@@ -170,6 +171,7 @@ function AppShell() {
     lng: number;
     lat: number;
   } | null>(null);
+  const [resetViewSignal, setResetViewSignal] = useState(0);
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
@@ -435,26 +437,16 @@ function AppShell() {
       setClickedPartnerId(null);
       setSelectedSiteId(null);
       setProximityAssociatedSiteId(null);
-      if (id) {
+      if (id !== null) {
         cellCountInSession.current += 1;
+        setAnalysisTabVisited(false);
       }
-      // Auto-switch to Analysis tab on mobile
-      if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-        setMobileActiveTab('analysis');
-        setPanelActiveTab('analysis');
-        try {
-          posthog?.capture('panel_tab_changed', {
-            tab: 'analysis',
-            trigger: 'auto_cell_select',
-            is_mobile: true,
-            had_cell_selected: id !== null,
-          });
-        } catch (error) {
-          console.error('Failed to capture panel_tab_changed event:', error);
-        }
+      if (id !== null && window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('biodiversity');
+        setPanelActiveTab('biodiversity');
       }
     },
-    [setSelectedCellId, posthog],
+    [setSelectedCellId],
   );
 
   const handleMobileTabChange = (tab: MobileTab) => {
@@ -462,6 +454,7 @@ function AppShell() {
     if (tab === 'biodiversity' || tab === 'analysis') {
       setPanelActiveTab(tab);
     }
+    if (tab === 'analysis') setAnalysisTabVisited(true);
     try {
       posthog?.capture('panel_tab_changed', {
         tab,
@@ -477,6 +470,7 @@ function AppShell() {
   const handlePanelTabChange = useCallback(
     (tab: 'analysis' | 'biodiversity') => {
       setPanelActiveTab(tab);
+      if (tab === 'analysis') setAnalysisTabVisited(true);
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab(tab);
       }
@@ -543,6 +537,7 @@ function AppShell() {
     setSpeciesLayerState({ speciesId: '', observations: [], enabled: false });
     setSpeciesFlyTarget(null);
     setSiteFlyTarget(null);
+    setResetViewSignal((s) => s + 1);
   }, [
     posthog,
     selectedCellId,
@@ -604,6 +599,7 @@ function AppShell() {
           onPartnerFlyComplete={() => setPartnerFlyTarget(null)}
           onLocationSearched={handleLocationSearched}
           onLocationSearchCleared={handleLocationSearchCleared}
+          resetViewSignal={resetViewSignal}
         />
       ),
     [
@@ -630,8 +626,11 @@ function AppShell() {
       partnerFlyTarget,
       handleLocationSearched,
       handleLocationSearchCleared,
+      resetViewSignal,
     ],
   );
+
+  const showAnalysisBadge = !!selectedCell && !analysisTabVisited;
 
   // Render side panel
   const sidePanel = useMemo(
@@ -669,6 +668,7 @@ function AppShell() {
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
+        showAnalysisBadge={showAnalysisBadge}
       />
     ),
     [
@@ -699,6 +699,7 @@ function AppShell() {
       isLocalContextPending,
       scrollToLocalDataSignal,
       scrollToPartnerSignal,
+      showAnalysisBadge,
     ],
   );
 
@@ -724,6 +725,7 @@ function AppShell() {
         sidePanel={sidePanel}
         mobileActiveTab={mobileActiveTab}
         onMobileTabChange={handleMobileTabChange}
+        showAnalysisBadge={showAnalysisBadge}
       />
     </>
   );

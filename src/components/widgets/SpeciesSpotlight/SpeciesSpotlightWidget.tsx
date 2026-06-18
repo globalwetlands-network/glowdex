@@ -367,7 +367,7 @@ export function SpeciesSpotlightWidget({
         <button
           type="button"
           onClick={() => setInfoOpen((prev) => !prev)}
-          className={`p-1 rounded-md transition-colors ${
+          className={`p-1 rounded-md transition-colors cursor-pointer ${
             infoOpen
               ? 'bg-teal-100 text-teal-700'
               : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
@@ -390,7 +390,7 @@ export function SpeciesSpotlightWidget({
             <button
               key={sp.id}
               onClick={() => handleTabChange(idx)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'

@@ -69,7 +69,7 @@ export function WelcomeModal() {
           type="button"
           onClick={() => handleDismiss('button')}
           aria-label="Close welcome message"
-          className="absolute top-4 right-4 p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
+          className="absolute top-4 right-4 p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
         >
           <X className="w-4 h-4" />
         </button>
@@ -126,7 +126,7 @@ export function WelcomeModal() {
         <button
           type="button"
           onClick={() => handleDismiss('button')}
-          className="w-full py-2.5 px-4 bg-[#0f6e56] text-white text-sm font-medium rounded-lg hover:bg-[#085041] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f6e56]/50"
+          className="w-full py-2.5 px-4 bg-[#0f6e56] text-white text-sm font-medium rounded-lg hover:bg-[#085041] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f6e56]/50"
         >
           Get started
         </button>

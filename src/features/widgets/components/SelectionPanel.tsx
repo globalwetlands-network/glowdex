@@ -60,7 +60,7 @@ export function SelectionPanel({
             type="button"
             aria-label="What is a tile"
             aria-describedby={`cell-help-tooltip-${id}`}
-            className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded"
+            className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help"
           >
             <Info className="w-3 h-3 text-gray-400 cursor-help shrink-0" />
           </button>

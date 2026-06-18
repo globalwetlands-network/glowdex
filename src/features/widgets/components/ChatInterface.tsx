@@ -223,7 +223,7 @@ export function ChatInterface({
               type="button"
               disabled={isLoading}
               onClick={() => handleAsk(suggestion)}
-              className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors disabled:opacity-50"
+              className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               {suggestion}
             </button>
@@ -247,7 +247,7 @@ export function ChatInterface({
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600"
+            className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 cursor-pointer disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
           </button>

@@ -59,6 +59,7 @@ interface MapProps {
   onPartnerFlyComplete: () => void;
   onLocationSearched?: (coords: { lng: number; lat: number }) => void;
   onLocationSearchCleared?: () => void;
+  resetViewSignal?: number;
 }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -203,6 +204,7 @@ export function GridMap({
   onPartnerFlyComplete,
   onLocationSearched,
   onLocationSearchCleared,
+  resetViewSignal = 0,
 }: MapProps) {
   const posthog = usePostHog();
   const mapRef = useRef<MapRef>(null);
@@ -214,6 +216,12 @@ export function GridMap({
     city: string;
     country: string;
   } | null>(null);
+  const touchedSite = useRef<{
+    id: string;
+    name: string;
+    country: string;
+  } | null>(null);
+  const touchedCell = useRef<RichGridCell | null>(null);
   const longPressActive = useRef<boolean>(false);
   // Temporary marker shown at the search result location.
   // Set when a search result is retrieved, cleared when the search
@@ -256,6 +264,11 @@ export function GridMap({
     id: string;
     name: string;
     country: string;
+  } | null>(null);
+  const [longPressTileInfo, setLongPressTileInfo] = useState<{
+    x: number;
+    y: number;
+    cell: RichGridCell;
   } | null>(null);
 
   const filteredGeoJson = useMemo(
@@ -313,58 +326,146 @@ export function GridMap({
     [onClick, onPartnerClick, onSiteClick],
   );
 
-  const handleTouchStart = useCallback((evt: MapTouchEvent) => {
-    setPartnerHoverInfo(null);
-    longPressActive.current = false;
+  const handleTouchStart = useCallback(
+    (evt: MapTouchEvent) => {
+      setPartnerHoverInfo(null);
+      setSiteHoverInfo(null);
+      setLongPressTileInfo(null);
+      longPressActive.current = false;
 
-    if (evt.originalEvent.touches.length !== 1) {
+      if (evt.originalEvent.touches.length !== 1) {
+        touchedPartner.current = null;
+        touchedSite.current = null;
+        touchedCell.current = null;
+        return;
+      }
+
+      touchStartTime.current = performance.now();
+      touchStartPoint.current = { x: evt.point.x, y: evt.point.y };
+
+      const siteFeatures =
+        mapRef.current?.queryRenderedFeatures(evt.point, {
+          layers: ['local-sites'],
+        }) ?? [];
+
+      const partnerFeatures =
+        mapRef.current?.queryRenderedFeatures(evt.point, {
+          layers: ['partner-locations', 'partner-locations-inner'],
+        }) ?? [];
+
+      const gridFeatures =
+        mapRef.current?.queryRenderedFeatures(evt.point, {
+          layers: ['grid-fill'],
+        }) ?? [];
+
+      const sp = siteFeatures[0]?.properties;
+      if (sp?.id) {
+        touchedSite.current = {
+          id: sp.id,
+          name: sp.name ?? '',
+          country: sp.country ?? '',
+        };
+        touchedPartner.current = null;
+        touchedCell.current = null;
+        return;
+      }
+
+      const pp = partnerFeatures[0]?.properties;
+      if (pp?.id) {
+        touchedPartner.current = {
+          id: pp.id,
+          institution: pp.institution ?? '',
+          city: pp.city ?? '',
+          country: pp.country ?? '',
+        };
+        touchedSite.current = null;
+        touchedCell.current = null;
+        return;
+      }
+
+      const gp = gridFeatures[0]?.properties;
+      if (gp?.ID) {
+        touchedCell.current = allGridCells.find((c) => c.id === gp.ID) ?? null;
+        touchedPartner.current = null;
+        touchedSite.current = null;
+        return;
+      }
+
       touchedPartner.current = null;
-      return;
-    }
-
-    touchStartTime.current = performance.now();
-    touchStartPoint.current = { x: evt.point.x, y: evt.point.y };
-
-    const features =
-      mapRef.current?.queryRenderedFeatures(evt.point, {
-        layers: ['partner-locations', 'partner-locations-inner'],
-      }) ?? [];
-
-    const p = features[0]?.properties;
-    touchedPartner.current = p?.id
-      ? {
-          id: p.id,
-          institution: p.institution ?? '',
-          city: p.city ?? '',
-          country: p.country ?? '',
-        }
-      : null;
-  }, []);
+      touchedSite.current = null;
+      touchedCell.current = null;
+    },
+    [allGridCells],
+  );
 
   const handleTouchEnd = useCallback(
     (evt: MapTouchEvent) => {
       const elapsed = performance.now() - touchStartTime.current;
 
-      if (elapsed >= 500 && touchedPartner.current) {
-        longPressActive.current = true;
-        setPartnerHoverInfo({
-          ...touchedPartner.current,
-          x: touchStartPoint.current.x,
-          y: touchStartPoint.current.y,
-        });
-        try {
-          posthog?.capture('partner_long_press_shown', {
-            partner_id: touchedPartner.current?.id ?? null,
-            institution: touchedPartner.current?.institution ?? null,
-            is_mobile: true,
+      if (elapsed >= 500) {
+        if (touchedSite.current) {
+          longPressActive.current = true;
+          setSiteHoverInfo({
+            ...touchedSite.current,
+            x: touchStartPoint.current.x,
+            y: touchStartPoint.current.y,
           });
-        } catch (error) {
-          console.error(
-            'Failed to capture partner_long_press_shown event:',
-            error,
-          );
+          try {
+            posthog?.capture('site_long_press_shown', {
+              site_id: touchedSite.current.id,
+              site_name: touchedSite.current.name,
+              site_country: touchedSite.current.country,
+              is_mobile: true,
+            });
+          } catch (error) {
+            console.error(
+              'Failed to capture site_long_press_shown event:',
+              error,
+            );
+          }
+          evt.originalEvent.preventDefault();
+        } else if (touchedPartner.current) {
+          longPressActive.current = true;
+          setPartnerHoverInfo({
+            ...touchedPartner.current,
+            x: touchStartPoint.current.x,
+            y: touchStartPoint.current.y,
+          });
+          try {
+            posthog?.capture('partner_long_press_shown', {
+              partner_id: touchedPartner.current?.id ?? null,
+              institution: touchedPartner.current?.institution ?? null,
+              is_mobile: true,
+            });
+          } catch (error) {
+            console.error(
+              'Failed to capture partner_long_press_shown event:',
+              error,
+            );
+          }
+          evt.originalEvent.preventDefault();
+        } else if (touchedCell.current) {
+          longPressActive.current = true;
+          setLongPressTileInfo({
+            x: touchStartPoint.current.x,
+            y: touchStartPoint.current.y,
+            cell: touchedCell.current,
+          });
+          try {
+            posthog?.capture('tile_long_press_shown', {
+              cell_id: String(touchedCell.current.id),
+              country: touchedCell.current.country,
+              cluster5: touchedCell.current.cluster5,
+              is_mobile: true,
+            });
+          } catch (error) {
+            console.error(
+              'Failed to capture tile_long_press_shown event:',
+              error,
+            );
+          }
+          evt.originalEvent.preventDefault();
         }
-        evt.originalEvent.preventDefault();
       }
     },
     [posthog],
@@ -372,6 +473,8 @@ export function GridMap({
 
   const handleTouchCancel = useCallback(() => {
     touchedPartner.current = null;
+    touchedSite.current = null;
+    touchedCell.current = null;
     longPressActive.current = false;
   }, []);
 
@@ -393,6 +496,15 @@ export function GridMap({
     canvas.style.cursor =
       partnerHoverInfo || siteHoverInfo || hoveredCellId ? 'pointer' : '';
   }, [partnerHoverInfo, siteHoverInfo, hoveredCellId]);
+
+  useEffect(() => {
+    if (!resetViewSignal) return;
+    mapRef.current?.flyTo({
+      center: [INITIAL_VIEW_STATE.longitude, INITIAL_VIEW_STATE.latitude],
+      zoom: INITIAL_VIEW_STATE.zoom,
+      duration: 1000,
+    });
+  }, [resetViewSignal]);
 
   useEffect(() => {
     if (!speciesFlyTarget) return;
@@ -700,6 +812,15 @@ export function GridMap({
               GLOWdex Partner Organisation
             </div>
           </div>
+        )}
+
+        {longPressTileInfo && !partnerHoverInfo && !siteHoverInfo && (
+          <MapTooltip
+            x={longPressTileInfo.x}
+            y={longPressTileInfo.y}
+            cell={longPressTileInfo.cell}
+            typologyScale={typologyScale}
+          />
         )}
 
         {speciesHoverInfo && (
