@@ -439,23 +439,12 @@ function AppShell() {
       if (id) {
         cellCountInSession.current += 1;
       }
-      // Auto-switch to Analysis tab on mobile
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
-        setMobileActiveTab('analysis');
-        setPanelActiveTab('analysis');
-        try {
-          posthog?.capture('panel_tab_changed', {
-            tab: 'analysis',
-            trigger: 'auto_cell_select',
-            is_mobile: true,
-            had_cell_selected: id !== null,
-          });
-        } catch (error) {
-          console.error('Failed to capture panel_tab_changed event:', error);
-        }
+        setMobileActiveTab('biodiversity');
+        setPanelActiveTab('biodiversity');
       }
     },
-    [setSelectedCellId, posthog],
+    [setSelectedCellId],
   );
 
   const handleMobileTabChange = (tab: MobileTab) => {
