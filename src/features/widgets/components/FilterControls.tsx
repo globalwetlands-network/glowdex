@@ -41,7 +41,7 @@ export function FilterControls({
           <button
             onClick={() => setScale('scale5')}
             title="View 5 broad habitat typologies"
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
               filterState.typologyScale === 'scale5'
                 ? 'bg-white shadow text-gray-900'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
@@ -52,7 +52,7 @@ export function FilterControls({
           <button
             onClick={() => setScale('scale18')}
             title="View 18 detailed habitat typologies"
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
               filterState.typologyScale === 'scale18'
                 ? 'bg-white shadow text-gray-900'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
@@ -69,7 +69,7 @@ export function FilterControls({
             aria-expanded={explainerOpen}
             aria-controls="typology-explainer"
             onClick={() => setExplainerOpen(!explainerOpen)}
-            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-[#0f6e56] hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-[#0f6e56] hover:bg-gray-50 transition-colors cursor-pointer"
           >
             What are typologies?
             {explainerOpen ? (

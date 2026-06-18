@@ -115,7 +115,7 @@ export function BiodiversityPanel({
               aria-expanded={localSiteInfoOpen}
               aria-controls="local-site-info"
               onClick={() => setLocalSiteInfoOpen((prev) => !prev)}
-              className={`p-1 rounded-md transition-colors ${
+              className={`p-1 rounded-md transition-colors cursor-pointer ${
                 localSiteInfoOpen
                   ? 'bg-teal-100 text-teal-700'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
@@ -189,7 +189,7 @@ export function BiodiversityPanel({
               aria-expanded={mangroveInfoOpen}
               aria-controls="mangrove-info"
               onClick={() => setMangroveInfoOpen((prev) => !prev)}
-              className={`p-1 rounded-md transition-colors ${
+              className={`p-1 rounded-md transition-colors cursor-pointer ${
                 mangroveInfoOpen
                   ? 'bg-teal-100 text-teal-700'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'

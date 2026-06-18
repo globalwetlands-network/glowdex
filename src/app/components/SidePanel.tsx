@@ -102,7 +102,7 @@ export function SidePanel({
       <div className="hidden md:flex border-b border-gray-200 shrink-0">
         <button
           onClick={() => onTabChange('biodiversity')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
             activeTab === 'biodiversity'
               ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
               : 'text-gray-500 hover:text-gray-700'
@@ -113,7 +113,7 @@ export function SidePanel({
         </button>
         <button
           onClick={() => onTabChange('analysis')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
             activeTab === 'analysis'
               ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
               : 'text-gray-500 hover:text-gray-700'
@@ -147,7 +147,7 @@ export function SidePanel({
                 >
                   <button
                     onClick={onClearSelection}
-                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors mb-3"
+                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer mb-3"
                   >
                     Clear selection
                   </button>

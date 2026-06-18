@@ -74,7 +74,7 @@ export function TopBar({ onLogoClick }: TopBarProps) {
         type="button"
         onClick={onLogoClick}
         aria-label="Return to home"
-        className="flex items-center gap-3 rounded-md px-1 py-0.5 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+        className="flex items-center gap-3 rounded-md px-1 py-0.5 hover:bg-white/10 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         {/* Logo */}
         <img src={logo} alt="GLOWdex logo" className="w-7 h-7" />
@@ -96,7 +96,7 @@ export function TopBar({ onLogoClick }: TopBarProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="px-3 py-1.5 text-white/75 text-[13px] rounded hover:bg-white/10 hover:text-white transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 text-white/75 text-[13px] rounded hover:bg-white/10 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Menu size={16} />
             Menu
@@ -119,7 +119,7 @@ export function TopBar({ onLogoClick }: TopBarProps) {
                 return (
                   <button
                     key={item.label}
-                    className="w-full px-4 py-2.5 flex items-center gap-3 text-gray-700 text-sm hover:bg-gray-50 transition-colors text-left"
+                    className="w-full px-4 py-2.5 flex items-center gap-3 text-gray-700 text-sm hover:bg-gray-50 transition-colors text-left cursor-pointer"
                     onClick={item.onClick}
                   >
                     <Icon size={16} className="text-gray-500" />

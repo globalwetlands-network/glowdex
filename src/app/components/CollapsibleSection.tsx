@@ -24,7 +24,7 @@ export function CollapsibleSection({
     <div className="space-y-3">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full focus:outline-none group"
+        className="flex items-center justify-between w-full focus:outline-none cursor-pointer group"
       >
         <div className="flex items-center space-x-2">
           <Icon className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600" />

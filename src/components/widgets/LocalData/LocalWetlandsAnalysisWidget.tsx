@@ -288,7 +288,7 @@ export function LocalWetlandsAnalysisWidget({
           <select
             value={associatedSite?.country ?? ''}
             onChange={(e) => handleCountryChange(e.target.value)}
-            className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+            className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
           >
             <option value="">Select country...</option>
             {availableCountries.map((country) => (
@@ -308,7 +308,7 @@ export function LocalWetlandsAnalysisWidget({
             <select
               value={selectedSiteId ?? ''}
               onChange={(e) => handleSiteSelect(e.target.value)}
-              className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
             >
               <option value="">Select location...</option>
               {activeSitesForSelector.map((site) => (
@@ -380,7 +380,7 @@ export function LocalWetlandsAnalysisWidget({
         <select
           value={associatedSite.country}
           onChange={(e) => handleCountryChange(e.target.value)}
-          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
         >
           {availableCountries.map((country) => (
             <option key={country} value={country}>
@@ -391,7 +391,7 @@ export function LocalWetlandsAnalysisWidget({
         <select
           value={selectedSiteId ?? associatedSite.id}
           onChange={(e) => handleSiteSelect(e.target.value)}
-          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
         >
           {activeSitesForSelector.map((site) => (
             <option key={site.id} value={site.id}>

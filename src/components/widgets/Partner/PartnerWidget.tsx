@@ -183,7 +183,7 @@ export function PartnerWidget({
               }
               onNavigateToAnalysis();
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors cursor-pointer"
           >
             <span>Tile {selectedCell.id}</span>
             {selectedCell.country && (
@@ -322,7 +322,7 @@ export function PartnerWidget({
                 }
                 onViewLocalData(associatedLocalSite.id);
               }}
-              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
             >
               <BarChart2 size={10} />
               View local monitoring data
