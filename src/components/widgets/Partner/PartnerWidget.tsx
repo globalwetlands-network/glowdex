@@ -183,7 +183,7 @@ export function PartnerWidget({
               }
               onNavigateToAnalysis();
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-900 hover:bg-gray-200 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-teal-50 border border-teal-200 text-xs font-semibold text-teal-800 hover:bg-teal-100 hover:border-teal-300 transition-colors cursor-pointer"
           >
             <span>Tile {selectedCell.id}</span>
             {selectedCell.country && (
@@ -202,6 +202,7 @@ export function PartnerWidget({
               </>
             )}
             <span>{clusterId}</span>
+            <BarChart2 size={10} className="shrink-0" />
           </button>
           <div
             id="tile-capsule-tooltip"

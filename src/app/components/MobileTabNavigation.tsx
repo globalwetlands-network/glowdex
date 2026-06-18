@@ -4,6 +4,7 @@ import type { MobileTab } from '../types/app.types';
 interface MobileTabNavigationProps {
   activeTab: MobileTab;
   onTabChange: (tab: MobileTab) => void;
+  showAnalysisBadge?: boolean;
 }
 
 /**
@@ -13,6 +14,7 @@ interface MobileTabNavigationProps {
 export function MobileTabNavigation({
   activeTab,
   onTabChange,
+  showAnalysisBadge,
 }: MobileTabNavigationProps) {
   const tabs: Array<{
     id: 'biodiversity' | 'analysis' | 'map';
@@ -41,7 +43,12 @@ export function MobileTabNavigation({
             {isActive && (
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#0f6e56]" />
             )}
-            <Icon size={20} />
+            <span className="relative">
+              <Icon size={20} />
+              {showAnalysisBadge && tab.id === 'analysis' && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse" />
+              )}
+            </span>
             <span className="text-[10px] mt-1">{tab.label}</span>
           </button>
         );

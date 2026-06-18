@@ -73,6 +73,7 @@ function AppShell() {
   >('biodiversity');
   const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
   const [scrollToPartnerSignal, setScrollToPartnerSignal] = useState(0);
+  const [analysisTabVisited, setAnalysisTabVisited] = useState(false);
 
   // Species layer state
   const [speciesLayerState, setSpeciesLayerState] = useState<{
@@ -438,6 +439,7 @@ function AppShell() {
       setProximityAssociatedSiteId(null);
       if (id) {
         cellCountInSession.current += 1;
+        setAnalysisTabVisited(false);
       }
       if (id && window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('biodiversity');
@@ -452,6 +454,7 @@ function AppShell() {
     if (tab === 'biodiversity' || tab === 'analysis') {
       setPanelActiveTab(tab);
     }
+    if (tab === 'analysis') setAnalysisTabVisited(true);
     try {
       posthog?.capture('panel_tab_changed', {
         tab,
@@ -467,6 +470,7 @@ function AppShell() {
   const handlePanelTabChange = useCallback(
     (tab: 'analysis' | 'biodiversity') => {
       setPanelActiveTab(tab);
+      if (tab === 'analysis') setAnalysisTabVisited(true);
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab(tab);
       }
@@ -626,6 +630,8 @@ function AppShell() {
     ],
   );
 
+  const showAnalysisBadge = !!selectedCell && !analysisTabVisited;
+
   // Render side panel
   const sidePanel = useMemo(
     () => (
@@ -662,6 +668,7 @@ function AppShell() {
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
+        showAnalysisBadge={showAnalysisBadge}
       />
     ),
     [
@@ -692,6 +699,7 @@ function AppShell() {
       isLocalContextPending,
       scrollToLocalDataSignal,
       scrollToPartnerSignal,
+      showAnalysisBadge,
     ],
   );
 
@@ -717,6 +725,7 @@ function AppShell() {
         sidePanel={sidePanel}
         mobileActiveTab={mobileActiveTab}
         onMobileTabChange={handleMobileTabChange}
+        showAnalysisBadge={showAnalysisBadge}
       />
     </>
   );

@@ -8,6 +8,7 @@ interface AppLayoutProps {
   sidePanel: ReactNode;
   mobileActiveTab: MobileTab;
   onMobileTabChange: (tab: MobileTab) => void;
+  showAnalysisBadge?: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ export function AppLayout({
   sidePanel,
   mobileActiveTab,
   onMobileTabChange,
+  showAnalysisBadge,
 }: AppLayoutProps) {
   return (
     <div className="h-dvh w-screen flex flex-col overflow-hidden bg-gray-100">
@@ -52,6 +54,7 @@ export function AppLayout({
         <MobileTabNavigation
           activeTab={mobileActiveTab}
           onTabChange={onMobileTabChange}
+          showAnalysisBadge={showAnalysisBadge}
         />
       </div>
     </div>

@@ -55,6 +55,7 @@ interface SidePanelProps {
   onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
   scrollToPartnerSignal?: number;
+  showAnalysisBadge?: boolean;
 }
 
 /**
@@ -91,6 +92,7 @@ export function SidePanel({
   onSiteAssociated,
   scrollToLocalDataSignal,
   scrollToPartnerSignal,
+  showAnalysisBadge,
 }: SidePanelProps) {
   const localDataRef = useScrollToSignal(
     activeTab === 'analysis' ? scrollToLocalDataSignal : 0,
@@ -120,7 +122,12 @@ export function SidePanel({
           }`}
         >
           <BarChart2 size={16} />
-          Analysis
+          <span className="relative">
+            Analysis
+            {showAnalysisBadge && (
+              <span className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse" />
+            )}
+          </span>
         </button>
       </div>
 
