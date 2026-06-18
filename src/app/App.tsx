@@ -170,6 +170,7 @@ function AppShell() {
     lng: number;
     lat: number;
   } | null>(null);
+  const [resetViewSignal, setResetViewSignal] = useState(0);
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
@@ -543,6 +544,7 @@ function AppShell() {
     setSpeciesLayerState({ speciesId: '', observations: [], enabled: false });
     setSpeciesFlyTarget(null);
     setSiteFlyTarget(null);
+    setResetViewSignal((s) => s + 1);
   }, [
     posthog,
     selectedCellId,
@@ -604,6 +606,7 @@ function AppShell() {
           onPartnerFlyComplete={() => setPartnerFlyTarget(null)}
           onLocationSearched={handleLocationSearched}
           onLocationSearchCleared={handleLocationSearchCleared}
+          resetViewSignal={resetViewSignal}
         />
       ),
     [
@@ -630,6 +633,7 @@ function AppShell() {
       partnerFlyTarget,
       handleLocationSearched,
       handleLocationSearchCleared,
+      resetViewSignal,
     ],
   );
 
