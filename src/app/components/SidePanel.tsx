@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Filter, MapPin, BarChart2, Leaf } from 'lucide-react';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 
@@ -97,6 +98,12 @@ export function SidePanel({
   const localDataRef = useScrollToSignal(
     activeTab === 'analysis' ? scrollToLocalDataSignal : 0,
   );
+
+  useEffect(() => {
+    if (activeTab === 'analysis') {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }, [activeTab]);
 
   return (
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
