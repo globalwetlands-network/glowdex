@@ -40,10 +40,17 @@ export interface InsightRequest {
   localSiteContext?: LocalSiteContext;
 }
 
+export interface InsightSource {
+  citation: string;
+  doi: string;
+  sections: string[];
+}
+
 export interface InsightResponse {
   gridCellId: number;
   text: string;
   statistics?: AIStatisticalContextV1;
+  sources?: InsightSource[];
   meta: {
     latencyMs: number;
     totalTokensUsed: number;

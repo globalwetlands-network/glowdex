@@ -1,9 +1,17 @@
 import { useState } from 'react';
-import { Send, User, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import {
+  Send,
+  User,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  BookOpen,
+} from 'lucide-react';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 import ReactMarkdown from 'react-markdown';
 
 import type { InsightResponse, LocalSiteContext } from '@/api/types';
+import { useAIAnalytics } from '@/features/analytics';
 
 const AI_SUGGESTIONS_ENABLED =
   import.meta.env.VITE_PUBLIC_FEATURE_AI_SUGGESTIONS === 'true';
@@ -33,6 +41,11 @@ export function ChatInterface({
   localSiteContext,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
+
+  const { captureOutboundLinkClicked } = useAIAnalytics({
+    selectedCellId,
+    localSiteContext,
+  });
 
   const { messages, setMessages } = useChatMessages();
 
@@ -195,6 +208,51 @@ export function ChatInterface({
                   selectedCellId={selectedCellId}
                 />
               )}
+
+            {idx === 0 && msg.role === 'assistant' && initialInsight && (
+              <div className="mt-1.5 px-1 border-t border-gray-100 pt-1.5">
+                <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-1">
+                  <BookOpen className="w-3 h-3" />
+                  Sources
+                </div>
+                <div className="text-[10px] text-gray-400 leading-relaxed">
+                  {(() => {
+                    const source = initialInsight.sources?.[0];
+                    const href = source?.doi
+                      ? `https://doi.org/${source.doi}`
+                      : 'https://doi.org/10.1016/j.ecolind.2021.108141';
+                    const label =
+                      source?.citation ??
+                      'Sievers et al. (2021) Ecological Indicators 131:108141';
+                    return (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-gray-600 transition-colors"
+                        onClick={(e) =>
+                          captureOutboundLinkClicked(
+                            e.currentTarget.href,
+                            'doi_citation',
+                          )
+                        }
+                      >
+                        {label}
+                      </a>
+                    );
+                  })()}
+                  {initialInsight.sources &&
+                    initialInsight.sources.length > 0 && (
+                      <span className="ml-1 text-gray-300">
+                        ·{' '}
+                        {initialInsight.sources
+                          .flatMap((s) => s.sections)
+                          .join(' · ')}
+                      </span>
+                    )}
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
