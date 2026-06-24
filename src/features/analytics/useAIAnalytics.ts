@@ -86,6 +86,17 @@ export function useAIAnalytics({
     [selectedCellId, localSiteContext, posthog],
   );
 
+  const captureRateLimitHit = useCallback(() => {
+    if (!selectedCellId) return;
+    try {
+      posthog?.capture('ai_rate_limit_hit', {
+        cell_id: String(selectedCellId),
+      });
+    } catch (error) {
+      console.error('Failed to capture ai_rate_limit_hit event:', error);
+    }
+  }, [selectedCellId, posthog]);
+
   const captureOutboundLinkClicked = useCallback(
     (url: string, context: string) => {
       if (!selectedCellId) return;
@@ -107,6 +118,7 @@ export function useAIAnalytics({
     captureFollowupAsked,
     captureResponseReceived,
     captureErrorOccurred,
+    captureRateLimitHit,
     captureOutboundLinkClicked,
   };
 }
