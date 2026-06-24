@@ -88,11 +88,12 @@ export function useAIAnalytics({
 
   const captureOutboundLinkClicked = useCallback(
     (url: string, context: string) => {
+      if (!selectedCellId) return;
       try {
         posthog?.capture('outbound_link_clicked', {
           url,
           context,
-          cell_id: selectedCellId ? String(selectedCellId) : null,
+          cell_id: String(selectedCellId),
         });
       } catch (error) {
         console.error('Failed to capture outbound_link_clicked event:', error);

@@ -216,20 +216,31 @@ export function ChatInterface({
                   Sources
                 </div>
                 <div className="text-[10px] text-gray-400 leading-relaxed">
-                  <a
-                    href="https://doi.org/10.1016/j.ecolind.2021.108141"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-gray-600 transition-colors"
-                    onClick={() =>
-                      captureOutboundLinkClicked(
-                        'https://doi.org/10.1016/j.ecolind.2021.108141',
-                        'doi_citation',
-                      )
-                    }
-                  >
-                    Sievers et al. (2021) Ecological Indicators 131:108141
-                  </a>
+                  {(() => {
+                    const source = initialInsight.sources?.[0];
+                    const href = source?.doi
+                      ? `https://doi.org/${source.doi}`
+                      : 'https://doi.org/10.1016/j.ecolind.2021.108141';
+                    const label =
+                      source?.citation ??
+                      'Sievers et al. (2021) Ecological Indicators 131:108141';
+                    return (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-gray-600 transition-colors"
+                        onClick={(e) =>
+                          captureOutboundLinkClicked(
+                            e.currentTarget.href,
+                            'doi_citation',
+                          )
+                        }
+                      >
+                        {label}
+                      </a>
+                    );
+                  })()}
                   {initialInsight.sources &&
                     initialInsight.sources.length > 0 && (
                       <span className="ml-1 text-gray-300">
