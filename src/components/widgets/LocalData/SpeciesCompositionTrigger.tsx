@@ -29,7 +29,7 @@ export function SpeciesCompositionTrigger() {
           />
         ))}
       </div>
-      <span className="text-xs text-gray-400">Species composition</span>
+      <span className="text-xs text-gray-400">Crab species composition</span>
       <span className="text-[10px] text-gray-300 italic ml-auto shrink-0">
         Coming soon
       </span>
