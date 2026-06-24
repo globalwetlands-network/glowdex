@@ -10,13 +10,15 @@ const MAX_HISTORY_MESSAGES = 10;
 
 /** Safely reads resetsIn (seconds) from an unknown API error payload. */
 function extractResetsIn(data: unknown): number {
-  if (
-    data &&
-    typeof data === 'object' &&
-    'resetsIn' in data &&
-    typeof (data as { resetsIn: unknown }).resetsIn === 'number'
-  ) {
-    return (data as { resetsIn: number }).resetsIn;
+  if (data && typeof data === 'object' && 'resetsIn' in data) {
+    const resetsIn = (data as { resetsIn?: unknown }).resetsIn;
+    if (
+      typeof resetsIn === 'number' &&
+      Number.isFinite(resetsIn) &&
+      resetsIn > 0
+    ) {
+      return resetsIn;
+    }
   }
   return 0;
 }

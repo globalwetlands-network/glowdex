@@ -87,9 +87,10 @@ export function useAIAnalytics({
   );
 
   const captureRateLimitHit = useCallback(() => {
+    if (!selectedCellId) return;
     try {
       posthog?.capture('ai_rate_limit_hit', {
-        cell_id: selectedCellId ? String(selectedCellId) : null,
+        cell_id: String(selectedCellId),
       });
     } catch (error) {
       console.error('Failed to capture ai_rate_limit_hit event:', error);
