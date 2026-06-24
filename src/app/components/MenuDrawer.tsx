@@ -154,7 +154,7 @@ export function MenuDrawer({ isOpen, onClose, activeItem }: MenuDrawerProps) {
           </div>
           <div className="text-xs text-gray-400 mt-0.5">
             This section will be updated with direct contact information for the
-            GLOWdex team.
+            MBCAM team.
           </div>
         </div>
       </div>

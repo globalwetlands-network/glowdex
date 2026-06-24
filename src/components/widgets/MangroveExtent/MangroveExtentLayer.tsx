@@ -17,7 +17,7 @@
  * Mitigation:
  * - Token stored in VITE_GMW_MAPBOX_TOKEN environment variable
  * - Layer disabled gracefully if token is absent
- * - Post-conference: migrate to a GLOWdex-owned Mapbox tileset
+ * - Post-conference: migrate to an MBCAM-owned Mapbox tileset
  *   using the GMW v3.0 CC-BY 4.0 data from Zenodo
  *   (https://doi.org/10.5281/zenodo.6894273)
  *

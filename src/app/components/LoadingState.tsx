@@ -6,10 +6,10 @@ export function LoadingState() {
       <div className="text-center">
         <img
           src={logo}
-          alt="GLOWdex"
+          alt="MBCAM"
           className="w-16 h-16 mx-auto mb-4 animate-pulse"
         />
-        <p className="text-gray-500 font-medium text-sm">Loading GLOWdex...</p>
+        <p className="text-gray-500 font-medium text-sm">Loading MBCAM...</p>
       </div>
     </div>
   );

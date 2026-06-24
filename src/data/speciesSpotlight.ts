@@ -140,9 +140,9 @@ const fiddlerCrabData: SpeciesSpotlightData = {
   conservationStatus: 'LC',
   iucnUrl: 'https://www.iucnredlist.org',
   summaryText:
-    'Cranuca inversa (Inverted Fiddler Crab) was recorded by the **GLOWdex South Africa** team in mangrove habitats along the **KwaZulu-Natal** coast. Fiddler crabs are widely used as bioindicators of mangrove ecosystem health — their presence signals intact intertidal habitat.',
+    'Cranuca inversa (Inverted Fiddler Crab) was recorded by the **MBCAM South Africa** team in mangrove habitats along the **KwaZulu-Natal** coast. Fiddler crabs are widely used as bioindicators of mangrove ecosystem health — their presence signals intact intertidal habitat.',
   dataApplicability: 'Regional',
-  dataSource: 'GBIF, GLOWdex South Africa',
+  dataSource: 'GBIF, MBCAM South Africa',
   learnMoreUrl: 'https://www.fiddlercrab.info/u_inversa.html',
   mapTipText: 'Show Fiddler Crab observation locations',
   imageUrl: fiddlerCrabImg,

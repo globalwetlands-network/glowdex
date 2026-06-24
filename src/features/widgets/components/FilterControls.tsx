@@ -88,8 +88,8 @@ export function FilterControls({
                 Typologies group coastal wetland grid cells by shared ecological
                 characteristics — including habitat condition, species profiles,
                 and cumulative pressures from land, marine, and climate sources.
-                All indicator values in GLOWdex are interpreted relative to
-                other cells in the same typology, not as global absolutes.
+                All indicator values in MBCAM are interpreted relative to other
+                cells in the same typology, not as global absolutes.
               </p>
 
               <div className="space-y-1 border-t border-gray-100 pt-3">
@@ -135,7 +135,7 @@ export function FilterControls({
               <div className="bg-amber-50 border border-amber-100 rounded-md p-2.5 italic text-gray-600">
                 Note: The current typologies were derived from a model
                 encompassing mangroves, saltmarsh, and seagrass ecosystems
-                globally. GLOWdex currently displays mangrove indicators only. A
+                globally. MBCAM currently displays mangrove indicators only. A
                 mangrove-specific typology analysis is planned for a future
                 release.
               </div>
