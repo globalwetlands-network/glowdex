@@ -1,11 +1,25 @@
 import { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
+import { ApiError } from '@/api/client';
 import { useAIAnalytics } from '@/features/analytics';
 import type { Message } from './useChatMessages';
 import type { LocalSiteContext } from '@/api/types';
 
 const MAX_HISTORY_MESSAGES = 10;
+
+/** Safely reads resetsIn (seconds) from an unknown API error payload. */
+function extractResetsIn(data: unknown): number {
+  if (
+    data &&
+    typeof data === 'object' &&
+    'resetsIn' in data &&
+    typeof (data as { resetsIn: unknown }).resetsIn === 'number'
+  ) {
+    return (data as { resetsIn: number }).resetsIn;
+  }
+  return 0;
+}
 
 interface Options {
   selectedCellId: number | null | undefined;
@@ -29,6 +43,7 @@ export function useAskMutation({
     captureFollowupAsked,
     captureResponseReceived,
     captureErrorOccurred,
+    captureRateLimitHit,
   } = useAIAnalytics({ selectedCellId, localSiteContext });
 
   const askMutation = useMutation({
@@ -76,7 +91,19 @@ export function useAskMutation({
       ]);
     },
 
-    onError: () => {
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 429) {
+        captureRateLimitHit();
+        const resetsIn = extractResetsIn(error.data);
+        const hours = resetsIn > 0 ? Math.ceil(resetsIn / 3600) : null;
+        const content = `You've reached today's AI analysis limit.${hours !== null ? ` Your limit resets in ${hours} hour${hours === 1 ? '' : 's'}.` : ''} In the meantime, you can still explore the map, species spotlight, and local monitoring data.`;
+        setMessages((prev) => [
+          ...prev,
+          { id: `err-${crypto.randomUUID()}`, role: 'assistant', content },
+        ]);
+        return;
+      }
+
       captureErrorOccurred('followup');
       setMessages((prev) => [
         ...prev,
