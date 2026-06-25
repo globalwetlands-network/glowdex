@@ -247,18 +247,18 @@ export function useIndicatorDistributions(
     );
     filteredIndicators = filterCumulativeImpacts(filteredIndicators);
 
+    if (cellStats?.summaries?.length) {
+      const statKeys = new Set(cellStats.summaries.map((s) => s.key));
+      filteredIndicators = filteredIndicators.filter((i) =>
+        statKeys.has(i.key),
+      );
+    }
+
     if (selectedCell) {
       filteredIndicators = filterBySignificance(
         filteredIndicators,
         scopedGridCells,
         quantileValue,
-      );
-    }
-
-    if (cellStats?.summaries?.length) {
-      const statKeys = new Set(cellStats.summaries.map((s) => s.key));
-      filteredIndicators = filteredIndicators.filter((i) =>
-        statKeys.has(i.key),
       );
     }
 
