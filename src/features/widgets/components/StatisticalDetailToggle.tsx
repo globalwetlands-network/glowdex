@@ -260,6 +260,7 @@ export function StatisticalDetailToggle({
           setIsOpen(next);
           try {
             posthog?.capture('statistical_detail_toggled', {
+              action: next ? 'expanded' : 'collapsed',
               expanded: next,
               cell_id:
                 selectedCellId !== null && selectedCellId !== undefined
