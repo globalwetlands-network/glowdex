@@ -440,6 +440,16 @@ export function SpeciesSpotlightWidget({
                 enabled,
                 observation_count: observations.length,
               });
+              if (enabled) {
+                posthog?.capture('species_spotlight_triggered', {
+                  species_id: speciesId,
+                  species_common_name: activeSpecies.commonName,
+                  cell_id:
+                    selectedCell?.id !== undefined
+                      ? String(selectedCell.id)
+                      : null,
+                });
+              }
             } catch (error) {
               console.error(
                 'Failed to capture species_layer_toggled event:',

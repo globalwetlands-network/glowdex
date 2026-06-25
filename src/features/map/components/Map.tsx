@@ -223,6 +223,7 @@ export function GridMap({
   } | null>(null);
   const touchedCell = useRef<RichGridCell | null>(null);
   const longPressActive = useRef<boolean>(false);
+  const hasTrackedMapInteraction = useRef<boolean>(false);
   // Temporary marker shown at the search result location.
   // Set when a search result is retrieved, cleared when the search
   // is cleared or when the user selects a grid cell.
@@ -296,12 +297,29 @@ export function GridMap({
     onCellSelect: handleCellSelect,
   });
 
+  const captureFirstMapInteraction = useCallback(
+    (interactionType: 'pan' | 'zoom' | 'click') => {
+      if (hasTrackedMapInteraction.current) return;
+      if (!posthog) return;
+      try {
+        posthog.capture('map_interacted', {
+          interaction_type: interactionType,
+        });
+        hasTrackedMapInteraction.current = true;
+      } catch (error) {
+        console.error('Failed to capture map_interacted event:', error);
+      }
+    },
+    [posthog],
+  );
+
   const handleMapClick = useCallback(
     (evt: MapMouseEvent) => {
       if (longPressActive.current) {
         longPressActive.current = false;
         return;
       }
+      captureFirstMapInteraction('click');
 
       const siteFeature = evt.features?.find(
         (f) => f.layer?.id === 'local-sites',
@@ -323,7 +341,7 @@ export function GridMap({
       }
       onClick(evt);
     },
-    [onClick, onPartnerClick, onSiteClick],
+    [onClick, onPartnerClick, onSiteClick, captureFirstMapInteraction],
   );
 
   const handleTouchStart = useCallback(
@@ -615,7 +633,14 @@ export function GridMap({
   }
 
   return (
-    <div className="relative w-full h-full bg-slate-200">
+    <div
+      className="relative w-full h-full bg-slate-200"
+      onWheel={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (!target?.closest('.mapboxgl-map')) return;
+        captureFirstMapInteraction('zoom');
+      }}
+    >
       {/* Location search overlay */}
       <div className="absolute top-3 left-3 z-10 w-[calc(100%-1.5rem)] sm:w-72">
         <SearchBox
@@ -729,6 +754,7 @@ export function GridMap({
           }
         }}
         onClick={handleMapClick}
+        onDragEnd={() => captureFirstMapInteraction('pan')}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
