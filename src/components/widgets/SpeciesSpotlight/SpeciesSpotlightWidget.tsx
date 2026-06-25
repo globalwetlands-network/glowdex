@@ -442,7 +442,8 @@ export function SpeciesSpotlightWidget({
               });
               if (enabled) {
                 posthog?.capture('species_spotlight_triggered', {
-                  species_name: activeSpecies.commonName,
+                  species_id: speciesId,
+                  species_common_name: activeSpecies.commonName,
                   cell_id:
                     selectedCell?.id !== undefined
                       ? String(selectedCell.id)

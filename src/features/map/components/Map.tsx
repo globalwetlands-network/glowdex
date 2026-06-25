@@ -300,11 +300,12 @@ export function GridMap({
   const captureFirstMapInteraction = useCallback(
     (interactionType: 'pan' | 'zoom' | 'click') => {
       if (hasTrackedMapInteraction.current) return;
-      hasTrackedMapInteraction.current = true;
+      if (!posthog) return;
       try {
-        posthog?.capture('map_interacted', {
+        posthog.capture('map_interacted', {
           interaction_type: interactionType,
         });
+        hasTrackedMapInteraction.current = true;
       } catch (error) {
         console.error('Failed to capture map_interacted event:', error);
       }
