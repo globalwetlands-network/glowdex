@@ -172,16 +172,16 @@ export const TERMINOLOGY = [
 
 export const MENU_CONTENT = {
   about: {
-    title: 'About GLOWdex',
+    title: 'About MBCAM',
     lead: 'Global status of coastal wetlands to inform conservation and management.',
     body: `Researchers from around the world have been recording data on the world's coastal wetlands for decades. For the first time, these global datasets have been brought together into a single platform.\n\nThe Global Coastal Wetlands Index uses 34 indicators to provide a full picture of the health of coastal wetlands worldwide. It quantifies relationships among these indicators to better understand ecosystem health and identify areas that may be under threat.\n\nWhen looking across the globe, similarities emerge between coastal wetlands in different regions. Sites sharing similar characteristics are grouped into a typology. This app lets you explore outputs at two scales — using either 5 or 18 typologies — to characterise the world's coastal wetlands.\n\nSites within the same typology facing similar pressures could benefit from knowledge exchange. This Index can inform globally and regionally coordinated conservation and management.`,
   },
   help: {
-    title: 'How to Use GLOWdex',
+    title: 'How to Use MBCAM',
     sections: [
       {
         heading: null,
-        body: 'GLOWdex maps the ecological health of mangrove ecosystems across thousands of 100 × 100 km grid cells worldwide. Click any cell on the map to explore its data.',
+        body: 'MBCAM maps the ecological health of mangrove ecosystems across thousands of 100 × 100 km grid cells worldwide. Click any cell on the map to explore its data.',
       },
       {
         heading: 'Search',
@@ -210,7 +210,7 @@ export const MENU_CONTENT = {
   },
   contact: {
     title: 'Contact',
-    body: 'For enquiries about GLOWdex or the Global Wetlands project, please contact the team at Griffith University.',
+    body: 'For enquiries about MBCAM or the Global Wetlands project, please contact the team at Griffith University.',
     placeholder: true,
   },
 } as const;

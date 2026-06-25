@@ -144,14 +144,14 @@ function enrichGeoJsonFeatures(
 }
 
 /**
- * Main map component for the GLOWdex platform.
+ * Main map component for the MBCAM platform.
  *
  * Renders a Mapbox GL JS map with:
  * - A global grid of 100×100km coastal wetland cells, coloured by
  *   typology cluster, with hover and selection interactions.
  * - An optional species observation layer (GBIF point data) toggled
  *   from the Species Spotlight widget.
- * - An optional partner layer showing GLOWdex partner institution
+ * - An optional partner layer showing MBCAM partner institution
  *   locations, toggled from the Partner widget.
  * - A location search overlay (Mapbox Search JS) with zoom-capped
  *   fly-to behaviour and a temporary search result marker.
@@ -809,7 +809,7 @@ export function GridMap({
               {partnerHoverInfo.city}, {partnerHoverInfo.country}
             </div>
             <div className="text-xs text-[#0f6e56] mt-1">
-              GLOWdex Partner Organisation
+              MBCAM Partner Organisation
             </div>
           </div>
         )}

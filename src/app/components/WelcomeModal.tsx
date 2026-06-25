@@ -76,18 +76,18 @@ export function WelcomeModal() {
 
         {/* Logo + Heading */}
         <div className="flex flex-col items-center text-center space-y-1">
-          <img src={logo} alt="GLOWdex logo" className="w-14 h-14 mb-2" />
+          <img src={logo} alt="MBCAM logo" className="w-14 h-14 mb-2" />
           <p className="text-xs font-semibold text-[#0f6e56] uppercase tracking-wider">
             Welcome to
           </p>
           <h2 id="welcome-title" className="text-2xl font-bold text-gray-900">
-            GLOWdex
+            MBCAM
           </h2>
         </div>
 
         {/* Body */}
         <p className="text-sm text-gray-600 leading-relaxed">
-          GLOWdex is an interactive action map for exploring global coastal
+          MBCAM is an interactive action map for exploring global coastal
           wetlands, with a focus on mangrove ecosystems. It brings together
           habitat data, biodiversity information, species profiles and involved
           partner organisations to support conservation, education and

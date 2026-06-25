@@ -1,8 +1,8 @@
-# GLOWdex – Global Coastal Wetlands Index App
+# MBCAM – Mangrove Biodiversity & Condition Action Map
 
 ## 1. Project Overview
 
-GLOWdex is an interactive scientific interpretation tool for exploring the **Global Coastal Wetlands Index**.
+MBCAM is an interactive scientific interpretation tool for exploring the **Global Coastal Wetlands Index**.
 
 It allows users to:
 
@@ -315,4 +315,4 @@ If using outputs from this application, please cite:
 
 ---
 
-_Maintained by the GLOWdex Engineering Team_
+_Maintained by the MBCAM Engineering Team_

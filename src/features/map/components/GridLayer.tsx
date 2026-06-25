@@ -101,6 +101,7 @@ export function GridLayer({
         id="grid-fill"
         type="fill"
         paint={fillPaint}
+        filter={['==', ['get', 'isFiltered'], true]}
         beforeId="waterway-label"
       />
 

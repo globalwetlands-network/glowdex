@@ -1,13 +1,13 @@
 # Frontend-Backend Integration
 
-This document outlines the architecture, routing constraints, and future security implementation for the integration between the GLOWdex frontend and the AI backend service.
+This document outlines the architecture, routing constraints, and future security implementation for the integration between the MBCAM frontend and the AI backend service.
 
 ## Architecture Overview
 
 The system consists of two primary applications:
 
-1. **Frontend (GLOWdex App)**: A React application built with Vite, responsible for the user interface, state management, and maps feature.
-2. **Backend (GLOWdex API)**: A NestJS application that securely handles API requests, external service integrations, and data processing.
+1. **Frontend (MBCAM App)**: A React application built with Vite, responsible for the user interface, state management, and maps feature.
+2. **Backend (MBCAM API)**: A NestJS application that securely handles API requests, external service integrations, and data processing.
 
 The frontend communicates with the backend exclusively via `/api` route paths (e.g., `/api/ai/insight`).
 
@@ -25,7 +25,7 @@ When the frontend makes a fetch request to `/api/ai/insight`, Vite intercepts th
 
 In a production environment, both the built frontend static assets and the NestJS backend run behind a **Reverse Proxy** (such as Nginx, AWS ALB, or another cloud load balancer).
 
-- The reverse proxy exposes a single domain (e.g., `https://glowdex.example.org`).
+- The reverse proxy exposes a single domain (e.g., `https://mbcam.example.org`).
 - Requests to the root `/` or static asset paths are routed to the frontend server/CDN.
 - Requests matching the `/api/*` path pattern are routed directly to the NestJS backend service.
 

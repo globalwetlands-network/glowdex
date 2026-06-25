@@ -175,6 +175,10 @@ function buildDistributions(
       }
     }
 
+    if (selectedCell && selectedValue === undefined) {
+      return;
+    }
+
     // Group by dimension
     if (!distributions[indicator.dimension]) {
       distributions[indicator.dimension] = [];
@@ -243,9 +247,14 @@ export function useIndicatorDistributions(
     );
     filteredIndicators = filterCumulativeImpacts(filteredIndicators);
 
-    // Only apply significance test when cell is selected (and we use local fallback)
-    // If we have API stats, we trust the backend's choice of indicators
-    if (selectedCell && !cellStats) {
+    if (cellStats?.summaries?.length) {
+      const statKeys = new Set(cellStats.summaries.map((s) => s.key));
+      filteredIndicators = filteredIndicators.filter((i) =>
+        statKeys.has(i.key),
+      );
+    }
+
+    if (selectedCell) {
       filteredIndicators = filterBySignificance(
         filteredIndicators,
         scopedGridCells,

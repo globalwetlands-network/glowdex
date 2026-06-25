@@ -3,7 +3,7 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   safelist: [
-    // GLOWdex brand greens — used in progress bars and UI accents.
+    // MBCAM brand greens — used in progress bars and UI accents.
     // Safelisted because they are constructed dynamically in
     // StatisticalDetailToggle.tsx and would otherwise be purged.
     'bg-glowdex-green', // #0a5c47 — dark teal, high/positive indicators

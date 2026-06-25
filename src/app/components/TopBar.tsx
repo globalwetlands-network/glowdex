@@ -77,15 +77,15 @@ export function TopBar({ onLogoClick }: TopBarProps) {
         className="flex items-center gap-3 rounded-md px-1 py-0.5 hover:bg-white/10 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         {/* Logo */}
-        <img src={logo} alt="GLOWdex logo" className="w-7 h-7" />
+        <img src={logo} alt="MBCAM logo" className="w-7 h-7" />
 
         {/* Branding text */}
         <div className="flex flex-col gap-0.5">
           <div className="text-white text-[15px] font-medium leading-tight">
-            GLOWdex
+            MBCAM
           </div>
           <div className="text-white/60 text-[10px] uppercase tracking-wider leading-tight">
-            Mangrove Ecosystem Analysis
+            Mangrove Biodiversity &amp; Condition Action Map
           </div>
         </div>
       </button>
