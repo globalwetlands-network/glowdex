@@ -635,7 +635,11 @@ export function GridMap({
   return (
     <div
       className="relative w-full h-full bg-slate-200"
-      onWheel={() => captureFirstMapInteraction('zoom')}
+      onWheel={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (!target?.closest('.mapboxgl-map')) return;
+        captureFirstMapInteraction('zoom');
+      }}
     >
       {/* Location search overlay */}
       <div className="absolute top-3 left-3 z-10 w-[calc(100%-1.5rem)] sm:w-72">
