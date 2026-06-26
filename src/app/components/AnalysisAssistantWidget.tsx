@@ -4,6 +4,7 @@ import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
 import type { LocalSiteContext } from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
+import { CrabIcon } from '@/components/icons/CrabIcon';
 
 interface AnalysisAssistantWidgetProps {
   selectedCellId?: number | null;
@@ -71,7 +72,24 @@ export function AnalysisAssistantWidget({
   if (isInsightLoading && !initialInsight) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-        <span className="animate-pulse">Loading assistant...</span>
+        <style>{`
+          @keyframes crab-bob {
+            0%   { transform: translateY(0px); }
+            100% { transform: translateY(-3px); }
+          }
+          @keyframes crab-scuttle {
+            0%   { transform: translateX(-3px); }
+            100% { transform: translateX(3px); }
+          }
+          .crab-bob     { animation: crab-bob     0.4s ease-in-out infinite alternate; }
+          .crab-scuttle { animation: crab-scuttle 0.8s ease-in-out infinite alternate; }
+        `}</style>
+        <div className="crab-bob mb-2">
+          <div className="crab-scuttle">
+            <CrabIcon size={24} className="text-[#0F6E56]" />
+          </div>
+        </div>
+        <span className="text-sm">Loading...</span>
       </div>
     );
   }
