@@ -10,7 +10,7 @@ interface TileCapsuleProps {
   typologies: TypologyMap;
   currentScale: 'scale5' | 'scale18';
   onNavigateToAnalysis: () => void;
-  source: string;
+  source: 'partner' | 'species';
   currentTab?: string;
 }
 

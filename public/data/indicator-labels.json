@@ -126,7 +126,7 @@
     "label": "AGB per ha",
     "units": "Mg/ha",
     "direction": 1,
-    "description": "Mean mangrove above ground biomass (mg/ha).",
+    "description": "Mean mangrove above-ground biomass (Mg/ha).",
     "": ""
   },
   {
@@ -166,7 +166,7 @@
     "label": "Land impact",
     "units": "rescaled (0–1)",
     "direction": -1,
-    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -186,7 +186,7 @@
     "label": "Climate impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -196,7 +196,7 @@
     "label": "Land impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -226,7 +226,7 @@
     "label": "Land impact",
     "units": "rescaled (0–1)",
     "direction": -1,
-    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -246,7 +246,7 @@
     "label": "Climate impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -256,7 +256,7 @@
     "label": "Land impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -286,7 +286,7 @@
     "label": "Land impact",
     "units": "rescaled (0–1)",
     "direction": -1,
-    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -306,7 +306,7 @@
     "label": "Climate impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
@@ -316,7 +316,7 @@
     "label": "Land impact rate",
     "units": "log ratio/yr",
     "direction": -1,
-    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
+    "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient pollution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
   },
   {
