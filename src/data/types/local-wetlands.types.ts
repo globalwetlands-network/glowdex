@@ -13,6 +13,7 @@ export interface LocalObservationRaw {
   Density: string;
   SE: string;
   Samples_n: string;
+  Partner_id?: string;
 }
 
 export type SiteCondition = 'Reference' | 'Degraded' | 'Rehabilitated';

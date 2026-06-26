@@ -31,13 +31,10 @@ function slugify(s: string): string {
 }
 
 /**
- * Temporary partner ID mapping by slugified location name.
- * Keys are slugified so punctuation variants in CSV values
- * (e.g. trailing spaces, hyphens vs spaces) resolve correctly.
- * TODO: Remove once Partner_id column is added to
- * local-wetlands-crab-data.csv.
+ * Fallback partner ID mapping by slugified location name.
+ * Used when a row has no Partner_id CSV column value.
  * Partner IDs match PARTNER_REGISTRY in
- * src/data/partners.config.ts.
+ * glowdex-api/src/partners/partner.config.ts.
  */
 const PARTNER_ID_BY_LOCATION: Record<string, string> = {
   mngazana: 'uwc-za',
@@ -71,18 +68,10 @@ export function deriveLocalWetlands(
     const lat = parseFloat(row.Location_lat);
     const lng = parseFloat(row.Location_long);
 
-    if (
-      isNaN(density) ||
-      isNaN(se) ||
-      isNaN(samplesN) ||
-      isNaN(year) ||
-      isNaN(lat) ||
-      isNaN(lng)
-    ) {
+    if (isNaN(year) || isNaN(lat) || isNaN(lng)) {
       console.warn(
-        `Skipping malformed row — non-numeric value: ` +
-          `Location=${row.Location_name}, Year=${row.Year}, ` +
-          `Species=${row.Species}`,
+        `Skipping malformed row — invalid coordinates or year: ` +
+          `Location=${row.Location_name}, Year=${row.Year}`,
       );
       continue;
     }
@@ -104,14 +93,16 @@ export function deriveLocalWetlands(
     const siteId = `${locationSlug}-${slugify(countryName)}`;
 
     if (!siteMap.has(siteId)) {
-      const partnerId = PARTNER_ID_BY_LOCATION[locationSlug] ?? null;
+      // CSV Partner_id takes priority; fall back to hardcoded location map
+      const csvPartnerId = row.Partner_id?.trim() || null;
+      const partnerId =
+        csvPartnerId ?? PARTNER_ID_BY_LOCATION[locationSlug] ?? null;
 
       if (!partnerId) {
         console.warn(
-          `No partner ID mapping found for location ` +
-            `"${locationName}" in PARTNER_ID_BY_LOCATION. ` +
-            `Partner link will not be shown for this site. ` +
-            `Add to mapping or await CSV Partner_id column.`,
+          `No partner ID found for location "${locationName}". ` +
+            `Add Partner_id to CSV or PARTNER_ID_BY_LOCATION fallback. ` +
+            `Partner link will not be shown for this site.`,
         );
       }
 
@@ -148,16 +139,18 @@ export function deriveLocalWetlands(
       }
     }
 
-    // Push observation row regardless of which branch ran
-    const entry = siteMap.get(siteId)!;
-    entry.rows.push({
-      year,
-      siteType: row.Site_Type,
-      species: row.Species.trim(),
-      density,
-      se,
-      samplesN,
-    });
+    // Only push observation if density data is present
+    if (!isNaN(density) && !isNaN(se) && !isNaN(samplesN)) {
+      const entry = siteMap.get(siteId)!;
+      entry.rows.push({
+        year,
+        siteType: row.Site_Type,
+        species: row.Species.trim(),
+        density,
+        se,
+        samplesN,
+      });
+    }
   }
 
   return Array.from(siteMap.values()).map(({ rows, meta }) => ({
