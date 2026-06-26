@@ -9,8 +9,10 @@ import {
 import type { ObservationPoint, RegionBoundResponse } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { PartnerResponse } from '@/api/partners';
+import type { TypologyMap } from '@/data/types/cluster.types';
 import { findNearestPartner } from '@/utils/geo';
 import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
+import { TileCapsule } from '@/components/shared/TileCapsule';
 import { SpeciesTab } from './SpeciesTab';
 
 interface SpeciesSpotlightWidgetProps {
@@ -22,6 +24,9 @@ interface SpeciesSpotlightWidgetProps {
   ) => void;
   selectedCell: EnrichedGridCell | null;
   partners: PartnerResponse[];
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  onNavigateToAnalysis: () => void;
   /**
    * Called when the active species changes — either via
    * auto-selection or manual tab click. Passes the center
@@ -86,6 +91,9 @@ export function SpeciesSpotlightWidget({
   onSpeciesLayerToggle,
   selectedCell,
   partners,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
   onSpeciesSelect,
   clickedPartnerId,
   suppressAutoFlyTo = false,
@@ -359,6 +367,16 @@ export function SpeciesSpotlightWidget({
 
   return (
     <div className="space-y-3">
+      {selectedCell && (
+        <TileCapsule
+          selectedCell={selectedCell}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
+          source="species"
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">

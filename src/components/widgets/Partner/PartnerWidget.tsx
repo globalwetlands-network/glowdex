@@ -7,7 +7,7 @@ import { findNearestPartner } from '@/utils/geo';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
-import { TYPOLOGY_5_INFO } from '@/data/constants/typology.constants';
+import { TileCapsule } from '@/components/shared/TileCapsule';
 
 interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
@@ -99,20 +99,6 @@ export function PartnerWidget({
     );
   }, [localSites, displayedPartner]);
 
-  const clusterId = selectedCell
-    ? ((currentScale === 'scale5'
-        ? selectedCell.cluster5
-        : selectedCell.cluster18) ?? undefined)
-    : undefined;
-  const typologyColor =
-    clusterId !== undefined
-      ? typologies[currentScale]?.[clusterId]?.color
-      : undefined;
-  const typologyInfo =
-    clusterId !== undefined && currentScale === 'scale5'
-      ? TYPOLOGY_5_INFO[clusterId]
-      : null;
-
   const handleToggle = () => {
     onPartnerLayerToggle(!partnerLayerEnabled);
   };
@@ -162,74 +148,15 @@ export function PartnerWidget({
 
   return (
     <div className="space-y-3">
-      {selectedCell && clusterId !== undefined && (
-        <div className="relative group/tile-tip inline-block">
-          <button
-            type="button"
-            aria-describedby="tile-capsule-tooltip"
-            onClick={() => {
-              try {
-                posthog?.capture('partner_tile_capsule_clicked', {
-                  cell_id: selectedCell?.id ? String(selectedCell.id) : null,
-                  cluster_id: clusterId ?? null,
-                  country: selectedCell?.country ?? null,
-                  current_tab: currentTab,
-                });
-              } catch (error) {
-                console.error(
-                  'Failed to capture partner_tile_capsule_clicked event:',
-                  error,
-                );
-              }
-              onNavigateToAnalysis();
-            }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-teal-50 border border-teal-200 text-xs font-semibold text-teal-800 hover:bg-teal-100 hover:border-teal-300 transition-colors cursor-pointer"
-          >
-            <span>Tile {selectedCell.id}</span>
-            {selectedCell.country && (
-              <>
-                <span className="text-gray-400">·</span>
-                <span>{selectedCell.country}</span>
-              </>
-            )}
-            {typologyColor && (
-              <>
-                <span className="text-gray-400">·</span>
-                <span
-                  className="w-2.5 h-2.5 rounded-sm shrink-0 border border-black/10"
-                  style={{ backgroundColor: typologyColor }}
-                />
-              </>
-            )}
-            <span>{clusterId}</span>
-            <BarChart2 size={10} className="shrink-0" />
-          </button>
-          <div
-            id="tile-capsule-tooltip"
-            role="tooltip"
-            className="absolute left-0 top-full mt-1 z-50 w-64 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/tile-tip:opacity-100 group-focus-within/tile-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
-          >
-            {typologyInfo ? (
-              <>
-                <p className="font-semibold">
-                  Typology {clusterId} — {typologyInfo.name}
-                </p>
-                <p className="mt-0.5 text-white/80">
-                  {typologyInfo.description}
-                </p>
-              </>
-            ) : (
-              <p>
-                Typology {clusterId}
-                {currentScale === 'scale18' &&
-                  ' — see Sievers et al. (2021) for full descriptions'}
-              </p>
-            )}
-            <p className="mt-1 text-white/60">
-              Click to view full tile analysis
-            </p>
-          </div>
-        </div>
+      {selectedCell && (
+        <TileCapsule
+          selectedCell={selectedCell}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
+          source="partner"
+          currentTab={currentTab}
+        />
       )}
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
         {clickedPartnerId

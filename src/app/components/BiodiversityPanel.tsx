@@ -79,6 +79,9 @@ export function BiodiversityPanel({
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           selectedCell={selectedCell}
           partners={partnersData?.partners ?? []}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
           suppressAutoFlyTo={suppressAutoFlyTo}
