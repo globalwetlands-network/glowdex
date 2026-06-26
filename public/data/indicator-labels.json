@@ -4,6 +4,7 @@
     "indicator": "mang_loss_rate",
     "habitat": "mg",
     "label": "Loss rate",
+    "units": "/yr",
     "direction": -1,
     "description": "Instantaneous rate of mangrove extent loss.",
     "": ""
@@ -13,6 +14,7 @@
     "indicator": "seag_loss_rate",
     "habitat": "sg",
     "label": "Loss rate",
+    "units": "/yr",
     "direction": 1,
     "description": "Instantaneous rate of seagrass extent change.",
     "": ""
@@ -22,6 +24,7 @@
     "indicator": "mang_fish_dens",
     "habitat": "mg",
     "label": "Fish density",
+    "units": "yr of young/yr",
     "direction": 1,
     "description": "Mean mangrove fish density (year of young/year).",
     "": ""
@@ -31,6 +34,7 @@
     "indicator": "mang_invert_dens",
     "habitat": "mg",
     "label": "Invertebrate density",
+    "units": "yr of young/yr",
     "direction": 1,
     "description": "Mean mangrove invertebrate density (year of young/year).",
     "": ""
@@ -40,6 +44,7 @@
     "indicator": "mang_spec_score",
     "habitat": "mg",
     "label": "Spp threat score",
+    "units": "score (0–1)",
     "direction": 1,
     "description": "IUCN threatened species score for mangrove-affiliated flora and fauna (higher score = fewer threatened species).",
     "": ""
@@ -49,6 +54,7 @@
     "indicator": "salt_spec_score",
     "habitat": "sm",
     "label": "Spp threat score",
+    "units": "score (0–1)",
     "direction": 1,
     "description": "IUCN threatened species score for saltmarsh-affiliated flora and fauna (higher score = fewer threatened species).",
     "": ""
@@ -58,6 +64,7 @@
     "indicator": "seag_spec_score",
     "habitat": "sg",
     "label": "Spp threat score",
+    "units": "score (0–1)",
     "direction": 1,
     "description": "IUCN threatened species score for seagrass-affiliated flora and fauna (higher score = fewer threatened species).",
     "": ""
@@ -67,6 +74,7 @@
     "indicator": "mang_frag_area_mn_rate",
     "habitat": "mg",
     "label": "Fragment rate (area)",
+    "units": "dimensionless",
     "direction": 1,
     "description": "Instantaneous rate of change in mean patch area.",
     "": ""
@@ -76,6 +84,7 @@
     "indicator": "mang_frag_enn_mn_rate",
     "habitat": "mg",
     "label": "Fragment rate (distance)",
+    "units": "",
     "direction": -1,
     "description": "",
     "": ""
@@ -85,6 +94,7 @@
     "indicator": "mang_frag_area_mn",
     "habitat": "mg",
     "label": "Fragment (area)",
+    "units": "dimensionless",
     "direction": 1,
     "description": "Mean patch area.",
     "": ""
@@ -94,6 +104,7 @@
     "indicator": "mang_frag_enn_mn",
     "habitat": "mg",
     "label": "Fragment (distance)",
+    "units": "",
     "direction": -1,
     "description": "",
     "": ""
@@ -103,6 +114,7 @@
     "indicator": "mang_mean_age",
     "habitat": "mg",
     "label": "Mean age",
+    "units": "years",
     "direction": 1,
     "description": "Mean mangrove persistence (years).",
     "": ""
@@ -112,6 +124,7 @@
     "indicator": "mang_mean_agb_mg_ha",
     "habitat": "mg",
     "label": "AGB per ha",
+    "units": "Mg/ha",
     "direction": 1,
     "description": "Mean mangrove above ground biomass (mg/ha).",
     "": ""
@@ -121,6 +134,7 @@
     "indicator": "mang_mean_SOC",
     "habitat": "mg",
     "label": "SOC per ha",
+    "units": "Mg/ha",
     "direction": 1,
     "description": "Mean mangrove soil organic carbon.",
     "": ""
@@ -130,6 +144,7 @@
     "indicator": "mang_mean_height_m",
     "habitat": "mg",
     "label": "Tree height",
+    "units": "m",
     "direction": 1,
     "description": "Mean mangrove canopy height (m).",
     "": ""
@@ -139,6 +154,7 @@
     "indicator": "pressure_seagrass_climate_current",
     "habitat": "sg",
     "label": "Climate impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative climate pressures calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -148,6 +164,7 @@
     "indicator": "pressure_seagrass_land_current",
     "habitat": "sg",
     "label": "Land impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -157,6 +174,7 @@
     "indicator": "pressure_seagrass_marine_current",
     "habitat": "sg",
     "label": "Marine impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative marine pressure calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -166,6 +184,7 @@
     "indicator": "pressure_seagrass_climate_rate",
     "habitat": "sg",
     "label": "Climate impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -175,6 +194,7 @@
     "indicator": "pressure_seagrass_land_rate",
     "habitat": "sg",
     "label": "Land impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -184,6 +204,7 @@
     "indicator": "pressure_seagrass_marine_rate",
     "habitat": "sg",
     "label": "Marine impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative marine pressures from 2003 - 2013 calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with seagrass ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -193,6 +214,7 @@
     "indicator": "pressure_mangrove_climate_current",
     "habitat": "mg",
     "label": "Climate impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative climate pressures calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -202,6 +224,7 @@
     "indicator": "pressure_mangrove_land_current",
     "habitat": "mg",
     "label": "Land impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -211,6 +234,7 @@
     "indicator": "pressure_mangrove_marine_current",
     "habitat": "mg",
     "label": "Marine impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative marine pressure calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -220,6 +244,7 @@
     "indicator": "pressure_mangrove_climate_rate",
     "habitat": "mg",
     "label": "Climate impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -229,6 +254,7 @@
     "indicator": "pressure_mangrove_land_rate",
     "habitat": "mg",
     "label": "Land impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -238,6 +264,7 @@
     "indicator": "pressure_mangrove_marine_rate",
     "habitat": "mg",
     "label": "Marine impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative marine pressures from 2003 - 2013 calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with mangrove ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -247,6 +274,7 @@
     "indicator": "pressure_saltmarsh_climate_current",
     "habitat": "sm",
     "label": "Climate impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative climate pressures calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -256,6 +284,7 @@
     "indicator": "pressure_saltmarsh_land_current",
     "habitat": "sm",
     "label": "Land impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative land pressure calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -265,6 +294,7 @@
     "indicator": "pressure_saltmarsh_marine_current",
     "habitat": "sm",
     "label": "Marine impact",
+    "units": "rescaled (0–1)",
     "direction": -1,
     "description": "The current (2013) cumulative marine pressure calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -274,6 +304,7 @@
     "indicator": "pressure_saltmarsh_climate_rate",
     "habitat": "sm",
     "label": "Climate impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantenous rate of change in cumulative climate pressures from 2003 - 2013 calculated as the sum of Ocean acidification, Sea surface temperature and Sea level rise pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -283,6 +314,7 @@
     "indicator": "pressure_saltmarsh_land_rate",
     "habitat": "sm",
     "label": "Land impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative land pressures from 2003 - 2013 calculated as the sum of Organic chemical pollution, Direct human and Nutrient polution pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -292,6 +324,7 @@
     "indicator": "pressure_saltmarsh_marine_rate",
     "habitat": "sm",
     "label": "Marine impact rate",
+    "units": "log ratio/yr",
     "direction": -1,
     "description": "The instantaneous rate of change of cumulative marine pressures from 2003 - 2013 calculated as the sum of Artisinal fishing, Comercial fishing Pelagic bycatch (low, high), Commercial fishing Demersal non-destructive bycatch (low, high), Commercial fishing Demersal destructive, Light and Shipping  pressures (with saltmarsh ecosystem multiplier) from Halpern et al. 2019.",
     "": ""
@@ -301,6 +334,7 @@
     "indicator": "mang_spec_prop",
     "habitat": "mg",
     "label": "Prop threatened",
+    "units": "proportion (0–1)",
     "direction": -1,
     "description": "Proportion of IUCN threatened species for mangrove-affiliated flora and fauna.",
     "": ""
@@ -310,6 +344,7 @@
     "indicator": "salt_spec_prop",
     "habitat": "sm",
     "label": "Prop threatened",
+    "units": "proportion (0–1)",
     "direction": -1,
     "description": "Proportion of IUCN threatened species for saltmarsh-affiliated flora and fauna.",
     "": ""
@@ -319,6 +354,7 @@
     "indicator": "seag_spec_prop",
     "habitat": "sg",
     "label": "Prop threatened",
+    "units": "proportion (0–1)",
     "direction": -1,
     "description": "Proportion of IUCN threatened species for seagrass-affiliated flora and fauna.",
     "": ""

@@ -3,6 +3,7 @@ import { Habitat } from '@/types/enums/habitat.enum';
 export interface Indicator {
   key: string;
   label: string;
+  units?: string;
   dimension: string;
   habitat: Habitat | 'all';
   direction: 1 | -1;
