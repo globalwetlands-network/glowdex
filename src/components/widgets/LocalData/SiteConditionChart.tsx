@@ -81,7 +81,7 @@ export function SiteConditionChart({
     },
     yaxis: {
       title: {
-        text: 'Density (ind. m⁻²)',
+        text: 'Crab density (individuals/m²)',
         font: { size: 10, color: '#6b7280' },
       },
       zeroline: true,

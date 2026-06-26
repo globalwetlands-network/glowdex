@@ -163,7 +163,7 @@ function SingleIndicatorRow({
         </span>
         {selectedValue !== undefined && (
           <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded">
-            {selectedValue.toFixed(2)}
+            {selectedValue.toFixed(indicator.key === 'mang_loss_rate' ? 4 : 2)}
           </span>
         )}
       </div>
