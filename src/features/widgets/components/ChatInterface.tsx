@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Send,
   User,
@@ -6,6 +6,7 @@ import {
   Loader2,
   Sparkles,
   BookOpen,
+  X,
 } from 'lucide-react';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 import ReactMarkdown from 'react-markdown';
@@ -41,6 +42,11 @@ export function ChatInterface({
   localSiteContext,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
+  // Tracks which cell ID the user dismissed suggestions for.
+  // Derived: suggestions are visible whenever the current cell differs.
+  const [suggestionsDismissedForCell, setSuggestionsDismissedForCell] =
+    useState<number | null>(null);
+  const suggestionsVisible = selectedCellId !== suggestionsDismissedForCell;
 
   const { captureOutboundLinkClicked } = useAIAnalytics({
     selectedCellId,
@@ -76,7 +82,22 @@ export function ChatInterface({
     localSiteContext,
   });
 
-  const scrollRef = useAutoScroll(conversation.length);
+  const { ref: scrollRef, scrollToTop, scrollToBottom } = useAutoScroll();
+
+  // Reset scroll position when the selected cell changes.
+  useEffect(() => {
+    scrollToTop();
+  }, [selectedCellId, scrollToTop]);
+
+  // Scroll to top when the initial insight loads so the user reads from the start.
+  useEffect(() => {
+    if (initialInsight) scrollToTop();
+  }, [initialInsight, scrollToTop]);
+
+  // Scroll to bottom when a follow-up exchange is added.
+  useEffect(() => {
+    if (messages.length > 0) scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   const isLoading = askMutation.isPending;
 
@@ -266,28 +287,45 @@ export function ChatInterface({
       {/* Prompt suggestions — shown before first follow-up when feature flag is on.
           The local field data suggestion is only included when localSiteContext
           is present — showing it without data would be misleading. */}
-      {AI_SUGGESTIONS_ENABLED && messages.length === 0 && !!initialInsight && (
-        <div className="px-3 pt-2 pb-1 bg-white border-t border-gray-100 flex flex-wrap gap-1.5 shrink-0">
-          <span className="flex items-center gap-1 text-[10px] text-gray-400 w-full">
-            <Sparkles className="w-3 h-3" />
-            Suggested questions
-          </span>
-          {[
-            ...BASE_SUGGESTIONS,
-            ...(localSiteContext ? [LOCAL_DATA_SUGGESTION] : []),
-          ].map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleAsk(suggestion)}
-              className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
+      {AI_SUGGESTIONS_ENABLED &&
+        messages.length === 0 &&
+        !!initialInsight &&
+        suggestionsVisible && (
+          <div className="px-3 pt-2 pb-1 bg-white border-t border-gray-100 shrink-0">
+            <div className="flex items-center justify-between w-full mb-1.5">
+              <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                <Sparkles className="w-3 h-3" />
+                Suggested questions
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setSuggestionsDismissedForCell(selectedCellId ?? null)
+                }
+                className="p-0.5 rounded text-gray-300 hover:text-gray-500 transition-colors cursor-pointer"
+                aria-label="Dismiss suggested questions"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                ...BASE_SUGGESTIONS,
+                ...(localSiteContext ? [LOCAL_DATA_SUGGESTION] : []),
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => handleAsk(suggestion)}
+                  className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* Input */}
       <div className="p-3 bg-white border-t border-gray-200 shrink-0">

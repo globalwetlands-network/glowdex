@@ -1,16 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 /**
- * Scrolls container to bottom when dependency changes.
+ * Returns a ref and imperative scroll helpers for a scrollable container.
  */
-export function useAutoScroll(dep: unknown) {
+export function useAutoScroll() {
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!ref.current) return;
+  const scrollToTop = useCallback(() => {
+    if (ref.current) ref.current.scrollTop = 0;
+  }, []);
 
-    ref.current.scrollTop = ref.current.scrollHeight;
-  }, [dep]);
+  const scrollToBottom = useCallback(() => {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+  }, []);
 
-  return ref;
+  return { ref, scrollToTop, scrollToBottom };
 }
