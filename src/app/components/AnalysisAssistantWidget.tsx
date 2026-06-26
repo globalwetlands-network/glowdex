@@ -89,7 +89,6 @@ export function AnalysisAssistantWidget({
             <CrabIcon size={24} className="text-[#0F6E56]" />
           </div>
         </div>
-        <span className="text-sm">Loading...</span>
       </div>
     );
   }
