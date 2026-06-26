@@ -347,6 +347,7 @@ export function SpeciesSpotlightWidget({
       (c) => c.id === currentSpecies.id,
     );
     if (!config) return;
+    if (!selectedCell.centerCoords) return;
     const isAutoSelection =
       autoTier !== null &&
       !(
