@@ -12,6 +12,7 @@ import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
+import { useMapViewState } from '../hooks/useMapViewState';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import { PartnerLayer } from '@/components/widgets/Partner';
@@ -207,6 +208,8 @@ export function GridMap({
   resetViewSignal = 0,
 }: MapProps) {
   const posthog = usePostHog();
+  const { initialViewState, persistViewState } =
+    useMapViewState(INITIAL_VIEW_STATE);
   const mapRef = useRef<MapRef>(null);
   const touchStartTime = useRef<number>(0);
   const touchStartPoint = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -680,7 +683,7 @@ export function GridMap({
       />
       <MapGL
         ref={mapRef}
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={initialViewState}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"
         mapboxAccessToken={MAPBOX_TOKEN}
@@ -758,12 +761,11 @@ export function GridMap({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
-        onMoveEnd={(evt) =>
-          setMapCenter({
-            lng: evt.viewState.longitude,
-            lat: evt.viewState.latitude,
-          })
-        }
+        onMoveEnd={(evt) => {
+          const { longitude, latitude, zoom } = evt.viewState;
+          setMapCenter({ lng: longitude, lat: latitude });
+          persistViewState(longitude, latitude, zoom);
+        }}
       >
         <NavigationControl position="top-right" />
 
