@@ -232,7 +232,7 @@ export function LocalWetlandsAnalysisWidget({
     }
   }, [associatedSiteResult, associatedSite, selectedCell, posthog]);
 
-  if (!associatedSite || !activeYear) {
+  if (!associatedSite) {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -286,7 +286,7 @@ export function LocalWetlandsAnalysisWidget({
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500">Country</label>
           <select
-            value={associatedSite?.country ?? ''}
+            value=""
             onChange={(e) => handleCountryChange(e.target.value)}
             className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
           >
@@ -319,6 +319,38 @@ export function LocalWetlandsAnalysisWidget({
             </select>
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (!activeYear) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Local Wetlands Analysis
+        </p>
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              {associatedSite.name}
+            </p>
+            <p className="text-xs text-gray-500">{associatedSite.country}</p>
+          </div>
+          {partner?.websiteUrl?.startsWith('https://') && (
+            <a
+              href={partner.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors shrink-0"
+            >
+              <ExternalLink size={10} />
+              {partner.institution}
+            </a>
+          )}
+        </div>
+        <p className="text-xs text-gray-500 italic">
+          Data still to be analysed
+        </p>
       </div>
     );
   }

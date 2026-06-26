@@ -6,6 +6,7 @@ import type { Indicator } from '@/features/widgets/types/indicator.types';
 interface IndicatorRaw {
   indicator: string;
   label: string;
+  units?: string;
   dimension: string;
   habitat: string;
   direction: number;
@@ -41,6 +42,7 @@ function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
     return {
       key: i.indicator,
       label,
+      units: i.units,
       dimension: i.dimension,
       habitat: habitatLabel,
       direction: i.direction as 1 | -1,

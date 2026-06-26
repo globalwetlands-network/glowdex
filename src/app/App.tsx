@@ -644,7 +644,7 @@ function AppShell() {
         distributions={distributions}
         statisticalSummaries={cellStats?.statistics?.summaries}
         isLoading={isLoading}
-        visibleCellCount={filteredGridCells.length}
+        visibleCellCount={filteredGridCells.filter((c) => c.mangroves).length}
         onSpeciesLayerToggle={handleSpeciesLayerToggle}
         onPartnerLayerToggle={handlePartnerLayerToggle}
         partnerLayerEnabled={partnerLayerEnabled}
@@ -680,7 +680,7 @@ function AppShell() {
       distributions,
       cellStats,
       isLoading,
-      filteredGridCells.length,
+      filteredGridCells,
       handleSpeciesLayerToggle,
       handlePartnerLayerToggle,
       partnerLayerEnabled,

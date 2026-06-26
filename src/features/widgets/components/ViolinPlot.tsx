@@ -157,13 +157,22 @@ function SingleIndicatorRow({
       <div className="flex justify-between items-baseline mb-1">
         <span
           className="text-xs font-medium text-gray-600 truncate"
-          title={indicator.label}
+          title={
+            indicator.units
+              ? `${indicator.label} (${indicator.units})`
+              : indicator.label
+          }
         >
           {indicator.label}
+          {indicator.units && (
+            <span className="text-[10px] font-normal text-gray-400 ml-1">
+              ({indicator.units})
+            </span>
+          )}
         </span>
         {selectedValue !== undefined && (
-          <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded">
-            {selectedValue.toFixed(2)}
+          <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded shrink-0">
+            {selectedValue.toFixed(indicator.key === 'mang_loss_rate' ? 4 : 2)}
           </span>
         )}
       </div>

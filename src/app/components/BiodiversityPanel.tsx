@@ -79,6 +79,9 @@ export function BiodiversityPanel({
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           selectedCell={selectedCell}
           partners={partnersData?.partners ?? []}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
           onSpeciesSelect={onSpeciesSelect}
           clickedPartnerId={clickedPartnerId}
           suppressAutoFlyTo={suppressAutoFlyTo}
@@ -127,15 +130,18 @@ export function BiodiversityPanel({
             </button>
           </div>
           {localSiteInfoOpen && (
-            <p
-              id="local-site-info"
-              className="text-xs text-gray-500 leading-relaxed"
-            >
-              Shows verified field monitoring locations submitted by partner
-              organisations. Each pin represents an active or historical
-              sampling site where biodiversity and habitat data has been
-              collected on the ground.
-            </p>
+            <div id="local-site-info" className="space-y-2">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Shows verified field monitoring locations submitted by partner
+                organisations. Each pin represents an active or historical
+                sampling site where biodiversity and habitat data has been
+                collected on the ground.
+              </p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                The GLOW statisticians are developing a method to incorporate
+                local field data into the typology analyses.
+              </p>
+            </div>
           )}
           <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -226,16 +232,21 @@ export function BiodiversityPanel({
             </button>
           </div>
           {mangroveInfoOpen && (
-            <p
-              id="mangrove-info"
-              className="text-xs text-gray-500 leading-relaxed"
-            >
-              Shows the spatial extent of mangrove habitat from the Global
-              Mangrove Watch dataset, providing a visual reference for where
-              mangroves occur within each tile. MBCAM uses this layer to
-              contextualise modelled indicators against observed habitat
-              distribution.
-            </p>
+            <div id="mangrove-info" className="space-y-2">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Shows the spatial extent of mangrove habitat from the Global
+                Mangrove Watch dataset, providing a visual reference for where
+                mangroves occur within each tile. MBCAM uses this layer to
+                contextualise modelled indicators against observed habitat
+                distribution.
+              </p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Currently the GMW forest layer is used as a map overlay only. We
+                plan to use GMW data to regularly update indices that rely on
+                mangrove forest distribution, such as the Mangrove Fragmentation
+                metric.
+              </p>
+            </div>
           )}
           <p className="text-[10px] text-gray-400 leading-relaxed">
             Global Mangrove Watch v4 · CC-BY 4.0 ·{' '}

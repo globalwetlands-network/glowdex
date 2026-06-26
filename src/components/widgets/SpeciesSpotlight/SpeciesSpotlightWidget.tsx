@@ -9,8 +9,10 @@ import {
 import type { ObservationPoint, RegionBoundResponse } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { PartnerResponse } from '@/api/partners';
-import { findNearestPartner } from '@/utils/geo';
+import type { TypologyMap } from '@/data/types/cluster.types';
+import { findNearestPartner, calculateDistance } from '@/utils/geo';
 import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
+import { TileCapsule } from '@/components/shared/TileCapsule';
 import { SpeciesTab } from './SpeciesTab';
 
 interface SpeciesSpotlightWidgetProps {
@@ -22,6 +24,9 @@ interface SpeciesSpotlightWidgetProps {
   ) => void;
   selectedCell: EnrichedGridCell | null;
   partners: PartnerResponse[];
+  typologies: TypologyMap;
+  currentScale: 'scale5' | 'scale18';
+  onNavigateToAnalysis: () => void;
   /**
    * Called when the active species changes — either via
    * auto-selection or manual tab click. Passes the center
@@ -49,18 +54,39 @@ interface SpeciesSpotlightWidgetProps {
 }
 
 /**
- * Calculates the geographic center of a species' primary
- * regionBound (index 0 — most specific) for map fly-to.
+ * Returns the center of the regionBound whose geographic
+ * center is closest to the selected cell.
+ * Falls back to regionBounds[0] when only one bound exists.
  * Returns null if no bounds are defined.
  */
 function getSpeciesPrimaryCenter(
   regionBounds: RegionBoundResponse[],
+  cellLat: number,
+  cellLng: number,
 ): { lng: number; lat: number } | null {
   if (!regionBounds.length) return null;
-  const primary = regionBounds[0];
+
+  const closest = regionBounds.reduce(
+    (best, bound) => {
+      const centerLat = (bound.lat[0] + bound.lat[1]) / 2;
+      const centerLng = (bound.lng[0] + bound.lng[1]) / 2;
+      const dist = calculateDistance(cellLat, cellLng, centerLat, centerLng);
+      return dist < best.dist ? { bound, dist } : best;
+    },
+    {
+      bound: regionBounds[0],
+      dist: calculateDistance(
+        cellLat,
+        cellLng,
+        (regionBounds[0].lat[0] + regionBounds[0].lat[1]) / 2,
+        (regionBounds[0].lng[0] + regionBounds[0].lng[1]) / 2,
+      ),
+    },
+  );
+
   return {
-    lat: (primary.lat[0] + primary.lat[1]) / 2,
-    lng: (primary.lng[0] + primary.lng[1]) / 2,
+    lat: (closest.bound.lat[0] + closest.bound.lat[1]) / 2,
+    lng: (closest.bound.lng[0] + closest.bound.lng[1]) / 2,
   };
 }
 
@@ -86,6 +112,9 @@ export function SpeciesSpotlightWidget({
   onSpeciesLayerToggle,
   selectedCell,
   partners,
+  typologies,
+  currentScale,
+  onNavigateToAnalysis,
   onSpeciesSelect,
   clickedPartnerId,
   suppressAutoFlyTo = false,
@@ -318,6 +347,7 @@ export function SpeciesSpotlightWidget({
       (c) => c.id === currentSpecies.id,
     );
     if (!config) return;
+    if (!selectedCell.centerCoords) return;
     const isAutoSelection =
       autoTier !== null &&
       !(
@@ -326,7 +356,11 @@ export function SpeciesSpotlightWidget({
         manualSelection.index === effectiveIndex
       );
 
-    const center = getSpeciesPrimaryCenter(config.regionBounds);
+    const center = getSpeciesPrimaryCenter(
+      config.regionBounds,
+      selectedCell.centerCoords.latitude,
+      selectedCell.centerCoords.longitude,
+    );
     if (center && !(suppressAutoFlyTo && isAutoSelection))
       onSpeciesSelect(center);
 
@@ -359,6 +393,16 @@ export function SpeciesSpotlightWidget({
 
   return (
     <div className="space-y-3">
+      {selectedCell && (
+        <TileCapsule
+          selectedCell={selectedCell}
+          typologies={typologies}
+          currentScale={currentScale}
+          onNavigateToAnalysis={onNavigateToAnalysis}
+          source="species"
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
