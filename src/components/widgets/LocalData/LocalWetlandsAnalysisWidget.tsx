@@ -286,7 +286,7 @@ export function LocalWetlandsAnalysisWidget({
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500">Country</label>
           <select
-            value={associatedSite?.country ?? ''}
+            value=""
             onChange={(e) => handleCountryChange(e.target.value)}
             className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
           >
