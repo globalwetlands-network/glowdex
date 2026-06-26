@@ -214,7 +214,8 @@ export function SpeciesTab({
 
           {/* Total GBIF records */}
           <p className="text-[10px] text-gray-400 -mt-2">
-            {data.totalObservations.toLocaleString()} total GBIF records
+            {data.totalObservations.toLocaleString()} total Global Biodiversity
+            Information Facility (GBIF) records
           </p>
 
           {/* Map tip */}
