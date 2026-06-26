@@ -1,4 +1,5 @@
 import Plot from 'react-plotly.js';
+import { Info } from 'lucide-react';
 import type { IndicatorDistribution } from '../types/indicator.types';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 import { ChartAIInsights } from './ChartAIInsights';
@@ -155,21 +156,42 @@ function SingleIndicatorRow({
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-baseline mb-1">
-        <span
-          className="text-xs font-medium text-gray-600 truncate"
-          title={
-            indicator.units
-              ? `${indicator.label} (${indicator.units})`
-              : indicator.label
-          }
-        >
-          {indicator.label}
-          {indicator.units && (
-            <span className="text-[10px] font-normal text-gray-400 ml-1">
-              ({indicator.units})
-            </span>
+        <div className="flex items-center gap-1 group/ind-tip relative min-w-0">
+          <span
+            className="text-xs font-medium text-gray-600 truncate"
+            title={
+              indicator.units
+                ? `${indicator.label} (${indicator.units})`
+                : indicator.label
+            }
+          >
+            {indicator.label}
+            {indicator.units && (
+              <span className="text-[10px] font-normal text-gray-400 ml-1">
+                ({indicator.units})
+              </span>
+            )}
+          </span>
+          {indicator.description && (
+            <>
+              <button
+                type="button"
+                aria-label={`About ${indicator.label}`}
+                aria-describedby={`ind-tip-${indicator.key}`}
+                className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help shrink-0"
+              >
+                <Info className="w-3 h-3 text-gray-400 shrink-0" />
+              </button>
+              <div
+                id={`ind-tip-${indicator.key}`}
+                role="tooltip"
+                className="absolute left-0 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/ind-tip:opacity-100 group-focus-within/ind-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
+              >
+                {indicator.description}
+              </div>
+            </>
           )}
-        </span>
+        </div>
         {selectedValue !== undefined && (
           <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded shrink-0">
             {selectedValue.toFixed(indicator.key === 'mang_loss_rate' ? 4 : 2)}
