@@ -18,7 +18,7 @@ import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
 import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import { SelectTilePrompt } from './SelectTilePrompt';
-import { useScrollToSignal } from '../hooks/useScrollToSignal';
+import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
 import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 
@@ -56,6 +56,7 @@ interface SidePanelProps {
   onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
   scrollToPartnerSignal?: number;
+  scrollToTopSignal?: number;
   showAnalysisBadge?: boolean;
 }
 
@@ -93,10 +94,12 @@ export function SidePanel({
   onSiteAssociated,
   scrollToLocalDataSignal,
   scrollToPartnerSignal,
+  scrollToTopSignal,
   showAnalysisBadge,
 }: SidePanelProps) {
-  const localDataRef = useScrollToSignal(
-    activeTab === 'analysis' ? scrollToLocalDataSignal : 0,
+  const { containerRef: analysisPanelRef, localDataRef } = useAnalysisScroll(
+    scrollToTopSignal,
+    scrollToLocalDataSignal,
   );
 
   useEffect(() => {
@@ -143,6 +146,7 @@ export function SidePanel({
 
       {/* Tab Content */}
       <div
+        ref={analysisPanelRef}
         className={
           activeTab === 'analysis'
             ? 'flex-1 overflow-y-auto p-4 space-y-4'

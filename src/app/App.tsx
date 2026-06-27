@@ -73,6 +73,7 @@ function AppShell() {
   >('biodiversity');
   const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
   const [scrollToPartnerSignal, setScrollToPartnerSignal] = useState(0);
+  const [scrollToTopSignal, setScrollToTopSignal] = useState(0);
   const [analysisTabVisited, setAnalysisTabVisited] = useState(false);
 
   // Species layer state
@@ -214,7 +215,7 @@ function AppShell() {
     (siteId: string) => {
       setSelectedSiteId(siteId);
       setPanelActiveTab('analysis');
-      setScrollToLocalDataSignal((c) => c + 1);
+      setScrollToLocalDataSignal(Date.now());
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab('analysis');
       }
@@ -454,7 +455,10 @@ function AppShell() {
     if (tab === 'biodiversity' || tab === 'analysis') {
       setPanelActiveTab(tab);
     }
-    if (tab === 'analysis') setAnalysisTabVisited(true);
+    if (tab === 'analysis') {
+      setAnalysisTabVisited(true);
+      setScrollToTopSignal(Date.now());
+    }
     try {
       posthog?.capture('panel_tab_changed', {
         tab,
@@ -470,7 +474,10 @@ function AppShell() {
   const handlePanelTabChange = useCallback(
     (tab: 'analysis' | 'biodiversity') => {
       setPanelActiveTab(tab);
-      if (tab === 'analysis') setAnalysisTabVisited(true);
+      if (tab === 'analysis') {
+        setAnalysisTabVisited(true);
+        setScrollToTopSignal(Date.now());
+      }
       if (window.innerWidth < MOBILE_BREAKPOINT) {
         setMobileActiveTab(tab);
       }
@@ -668,6 +675,7 @@ function AppShell() {
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
+        scrollToTopSignal={scrollToTopSignal}
         showAnalysisBadge={showAnalysisBadge}
       />
     ),
@@ -699,6 +707,7 @@ function AppShell() {
       isLocalContextPending,
       scrollToLocalDataSignal,
       scrollToPartnerSignal,
+      scrollToTopSignal,
       showAnalysisBadge,
     ],
   );

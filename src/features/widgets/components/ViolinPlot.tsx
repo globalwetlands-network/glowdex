@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Info } from 'lucide-react';
 import type { IndicatorDistribution } from '../types/indicator.types';
@@ -71,6 +72,7 @@ function SingleIndicatorRow({
   selectedCellId: number | null;
   onAskAI?: (prompt: string) => void;
 }) {
+  const [showTooltip, setShowTooltip] = useState(false);
   const { indicator, values, selectedValue } = distribution;
 
   const match = statisticalSummaries?.find((s) => s.key === indicator.key);
@@ -156,7 +158,7 @@ function SingleIndicatorRow({
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-baseline mb-1">
-        <div className="flex items-center gap-1 group/ind-tip relative min-w-0">
+        <div className="flex items-center gap-1 relative min-w-0">
           <span
             className="text-xs font-medium text-gray-600 truncate"
             title={
@@ -177,18 +179,28 @@ function SingleIndicatorRow({
               <button
                 type="button"
                 aria-label={`About ${indicator.label}`}
-                aria-describedby={`ind-tip-${indicator.key}`}
-                className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help shrink-0"
+                aria-expanded={showTooltip}
+                aria-controls={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
+                aria-describedby={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
+                onClick={() => setShowTooltip((v) => !v)}
+                onBlur={() => setShowTooltip(false)}
+                className="inline-flex items-center p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help shrink-0"
               >
                 <Info className="w-3 h-3 text-gray-400 shrink-0" />
               </button>
-              <div
-                id={`ind-tip-${indicator.key}`}
-                role="tooltip"
-                className="absolute left-0 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg opacity-0 group-hover/ind-tip:opacity-100 group-focus-within/ind-tip:opacity-100 pointer-events-none transition-opacity whitespace-normal"
-              >
-                {indicator.description}
-              </div>
+              {showTooltip && (
+                <div
+                  id={`ind-tip-${indicator.key}`}
+                  role="tooltip"
+                  className="absolute left-0 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg pointer-events-none whitespace-normal"
+                >
+                  {indicator.description}
+                </div>
+              )}
             </>
           )}
         </div>
