@@ -1,18 +1,20 @@
 import { useRef, useEffect } from 'react';
 
 /**
- * Scrolls a target element into view whenever `signal` changes to a truthy value.
- * Uses a RAF-debounced scroll with a ResizeObserver on preceding
- * siblings to re-scroll if content above the target expands after
- * async data loads (e.g. while cards are rendering).
+ * Scrolls a target element into view whenever `signal` changes to a new,
+ * strictly-greater truthy value. Initialises lastProcessedRef to the current
+ * signal so stale signals don't fire on mount (e.g. after a tab switch resets
+ * the passed value to 0 then back to the previous non-zero value).
  *
  * Returns a ref to attach to the element you want to scroll to.
  */
 export function useScrollToSignal(signal: number | undefined) {
   const ref = useRef<HTMLDivElement>(null);
+  const lastProcessedRef = useRef(0);
 
   useEffect(() => {
-    if (!signal) return;
+    if (!signal || signal <= lastProcessedRef.current) return;
+    lastProcessedRef.current = signal;
     const target = ref.current;
     if (!target) return;
 
