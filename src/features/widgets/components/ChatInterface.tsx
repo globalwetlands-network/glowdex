@@ -86,6 +86,7 @@ export function ChatInterface({
 
   // Reset scroll position when the selected cell changes.
   useEffect(() => {
+    if (!selectedCellId) return;
     scrollToTop();
   }, [selectedCellId, scrollToTop]);
 
