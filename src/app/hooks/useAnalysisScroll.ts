@@ -81,6 +81,9 @@ export function useAnalysisScroll(
     let idleTimer = 0;
 
     const teardown = () => {
+      // Cancel any frame still queued by pin() so it can't fire one last scroll
+      // after the user has taken over (teardown also runs as the scroll handler).
+      cancelAnimationFrame(rafId);
       observer.disconnect();
       clearTimeout(idleTimer);
       clearTimeout(hardCap);
@@ -113,10 +116,7 @@ export function useAnalysisScroll(
     container?.addEventListener('wheel', teardown, { passive: true });
     container?.addEventListener('touchmove', teardown, { passive: true });
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      teardown();
-    };
+    return teardown;
   }, [scrollToTopSignal, scrollToLocalDataSignal]);
 
   // Mark as mounted AFTER the signal effect, so the first run on a fresh mount

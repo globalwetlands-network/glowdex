@@ -44,6 +44,10 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  // jsdom doesn't implement scrollIntoView; remove our per-test stub so it
+  // can't leak into other suites.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (HTMLElement.prototype as any).scrollIntoView;
   vi.unstubAllGlobals();
 });
 

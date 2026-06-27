@@ -180,7 +180,12 @@ function SingleIndicatorRow({
                 type="button"
                 aria-label={`About ${indicator.label}`}
                 aria-expanded={showTooltip}
-                aria-controls={`ind-tip-${indicator.key}`}
+                aria-controls={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
+                aria-describedby={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
                 onClick={() => setShowTooltip((v) => !v)}
                 onBlur={() => setShowTooltip(false)}
                 className="inline-flex items-center p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help shrink-0"

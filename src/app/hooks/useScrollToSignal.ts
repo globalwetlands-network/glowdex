@@ -2,9 +2,13 @@ import { useRef, useEffect } from 'react';
 
 /**
  * Scrolls a target element into view whenever `signal` changes to a new,
- * strictly-greater truthy value. Initialises lastProcessedRef to the current
- * signal so stale signals don't fire on mount (e.g. after a tab switch resets
- * the passed value to 0 then back to the previous non-zero value).
+ * strictly-greater truthy value.
+ *
+ * `lastProcessedRef` starts at 0, so a non-zero signal that is already present
+ * when the component mounts DOES fire. This is intentional: the consumer
+ * (partner scroll in `BiodiversityPanel`) remounts on mobile when navigating to
+ * the panel, and we want the scroll to run on that fresh mount. A fresh mount
+ * also gives a fresh `lastProcessedRef`, so there is no stale value to suppress.
  *
  * Returns a ref to attach to the element you want to scroll to.
  */
