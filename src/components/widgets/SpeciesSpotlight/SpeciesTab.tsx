@@ -19,12 +19,24 @@ interface SpeciesTabProps {
 }
 
 /**
- * Parses simple `**bold**` markdown markers into <strong> tags.
+ * Parses simple `*italic*` markdown markers into <em> tags
+ * (e.g. for scientific names per taxonomic convention).
+ */
+function parseItalic(text: string, keyPrefix: number): ReactNode[] {
+  const parts = text.split(/\*(.*?)\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <em key={`${keyPrefix}-i${i}`}>{part}</em> : part,
+  );
+}
+
+/**
+ * Parses simple `**bold**` markdown markers into <strong> tags,
+ * applying italic parsing to the remaining non-bold segments.
  */
 function parseBold(text: string): ReactNode[] {
   const parts = text.split(/\*\*(.*?)\*\*/g);
   return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : parseItalic(part, i),
   );
 }
 
