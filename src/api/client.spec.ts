@@ -4,6 +4,7 @@ import { apiClient, ApiError } from './client';
 vi.mock('./config', () => ({
   API_BASE_URL: '/api',
   DEFAULT_API_TIMEOUT: 100,
+  API_KEY: 'test-key',
 }));
 
 describe('apiClient', () => {
@@ -28,7 +29,7 @@ describe('apiClient', () => {
     expect(fetch).toHaveBeenCalledWith(
       '/api/test',
       expect.objectContaining({
-        headers: {},
+        headers: { 'x-api-key': 'test-key' },
       }),
     );
     expect(result).toEqual(mockData);
