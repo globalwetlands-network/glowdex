@@ -4,19 +4,19 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
 
 /**
  * Loads indicator residual values for all grid cells
- * 
+ *
  * Transforms CSV data where each row contains:
  * - ID: Grid cell identifier
  * - Multiple columns: One per indicator with residual values
- * 
+ *
  * The transformation:
  * 1. Extracts the ID field
  * 2. Converts all other columns to numeric residual values
  * 3. Filters out empty/undefined values (sparse data)
  * 4. Returns a clean key-value map of indicator residuals
- * 
+ *
  * @returns Promise resolving to array of residual objects
- * 
+ *
  * @remarks Fetches data from /data/grid-items-residuals.csv at runtime.
  */
 export async function loadResiduals(): Promise<Residuals[]> {
@@ -27,7 +27,7 @@ export async function loadResiduals(): Promise<Residuals[]> {
   const text = await response.text();
   const raw = parseCsv<ResidualsRaw>(text);
 
-  return raw.map(row => {
+  return raw.map((row) => {
     const { ID, ...rest } = row;
 
     // Transform all non-ID columns to numeric residual values

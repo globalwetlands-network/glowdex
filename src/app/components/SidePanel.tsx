@@ -1,14 +1,26 @@
-import { Layers } from 'lucide-react';
+import { useEffect } from 'react';
+import { Filter, MapPin, BarChart2, Leaf } from 'lucide-react';
+import { CrabIcon } from '@/components/icons/CrabIcon';
 
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
+import type { ObservationPoint } from '@/api/species';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type { LocalSiteContext } from '@/api/types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
-import { GroupedViolinPlot } from '@/features/widgets/components/ViolinPlot';
-import { QuantileSlider } from './QuantileSlider';
+import { CollapsibleSection } from './CollapsibleSection';
+import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
+import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
+import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
+import { BiodiversityPanel } from './BiodiversityPanel';
+import { SelectTilePrompt } from './SelectTilePrompt';
+import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
+import { TILE_COLOUR } from '@/constants/map-colours';
+import type { AIStatisticalIndicatorSummary } from '@/api';
 
 interface SidePanelProps {
   filterState: FilterState;
@@ -17,8 +29,35 @@ interface SidePanelProps {
   onClearSelection: () => void;
   typologies: TypologyMap;
   distributions: DistributionsByDimension;
+  statisticalSummaries?: AIStatisticalIndicatorSummary[];
   isLoading: boolean;
   visibleCellCount: number;
+  onSpeciesLayerToggle: (
+    speciesId: string,
+    observations: ObservationPoint[],
+    enabled: boolean,
+  ) => void;
+  onPartnerLayerToggle: (enabled: boolean) => void;
+  partnerLayerEnabled: boolean;
+  onMangroveLayerToggle: (enabled: boolean) => void;
+  mangroveLayerEnabled: boolean;
+  onSpeciesSelect?: (center: { lng: number; lat: number }) => void;
+  activeTab: 'analysis' | 'biodiversity';
+  onTabChange: (tab: 'analysis' | 'biodiversity') => void;
+  clickedPartnerId: string | null;
+  localSites: LocalSite[];
+  selectedSiteId: string | null;
+  onSiteSelect: (siteId: string) => void;
+  localSiteLayerEnabled: boolean;
+  onLocalSiteLayerToggle: (enabled: boolean) => void;
+  onViewLocalData: (siteId: string) => void;
+  localSiteContext: LocalSiteContext | null;
+  isLocalContextPending: boolean;
+  onSiteAssociated?: (siteId: string | null) => void;
+  scrollToLocalDataSignal?: number;
+  scrollToPartnerSignal?: number;
+  scrollToTopSignal?: number;
+  showAnalysisBadge?: boolean;
 }
 
 /**
@@ -32,87 +71,232 @@ export function SidePanel({
   onClearSelection,
   typologies,
   distributions,
+  statisticalSummaries,
   isLoading,
   visibleCellCount,
+  onSpeciesLayerToggle,
+  onPartnerLayerToggle,
+  partnerLayerEnabled,
+  onMangroveLayerToggle,
+  mangroveLayerEnabled,
+  onSpeciesSelect,
+  activeTab,
+  onTabChange,
+  clickedPartnerId,
+  localSites,
+  selectedSiteId,
+  onSiteSelect,
+  localSiteLayerEnabled,
+  onLocalSiteLayerToggle,
+  onViewLocalData,
+  localSiteContext,
+  isLocalContextPending,
+  onSiteAssociated,
+  scrollToLocalDataSignal,
+  scrollToPartnerSignal,
+  scrollToTopSignal,
+  showAnalysisBadge,
 }: SidePanelProps) {
-  const handleQuantileChange = (quantile: number) => {
-    onFilterChange({ ...filterState, quantile });
-  };
+  const { containerRef: analysisPanelRef, localDataRef } = useAnalysisScroll(
+    scrollToTopSignal,
+    scrollToLocalDataSignal,
+  );
+
+  useEffect(() => {
+    if (activeTab === 'analysis') {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }, [activeTab]);
 
   return (
-    <div className="bg-white shadow-xl flex flex-col w-full md:w-96 h-full md:border-r md:border-gray-200">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
-        <div className="flex items-center space-x-2">
-          <div className="bg-blue-600 text-white p-1.5 rounded-md">
-            <Layers size={18} />
+    <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
+      {/* Tab Strip */}
+      <div className="hidden md:flex border-b border-gray-200 shrink-0">
+        <button
+          onClick={() => onTabChange('biodiversity')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
+            activeTab === 'biodiversity'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Leaf size={16} />
+          Biodiversity
+        </button>
+        <button
+          onClick={() => onTabChange('analysis')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
+            activeTab === 'analysis'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <BarChart2 size={16} />
+          <span className="relative">
+            Analysis
+            {showAnalysisBadge && (
+              <span
+                aria-hidden="true"
+                className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-[#0f6e56] animate-pulse motion-reduce:animate-none"
+              />
+            )}
+          </span>
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div
+        ref={analysisPanelRef}
+        className={
+          activeTab === 'analysis'
+            ? 'flex-1 overflow-y-auto p-4 space-y-4'
+            : 'hidden'
+        }
+      >
+        {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+
+        {/* Location + Assistant cards — only shown when a cell is selected */}
+        {selectedCell && (
+          <div className="space-y-4">
+            {/* Location card */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="p-4">
+                <CollapsibleSection
+                  title="Location"
+                  icon={MapPin}
+                  defaultOpen={true}
+                >
+                  <button
+                    onClick={onClearSelection}
+                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer mb-3"
+                  >
+                    Clear selection
+                  </button>
+                  <SelectionPanel
+                    selectedCell={selectedCell}
+                    typologies={typologies}
+                    currentScale={filterState.typologyScale}
+                  />
+                </CollapsibleSection>
+              </div>
+            </div>
+
+            {/* Assistant card */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="p-4">
+                <CollapsibleSection
+                  title="Assistant"
+                  icon={CrabIcon}
+                  defaultOpen={true}
+                >
+                  <AnalysisAssistantWidget
+                    selectedCellId={
+                      activeTab === 'analysis' ? selectedCell?.id : null
+                    }
+                    localSiteContext={localSiteContext}
+                    isLocalContextPending={isLocalContextPending}
+                    hasMangrove={selectedCell?.mangroves ?? false}
+                  />
+                </CollapsibleSection>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">GLOWdex</h1>
-            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
-              Analysis Panel
-            </p>
+        )}
+
+        {/* Filters + Global Wetlands Analysis — only shown when a cell is selected */}
+        {selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Filters"
+                icon={Filter}
+                defaultOpen={true}
+                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+              >
+                <FilterControls
+                  filterState={filterState}
+                  onFilterChange={onFilterChange}
+                  typologies={typologies}
+                  activeClusterId={
+                    selectedCell
+                      ? ((filterState.typologyScale === 'scale5'
+                          ? selectedCell.cluster5
+                          : selectedCell.cluster18) ?? undefined)
+                      : undefined
+                  }
+                />
+              </CollapsibleSection>
+            </div>
+          </div>
+        )}
+
+        {selectedCell && (
+          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+            <div className="p-4">
+              <CollapsibleSection
+                title="Global Wetlands Analysis"
+                icon={BarChart2}
+                defaultOpen={true}
+              >
+                <GlobalWetlandsAnalysisWidget
+                  selectedCell={selectedCell}
+                  distributions={distributions}
+                  statisticalSummaries={statisticalSummaries}
+                  isLoading={isLoading}
+                />
+              </CollapsibleSection>
+            </div>
+          </div>
+        )}
+
+        {/* Local Wetlands Analysis card — always visible */}
+        <div
+          ref={localDataRef}
+          className="rounded-xl border border-gray-100 bg-white shadow-sm"
+        >
+          <div className="p-4">
+            <LocalWetlandsAnalysisWidget
+              localSites={localSites}
+              selectedCell={selectedCell}
+              selectedSiteId={selectedSiteId}
+              onSiteSelect={onSiteSelect}
+              localSiteLayerEnabled={localSiteLayerEnabled}
+              onLocalSiteLayerToggle={onLocalSiteLayerToggle}
+              onSiteAssociated={onSiteAssociated}
+            />
           </div>
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Section: Filters */}
-        <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Filters
-          </h2>
-          <FilterControls filterState={filterState} onFilterChange={onFilterChange} />
-        </div>
-
-        <div className="border-t border-gray-100 my-4" />
-
-        {/* Section: Selected Cell */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Selection
-            </h2>
-            {selectedCell && (
-              <button
-                onClick={onClearSelection}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <SelectionPanel
-            selectedCell={selectedCell}
-            typologies={typologies}
-            currentScale={filterState.typologyScale}
-          />
-        </div>
-
-        <div className="border-t border-gray-100 my-4" />
-
-        {/* Section: Quantile Slider */}
-        <QuantileSlider value={filterState.quantile} onChange={handleQuantileChange} />
-
-        <div className="border-t border-gray-100 my-4" />
-
-        {/* Section: Analysis */}
-        <div className="space-y-3 pb-8">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Distributions
-          </h2>
-          {isLoading ? (
-            <div className="h-32 bg-gray-50 rounded animate-pulse" />
-          ) : (
-            <GroupedViolinPlot distributions={distributions} isLoading={isLoading} />
-          )}
-        </div>
+      <div
+        className={
+          activeTab === 'biodiversity' ? 'flex-1 overflow-y-auto' : 'hidden'
+        }
+      >
+        <BiodiversityPanel
+          selectedCell={selectedCell}
+          onSpeciesLayerToggle={onSpeciesLayerToggle}
+          onPartnerLayerToggle={onPartnerLayerToggle}
+          partnerLayerEnabled={partnerLayerEnabled}
+          onMangroveLayerToggle={onMangroveLayerToggle}
+          mangroveLayerEnabled={mangroveLayerEnabled}
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          onLocalSiteLayerToggle={onLocalSiteLayerToggle}
+          onSpeciesSelect={onSpeciesSelect}
+          clickedPartnerId={clickedPartnerId}
+          localSites={localSites}
+          onViewLocalData={onViewLocalData}
+          scrollToPartnerSignal={scrollToPartnerSignal}
+          suppressAutoFlyTo={!!selectedSiteId}
+          typologies={typologies}
+          currentScale={filterState.typologyScale}
+          onNavigateToAnalysis={() => onTabChange('analysis')}
+        />
       </div>
 
       {/* Footer info */}
       <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-        {visibleCellCount.toLocaleString()} Grid Cells Visible
+        {visibleCellCount.toLocaleString()} Mangrove Tiles
       </div>
     </div>
   );

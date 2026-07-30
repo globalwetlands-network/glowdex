@@ -1,12 +1,25 @@
+import { useState } from 'react';
 import Plot from 'react-plotly.js';
+import { Info } from 'lucide-react';
 import type { IndicatorDistribution } from '../types/indicator.types';
+import type { AIStatisticalIndicatorSummary } from '@/api';
+import { ChartAIInsights } from './ChartAIInsights';
 
 interface GroupedViolinPlotProps {
   distributions: Record<string, IndicatorDistribution[]>;
   isLoading?: boolean;
+  selectedCellId: number | null;
+  statisticalSummaries?: AIStatisticalIndicatorSummary[];
+  onAskAI?: (prompt: string) => void;
 }
 
-export function GroupedViolinPlot({ distributions, isLoading }: GroupedViolinPlotProps) {
+export function GroupedViolinPlot({
+  distributions,
+  isLoading,
+  selectedCellId,
+  statisticalSummaries,
+  onAskAI,
+}: GroupedViolinPlotProps) {
   if (isLoading) {
     return <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />;
   }
@@ -23,7 +36,7 @@ export function GroupedViolinPlot({ distributions, isLoading }: GroupedViolinPlo
 
   return (
     <div className="space-y-8">
-      {dimensions.map(dimension => (
+      {dimensions.map((dimension) => (
         <div key={dimension} className="space-y-4">
           <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">
             {dimension}
@@ -34,6 +47,9 @@ export function GroupedViolinPlot({ distributions, isLoading }: GroupedViolinPlo
               <SingleIndicatorRow
                 key={dist.indicator.key}
                 distribution={dist}
+                statisticalSummaries={statisticalSummaries}
+                selectedCellId={selectedCellId}
+                onAskAI={onAskAI}
               />
             ))}
           </div>
@@ -43,8 +59,23 @@ export function GroupedViolinPlot({ distributions, isLoading }: GroupedViolinPlo
   );
 }
 
-function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribution }) {
+// Removed fragile KEY_TO_BACKEND_LABEL mapping
+
+function SingleIndicatorRow({
+  distribution,
+  statisticalSummaries,
+  selectedCellId,
+  onAskAI,
+}: {
+  distribution: IndicatorDistribution;
+  statisticalSummaries?: AIStatisticalIndicatorSummary[];
+  selectedCellId: number | null;
+  onAskAI?: (prompt: string) => void;
+}) {
+  const [showTooltip, setShowTooltip] = useState(false);
   const { indicator, values, selectedValue } = distribution;
+
+  const match = statisticalSummaries?.find((s) => s.key === indicator.key);
 
   const trace: Partial<Plotly.Data> = {
     type: 'violin',
@@ -73,9 +104,27 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
       showgrid: false,
       zeroline: false,
     },
-    hovermode: false,
+    hovermode: 'closest',
     dragmode: false,
   };
+
+  if (selectedValue !== undefined) {
+    layout.shapes = [
+      {
+        type: 'line',
+        x0: selectedValue,
+        x1: selectedValue,
+        y0: 0,
+        y1: 1,
+        yref: 'paper',
+        line: {
+          color: 'rgba(225,29,72,0.4)',
+          width: 1,
+          dash: 'dot',
+        },
+      },
+    ];
+  }
 
   // If selected value exists, add a marker trace
   const data = [trace];
@@ -92,13 +141,13 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
       mode: 'markers',
       marker: {
         symbol: 'diamond',
-        size: 12,
-        color: '#db2777', // Pink/Magenta for visibility
-        line: { color: '#fff', width: 2 }
+        size: 10,
+        color: '#E11D48',
+        line: { color: '#FFFFFF', width: 2 },
       },
-      hoverinfo: 'skip',
+      hovertemplate: 'This location<br>%{x}<extra></extra>',
       name: 'Selected',
-      showlegend: false
+      showlegend: false,
     } as Plotly.Data);
   }
 
@@ -109,12 +158,55 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-xs font-medium text-gray-600 truncate" title={indicator.label}>
-          {indicator.label}
-        </span>
+        <div className="flex items-center gap-1 relative min-w-0">
+          <span
+            className="text-xs font-medium text-gray-600 truncate"
+            title={
+              indicator.units
+                ? `${indicator.label} (${indicator.units})`
+                : indicator.label
+            }
+          >
+            {indicator.label}
+            {indicator.units && (
+              <span className="text-[10px] font-normal text-gray-400 ml-1">
+                ({indicator.units})
+              </span>
+            )}
+          </span>
+          {indicator.description && (
+            <>
+              <button
+                type="button"
+                aria-label={`About ${indicator.label}`}
+                aria-expanded={showTooltip}
+                aria-controls={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
+                aria-describedby={
+                  showTooltip ? `ind-tip-${indicator.key}` : undefined
+                }
+                onClick={() => setShowTooltip((v) => !v)}
+                onBlur={() => setShowTooltip(false)}
+                className="inline-flex items-center p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 rounded cursor-help shrink-0"
+              >
+                <Info className="w-3 h-3 text-gray-400 shrink-0" />
+              </button>
+              {showTooltip && (
+                <div
+                  id={`ind-tip-${indicator.key}`}
+                  role="tooltip"
+                  className="absolute left-0 top-full mt-1 z-50 w-56 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded shadow-lg pointer-events-none whitespace-normal"
+                >
+                  {indicator.description}
+                </div>
+              )}
+            </>
+          )}
+        </div>
         {selectedValue !== undefined && (
-          <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded">
-            {selectedValue.toFixed(2)}
+          <span className="text-xs font-mono text-pink-600 bg-pink-50 px-1.5 rounded shrink-0">
+            {selectedValue.toFixed(indicator.key === 'mang_loss_rate' ? 4 : 2)}
           </span>
         )}
       </div>
@@ -126,6 +218,20 @@ function SingleIndicatorRow({ distribution }: { distribution: IndicatorDistribut
           style={{ width: '100%', height: '80px' }}
           useResizeHandler={true}
         />
+        {match &&
+          match.cellValue !== undefined &&
+          selectedCellId &&
+          onAskAI && (
+            <ChartAIInsights
+              indicatorName={indicator.label}
+              value={match.cellValue}
+              percentile={match.percentile}
+              q1={match.q1}
+              q3={match.q3}
+              selectedCellId={selectedCellId}
+              onAskAI={onAskAI}
+            />
+          )}
       </div>
     </div>
   );

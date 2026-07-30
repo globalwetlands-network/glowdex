@@ -13,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 jobs:
@@ -41,6 +41,15 @@ jobs:
         run: npm run build
         env:
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_GMW_LAYER_ENABLED: ${{ vars.VITE_GMW_LAYER_ENABLED }}
+          VITE_GMW_MAPBOX_TOKEN: ${{ vars.VITE_GMW_MAPBOX_TOKEN }}
+          VITE_PUBLIC_POSTHOG_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_KEY }}
+          VITE_PUBLIC_POSTHOG_HOST: ${{ vars.VITE_PUBLIC_POSTHOG_HOST }}
+          VITE_PUBLIC_POSTHOG_ENABLED: ${{ vars.VITE_PUBLIC_POSTHOG_ENABLED }}
+          VITE_PUBLIC_CONFERENCE_MODE: ${{ vars.VITE_PUBLIC_CONFERENCE_MODE }}
+          VITE_PUBLIC_FEATURE_AI_SUGGESTIONS: ${{ vars.VITE_PUBLIC_FEATURE_AI_SUGGESTIONS }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

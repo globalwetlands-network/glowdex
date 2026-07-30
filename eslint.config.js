@@ -1,22 +1,19 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import jsdoc from 'eslint-plugin-jsdoc'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 export default tseslint.config(
   { ignores: ['dist'] },
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
-      'jsdoc': jsdoc,
+      jsdoc: jsdoc,
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -35,22 +32,25 @@ export default tseslint.config(
   {
     files: ['**/use*.ts'],
     plugins: {
-      'jsdoc': jsdoc,
+      jsdoc: jsdoc,
     },
     rules: {
-      'jsdoc/require-jsdoc': ['warn', {
-        require: {
-          FunctionDeclaration: true,
-          MethodDefinition: false,
-          ClassDeclaration: false,
-          ArrowFunctionExpression: false,
-          FunctionExpression: false,
+      'jsdoc/require-jsdoc': [
+        'warn',
+        {
+          require: {
+            FunctionDeclaration: true,
+            MethodDefinition: false,
+            ClassDeclaration: false,
+            ArrowFunctionExpression: false,
+            FunctionExpression: false,
+          },
         },
-      }],
+      ],
       'jsdoc/check-param-names': 'error',
       'jsdoc/check-tag-names': 'error',
       'jsdoc/require-param': 'off', // TypeScript handles this
       'jsdoc/require-returns': 'off', // TypeScript handles this
     },
   },
-)
+);

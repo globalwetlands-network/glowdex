@@ -2,7 +2,11 @@ import { createContext, useContext } from 'react';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
-import type { Indicator, IndicatorDimension } from '@/features/widgets/types/indicator.types';
+import type { LocalSite } from '@/data/types/local-wetlands.types';
+import type {
+  Indicator,
+  IndicatorDimension,
+} from '@/features/widgets/types/indicator.types';
 
 export interface DataContextValue {
   gridCells: RichGridCell[];
@@ -10,11 +14,21 @@ export interface DataContextValue {
   geojson: GridGeoJSON | null;
   indicators: Indicator[];
   dimensions: IndicatorDimension[];
+  localSites: LocalSite[];
   isLoading: boolean;
+  /**
+   * Error from indicatorData only. useScientificData and
+   * useLocalWetlands handle errors internally by logging
+   * and returning empty state. If uniform error surfacing
+   * is needed post-conference, expose errors from all three
+   * hooks here.
+   */
   error: Error | null;
 }
 
-export const DataContext = createContext<DataContextValue | undefined>(undefined);
+export const DataContext = createContext<DataContextValue | undefined>(
+  undefined,
+);
 
 export function useData() {
   const context = useContext(DataContext);

@@ -21,7 +21,9 @@ export function getAssetUrl(path: string): string {
 
   // Security: ensure resolved path stays within BASE_URL
   if (!resolved.pathname.startsWith(safeBase)) {
-    throw new Error(`Invalid asset path: Path traversal not allowed in "${path}"`);
+    throw new Error(
+      `Invalid asset path: Path traversal not allowed in "${path}"`,
+    );
   }
 
   return resolved.pathname;
@@ -33,6 +35,9 @@ export function getAssetUrl(path: string): string {
  * @param init Optional fetch init options
  * @returns Promise<Response>
  */
-export async function fetchAsset(path: string, init?: RequestInit): Promise<Response> {
+export async function fetchAsset(
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
   return fetch(getAssetUrl(path), init);
 }

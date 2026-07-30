@@ -3,10 +3,14 @@ import type { FilterState } from '@/features/widgets/types/filter.types';
 
 export interface FilterContextValue {
   filterState: FilterState;
-  setFilterState: (state: FilterState | ((prev: FilterState) => FilterState)) => void;
+  setFilterState: (
+    state: FilterState | ((prev: FilterState) => FilterState),
+  ) => void;
 }
 
-export const FilterContext = createContext<FilterContextValue | undefined>(undefined);
+export const FilterContext = createContext<FilterContextValue | undefined>(
+  undefined,
+);
 
 export function useFilter() {
   const context = useContext(FilterContext);

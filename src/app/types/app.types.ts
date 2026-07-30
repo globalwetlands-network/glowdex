@@ -23,4 +23,4 @@ export interface MobilePanelState {
 /**
  * Mobile tab options
  */
-export type MobileTab = 'panel' | 'map';
+export type MobileTab = 'analysis' | 'biodiversity' | 'map' | 'menu';

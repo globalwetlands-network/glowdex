@@ -1,3 +1,4 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 export interface ClusterRaw {
   ID: string;
   cluster_5?: string;
@@ -24,7 +25,7 @@ export interface TypologyMap {
 }
 
 export type HabitatPresence = {
-  mangroves: boolean;
-  saltmarsh: boolean;
-  seagrass: boolean;
-}
+  [Habitat.MANGROVES]: boolean;
+  [Habitat.SALTMARSH]: boolean;
+  [Habitat.SEAGRASS]: boolean;
+};

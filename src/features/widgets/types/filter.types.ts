@@ -1,8 +1,9 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 export interface FilterState {
   habitats: {
-    mangroves: boolean;
-    saltmarsh: boolean;
-    seagrass: boolean;
+    [Habitat.MANGROVES]: boolean;
+    [Habitat.SALTMARSH]: boolean;
+    [Habitat.SEAGRASS]: boolean;
   };
   typologyScale: 'scale5' | 'scale18';
   quantile: number;
@@ -10,10 +11,12 @@ export interface FilterState {
 
 export const INITIAL_FILTER_STATE: FilterState = {
   habitats: {
-    mangroves: true,
-    saltmarsh: true,
-    seagrass: true,
+    [Habitat.MANGROVES]: true,
+    [Habitat.SALTMARSH]: false,
+    [Habitat.SEAGRASS]: false,
   },
   typologyScale: 'scale5',
-  quantile: 0.25,
+  // Default to median (0.5) — shows all cells relative
+  // to the full distribution. Previously 0.25 (top quartile).
+  quantile: 0.5,
 };

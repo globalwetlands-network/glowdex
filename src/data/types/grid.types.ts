@@ -1,3 +1,4 @@
+import { Habitat } from '@/types/enums/habitat.enum';
 export interface GridItemRaw {
   ID: string;
   TERRITORY1: string;
@@ -37,8 +38,7 @@ export interface RichGridCell extends GridItem {
   residuals: Record<string, number>; // Always defined, empty object if missing
   cluster5?: number; // typology ID in scale 5
   cluster18?: number; // typology ID in scale 18
-  mangroves: boolean;
-  saltmarsh: boolean;
-  seagrass: boolean;
-
+  [Habitat.MANGROVES]: boolean;
+  [Habitat.SALTMARSH]: boolean;
+  [Habitat.SEAGRASS]: boolean;
 }

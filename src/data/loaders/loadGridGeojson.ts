@@ -3,13 +3,13 @@ import type { GridGeoJSON } from '../types/geo.types';
 
 /**
  * Loads grid cell geometries as GeoJSON FeatureCollection
- * 
+ *
  * Contains polygon geometries for each grid cell with properties:
  * - ID: Grid cell identifier
  * - Bounding box coordinates for center point calculation
- * 
+ *
  * @returns Promise resolving to GeoJSON FeatureCollection
- * 
+ *
  * @remarks Fetches data from /data/grid.geojson at runtime.
  */
 export async function loadGridGeoJson(): Promise<GridGeoJSON> {

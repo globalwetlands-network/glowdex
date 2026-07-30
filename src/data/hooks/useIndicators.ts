@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { loadIndicators } from '../loaders/loadIndicators';
-import type { Indicator, IndicatorDimension } from '@/features/widgets/types/indicator.types';
+import type {
+  Indicator,
+  IndicatorDimension,
+} from '@/features/widgets/types/indicator.types';
 
 /**
  * Groups indicators by dimension
@@ -9,7 +12,7 @@ import type { Indicator, IndicatorDimension } from '@/features/widgets/types/ind
 function groupByDimension(indicators: Indicator[]): IndicatorDimension[] {
   const groups: Record<string, Indicator[]> = {};
 
-  indicators.forEach(ind => {
+  indicators.forEach((ind) => {
     if (!groups[ind.dimension]) {
       groups[ind.dimension] = [];
     }
@@ -18,7 +21,7 @@ function groupByDimension(indicators: Indicator[]): IndicatorDimension[] {
 
   return Object.entries(groups).map(([name, inds]) => ({
     name,
-    indicators: inds
+    indicators: inds,
   }));
 }
 
@@ -32,12 +35,10 @@ export function useIndicators() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-
     /**
      * Load indicators
      */
     async function load() {
-
       try {
         const data = await loadIndicators();
         setIndicators(data);

@@ -22,13 +22,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Lint
         run: npm run lint
 
       - name: Type check
         run: npm run type-check
 
+      - name: Test
+        run: npm run test
+
       - name: Build
         run: npm run build
         env:
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_GMW_LAYER_ENABLED: ${{ vars.VITE_GMW_LAYER_ENABLED }}
+          VITE_GMW_MAPBOX_TOKEN: ${{ vars.VITE_GMW_MAPBOX_TOKEN }}
