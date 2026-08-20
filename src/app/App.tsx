@@ -138,8 +138,9 @@ function AppShell() {
     [posthog],
   );
 
-  // Mangrove layer state
-  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(false);
+  // Mangrove layer state — on by default so the habitat extent
+  // overlay is visible when the map loads (user can toggle it off).
+  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(true);
 
   const handleMangroveLayerToggle = useCallback(
     (enabled: boolean) => {
