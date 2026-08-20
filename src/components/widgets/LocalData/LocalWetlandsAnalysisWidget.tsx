@@ -145,6 +145,7 @@ function LocationSelectors({
       <select
         value={selectedCountry}
         onChange={(e) => onCountryChange(e.target.value)}
+        aria-label="Country"
         className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
       >
         {availableCountries.map((country) => (
@@ -156,6 +157,7 @@ function LocationSelectors({
       <select
         value={selectedSiteValue}
         onChange={(e) => onSiteSelect(e.target.value)}
+        aria-label="Monitoring location"
         className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
       >
         {activeSitesForSelector.map((site) => (
