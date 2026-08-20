@@ -69,6 +69,105 @@ interface LocalWetlandsAnalysisWidgetProps {
   onSiteAssociated?: (siteId: string | null) => void;
 }
 
+/**
+ * Section header with the "Local Wetlands Analysis" title and
+ * the map-layer toggle. Shared across the render branches so the
+ * toggle stays available whether or not the selected site has data.
+ */
+interface SectionHeaderProps {
+  localSiteLayerEnabled: boolean;
+  onToggle: () => void;
+}
+
+function SectionHeader({
+  localSiteLayerEnabled,
+  onToggle,
+}: SectionHeaderProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+        Local Wetlands Analysis
+      </p>
+      <button
+        role="switch"
+        aria-checked={localSiteLayerEnabled}
+        onClick={onToggle}
+        className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+          localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
+        }`}
+        aria-label={
+          localSiteLayerEnabled
+            ? 'Hide monitoring locations on map'
+            : 'Show monitoring locations on map'
+        }
+        title={
+          localSiteLayerEnabled
+            ? 'Hide monitoring locations on map'
+            : 'Show monitoring locations on map'
+        }
+      >
+        <span
+          className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
+            localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Side-by-side Country + Monitoring location dropdowns. Shared by
+ * the no-data and full-data branches so a user can always navigate
+ * to another location regardless of whether the current one has
+ * analysed data. Changing country auto-selects the first site in
+ * that country immediately.
+ */
+interface LocationSelectorsProps {
+  availableCountries: string[];
+  activeSitesForSelector: LocalSite[];
+  selectedCountry: string;
+  selectedSiteValue: string;
+  onCountryChange: (country: string) => void;
+  onSiteSelect: (siteId: string) => void;
+}
+
+function LocationSelectors({
+  availableCountries,
+  activeSitesForSelector,
+  selectedCountry,
+  selectedSiteValue,
+  onCountryChange,
+  onSiteSelect,
+}: LocationSelectorsProps) {
+  return (
+    <div className="flex gap-2">
+      <select
+        value={selectedCountry}
+        onChange={(e) => onCountryChange(e.target.value)}
+        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+      >
+        {availableCountries.map((country) => (
+          <option key={country} value={country}>
+            {country}
+          </option>
+        ))}
+      </select>
+      <select
+        value={selectedSiteValue}
+        onChange={(e) => onSiteSelect(e.target.value)}
+        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+      >
+        {activeSitesForSelector.map((site) => (
+          <option key={site.id} value={site.id}>
+            {site.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export function LocalWetlandsAnalysisWidget({
   localSites,
   selectedCell,
@@ -177,6 +276,19 @@ export function LocalWetlandsAnalysisWidget({
     [localSites, onSiteSelect, posthog, selectedCell],
   );
 
+  const handleLayerToggle = useCallback(() => {
+    const next = !localSiteLayerEnabled;
+    try {
+      posthog?.capture('local_site_layer_toggled', {
+        enabled: next,
+        source: 'local_data_widget',
+      });
+    } catch (error) {
+      console.error('Failed to capture local_site_layer_toggled event:', error);
+    }
+    onLocalSiteLayerToggle(next);
+  }, [localSiteLayerEnabled, onLocalSiteLayerToggle, posthog]);
+
   const handleCountryChange = useCallback(
     (country: string) => {
       if (!country) return;
@@ -235,49 +347,10 @@ export function LocalWetlandsAnalysisWidget({
   if (!associatedSite) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Local Wetlands Analysis
-          </p>
-          <button
-            role="switch"
-            aria-checked={localSiteLayerEnabled}
-            onClick={() => {
-              const next = !localSiteLayerEnabled;
-              try {
-                posthog?.capture('local_site_layer_toggled', {
-                  enabled: next,
-                  source: 'local_data_widget',
-                });
-              } catch (error) {
-                console.error(
-                  'Failed to capture local_site_layer_toggled event:',
-                  error,
-                );
-              }
-              onLocalSiteLayerToggle(next);
-            }}
-            className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
-            }`}
-            aria-label={
-              localSiteLayerEnabled
-                ? 'Hide monitoring locations on map'
-                : 'Show monitoring locations on map'
-            }
-            title={
-              localSiteLayerEnabled
-                ? 'Hide monitoring locations on map'
-                : 'Show monitoring locations on map'
-            }
-          >
-            <span
-              className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
-                localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </div>
+        <SectionHeader
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          onToggle={handleLayerToggle}
+        />
         <p className="text-xs text-gray-500">
           Select a monitoring location to view local field data.
         </p>
@@ -326,9 +399,23 @@ export function LocalWetlandsAnalysisWidget({
   if (!activeYear) {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Local Wetlands Analysis
-        </p>
+        <SectionHeader
+          localSiteLayerEnabled={localSiteLayerEnabled}
+          onToggle={handleLayerToggle}
+        />
+
+        {/* Site selectors — kept visible for no-data sites so the
+            user can always navigate to another location. */}
+        <LocationSelectors
+          availableCountries={availableCountries}
+          activeSitesForSelector={activeSitesForSelector}
+          selectedCountry={associatedSite.country}
+          selectedSiteValue={selectedSiteId ?? associatedSite.id}
+          onCountryChange={handleCountryChange}
+          onSiteSelect={handleSiteSelect}
+        />
+
+        {/* Site name + partner link */}
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-gray-900">
@@ -361,77 +448,21 @@ export function LocalWetlandsAnalysisWidget({
 
   return (
     <div className="space-y-3">
-      {/* Section header */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Local Wetlands Analysis
-        </p>
-        <button
-          role="switch"
-          aria-checked={localSiteLayerEnabled}
-          onClick={() => {
-            const next = !localSiteLayerEnabled;
-            try {
-              posthog?.capture('local_site_layer_toggled', {
-                enabled: next,
-                source: 'local_data_widget',
-              });
-            } catch (error) {
-              console.error(
-                'Failed to capture local_site_layer_toggled event:',
-                error,
-              );
-            }
-            onLocalSiteLayerToggle(next);
-          }}
-          className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
-          }`}
-          aria-label={
-            localSiteLayerEnabled
-              ? 'Hide monitoring locations on map'
-              : 'Show monitoring locations on map'
-          }
-          title={
-            localSiteLayerEnabled
-              ? 'Hide monitoring locations on map'
-              : 'Show monitoring locations on map'
-          }
-        >
-          <span
-            className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
-              localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
-            }`}
-          />
-        </button>
-      </div>
+      <SectionHeader
+        localSiteLayerEnabled={localSiteLayerEnabled}
+        onToggle={handleLayerToggle}
+      />
 
       {/* Site selectors — changing country auto-selects
           the first site in that country immediately. */}
-      <div className="flex gap-2">
-        <select
-          value={associatedSite.country}
-          onChange={(e) => handleCountryChange(e.target.value)}
-          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
-        >
-          {availableCountries.map((country) => (
-            <option key={country} value={country}>
-              {country}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedSiteId ?? associatedSite.id}
-          onChange={(e) => handleSiteSelect(e.target.value)}
-          className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
-        >
-          {activeSitesForSelector.map((site) => (
-            <option key={site.id} value={site.id}>
-              {site.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <LocationSelectors
+        availableCountries={availableCountries}
+        activeSitesForSelector={activeSitesForSelector}
+        selectedCountry={associatedSite.country}
+        selectedSiteValue={selectedSiteId ?? associatedSite.id}
+        onCountryChange={handleCountryChange}
+        onSiteSelect={handleSiteSelect}
+      />
 
       {/* Site name + partner link */}
       <div className="flex items-center justify-between gap-2">
