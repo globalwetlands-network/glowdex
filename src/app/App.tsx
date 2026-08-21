@@ -12,7 +12,6 @@ import type { ObservationPoint } from '@/api/species';
 import type { LocalSiteContext } from '@/api/types';
 
 // Data
-import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
 import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
 
 // Feature Hooks & Components
@@ -25,6 +24,7 @@ import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCe
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
 import { usePartners } from '@/api/hooks/usePartners';
+import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
 import {
   calculateDistance,
   findCellContainingPoint,
@@ -98,13 +98,17 @@ function AppShell() {
     [],
   );
 
+  // Species names come from the backend registry (single source of truth)
+  // via the shared, 24h-cached species config query.
+  const { data: speciesConfigData } = useSpeciesConfig();
   const activeSpeciesName = useMemo(() => {
     if (!speciesLayerState.speciesId) return '';
     return (
-      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === speciesLayerState.speciesId)
-        ?.commonName ?? ''
+      speciesConfigData?.species.find(
+        (s) => s.id === speciesLayerState.speciesId,
+      )?.commonName ?? ''
     );
-  }, [speciesLayerState.speciesId]);
+  }, [speciesLayerState.speciesId, speciesConfigData]);
 
   const [speciesFlyTarget, setSpeciesFlyTarget] = useState<{
     lng: number;

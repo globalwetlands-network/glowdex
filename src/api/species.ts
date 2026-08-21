@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { ConservationStatus } from '@/data/speciesSpotlight';
 
 export interface ObservationPoint {
   lat: number;
@@ -51,12 +52,29 @@ export async function fetchSpeciesObservations(
 }
 
 /**
- * Lightweight static config for a single species.
- * Mirrors SpeciesConfigResponse in the backend species.types.ts.
+ * Static config + spotlight display content for a single species.
+ * Mirrors SpeciesConfigResponse in the backend species.types.ts, which is
+ * the single source of truth for all of this content. The only per-species
+ * data the frontend still owns is the image binary (see SPECIES_IMAGES),
+ * mapped by `id`.
  */
 export interface SpeciesConfigResponse {
   id: string;
   commonName: string;
+  localName?: string;
+  scientificName: string;
+  conservationStatus: ConservationStatus;
+  iucnUrl: string;
+  summaryText: string;
+  dataApplicability: string;
+  dataSource: string;
+  learnMoreUrl: string;
+  mapTipText: string;
+  stub?: boolean;
+  imageCredit?: string;
+  imageCreditUrl?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
   partnerIds: string[];
   regionBounds: RegionBoundResponse[];
 }
