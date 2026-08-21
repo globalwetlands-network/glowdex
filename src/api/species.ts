@@ -1,5 +1,22 @@
 import { apiClient } from './client';
-import type { ConservationStatus } from '@/data/speciesSpotlight';
+
+/**
+ * IUCN Red List conservation status codes.
+ * Mirrors the backend `ConservationStatus` union (species.config.ts) — kept in
+ * the API layer so the DTO types stay self-contained. The frontend styling
+ * lookup (CONSERVATION_STATUS_INFO) imports this rather than redefining it.
+ * https://www.iucnredlist.org/about/categories-and-criteria
+ */
+export type ConservationStatus =
+  | 'EX'
+  | 'EW'
+  | 'CR'
+  | 'EN'
+  | 'VU'
+  | 'NT'
+  | 'LC'
+  | 'DD'
+  | 'NE';
 
 export interface ObservationPoint {
   lat: number;

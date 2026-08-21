@@ -1,6 +1,7 @@
 import katalaImg from '@/assets/species/katala.jpg';
 import estuaryStringRayImg from '@/assets/species/estuary-stingray.jpg';
 import fiddlerCrabImg from '@/assets/species/fiddler-crab-second.jpg';
+import type { ConservationStatus } from '@/api/species';
 
 /**
  * Species Spotlight — frontend presentation data only.
@@ -15,21 +16,6 @@ import fiddlerCrabImg from '@/assets/species/fiddler-crab-second.jpg';
  *    Vite-optimized assets rather than hosted URLs.
  *  - Shared chart/type helpers.
  */
-
-/**
- * IUCN Red List Conservation Status codes.
- * https://www.iucnredlist.org/about/categories-and-criteria
- */
-export type ConservationStatus =
-  | 'EX'
-  | 'EW'
-  | 'CR'
-  | 'EN'
-  | 'VU'
-  | 'NT'
-  | 'LC'
-  | 'DD'
-  | 'NE';
 
 /**
  * Styling and label information for each IUCN conservation status.
