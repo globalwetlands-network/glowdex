@@ -1,13 +1,13 @@
 import { type ReactNode } from 'react';
-import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
+import { SPECIES_IMAGES } from '@/data/speciesSpotlight';
 import { useSpeciesObservations } from '@/hooks/useSpeciesObservations';
-import type { ObservationPoint } from '@/api/species';
+import type { ObservationPoint, SpeciesConfigResponse } from '@/api/species';
 import { SpeciesMapTip } from './SpeciesMapTip';
 import { SpeciesInfoPanel } from './SpeciesInfoPanel';
 import { Clock, Info } from 'lucide-react';
 
 interface SpeciesTabProps {
-  species: SpeciesSpotlightData;
+  species: SpeciesConfigResponse;
   layerEnabled: boolean;
   onLayerToggle: (
     speciesId: string,
@@ -90,6 +90,10 @@ export function SpeciesTab({
     species.stub ? '' : species.id,
   );
 
+  // Image binary is the only per-species data the frontend still owns —
+  // resolved by id from the local asset map (see SPECIES_IMAGES).
+  const imageUrl = SPECIES_IMAGES[species.id];
+
   const handleToggleLayer = () => {
     const nextEnabled = !layerEnabled;
     onLayerToggle(species.id, data?.observations ?? [], nextEnabled);
@@ -113,10 +117,10 @@ export function SpeciesTab({
   return (
     <div className="space-y-4 pt-1">
       {/* Species image */}
-      {species.imageUrl && (
+      {imageUrl && (
         <div className="relative w-full rounded-xl overflow-hidden bg-gray-50">
           <img
-            src={species.imageUrl}
+            src={imageUrl}
             alt={species.commonName}
             className="w-full h-48 object-contain"
           />

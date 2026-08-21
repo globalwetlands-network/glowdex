@@ -1,12 +1,12 @@
 import { ExternalLink } from 'lucide-react';
-import {
-  CONSERVATION_STATUS_INFO,
-  type SpeciesSpotlightData,
-} from '@/data/speciesSpotlight';
-import type { SpeciesObservationsResponse } from '@/api/species';
+import { CONSERVATION_STATUS_INFO } from '@/data/speciesSpotlight';
+import type {
+  SpeciesConfigResponse,
+  SpeciesObservationsResponse,
+} from '@/api/species';
 
 interface SpeciesInfoPanelProps {
-  species: SpeciesSpotlightData;
+  species: SpeciesConfigResponse;
   open: boolean;
   data?: SpeciesObservationsResponse | null;
 }
