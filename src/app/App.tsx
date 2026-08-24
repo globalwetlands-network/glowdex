@@ -677,6 +677,8 @@ function AppShell() {
         onViewLocalData={handleSiteSelect}
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
+        speciesConfig={speciesConfigData?.species ?? []}
+        partners={partnersData?.partners ?? []}
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
@@ -710,6 +712,8 @@ function AppShell() {
       handleLocalSiteLayerToggle,
       localSiteContext,
       isLocalContextPending,
+      speciesConfigData,
+      partnersData,
       scrollToLocalDataSignal,
       scrollToPartnerSignal,
       scrollToTopSignal,
