@@ -6,12 +6,14 @@ import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
-import type { ObservationPoint } from '@/api/species';
+import type { ObservationPoint, SpeciesConfigResponse } from '@/api/species';
+import type { PartnerResponse } from '@/api/partners';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { LocalSiteContext } from '@/api/types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
+import { DownloadSummaryButton } from '@/features/widgets/components/DownloadSummaryButton';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
@@ -53,6 +55,8 @@ interface SidePanelProps {
   onViewLocalData: (siteId: string) => void;
   localSiteContext: LocalSiteContext | null;
   isLocalContextPending: boolean;
+  speciesConfig: SpeciesConfigResponse[];
+  partners: PartnerResponse[];
   onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
   scrollToPartnerSignal?: number;
@@ -91,6 +95,8 @@ export function SidePanel({
   onViewLocalData,
   localSiteContext,
   isLocalContextPending,
+  speciesConfig,
+  partners,
   onSiteAssociated,
   scrollToLocalDataSignal,
   scrollToPartnerSignal,
@@ -166,12 +172,22 @@ export function SidePanel({
                   icon={MapPin}
                   defaultOpen={true}
                 >
-                  <button
-                    onClick={onClearSelection}
-                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer mb-3"
-                  >
-                    Clear selection
-                  </button>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <button
+                      onClick={onClearSelection}
+                      className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
+                    >
+                      Clear selection
+                    </button>
+                    <DownloadSummaryButton
+                      selectedCell={selectedCell}
+                      scale={filterState.typologyScale}
+                      statisticalSummaries={statisticalSummaries}
+                      species={speciesConfig}
+                      partners={partners}
+                      localSiteContext={localSiteContext}
+                    />
+                  </div>
                   <SelectionPanel
                     selectedCell={selectedCell}
                     typologies={typologies}
