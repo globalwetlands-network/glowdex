@@ -147,6 +147,19 @@ describe('buildCellSummary', () => {
     expect(summary.location.latitude).toBeNull();
   });
 
+  it('treats a half-populated lat/lng pair as unavailable', () => {
+    const summary = buildCellSummary({
+      ...baseInput(),
+      cell: makeCell({ centerCoords: undefined, lat: 9.5, lng: undefined }),
+    });
+
+    // Without both axes, formatCoordinate would emit a misleading 0 — so
+    // the summary reports the coordinates as unavailable instead.
+    expect(summary.location.coordinates).toBe('Not available');
+    expect(summary.location.latitude).toBeNull();
+    expect(summary.location.longitude).toBeNull();
+  });
+
   it('reflects a non-mangrove cell', () => {
     const summary = buildCellSummary({
       ...baseInput(),

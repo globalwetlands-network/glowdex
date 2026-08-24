@@ -114,19 +114,22 @@ export function buildCellSummary({
     scale,
   };
 
-  const coords = cell.centerCoords ?? {
-    latitude: cell.lat ?? 0,
-    longitude: cell.lng ?? 0,
-  };
-  const hasCoords = !!cell.centerCoords || cell.lat != null || cell.lng != null;
+  // Only treat coordinates as available when a complete lat/lng pair
+  // exists — formatCoordinate needs both, and a half-populated pair
+  // would silently format a misleading 0 for the missing axis.
+  const coords =
+    cell.centerCoords ??
+    (cell.lat != null && cell.lng != null
+      ? { latitude: cell.lat, longitude: cell.lng }
+      : null);
 
   const location: CellSummaryLocation = {
     country: cell.country || 'Unknown',
     iso3: cell.iso3 || '',
     tileId: cell.id,
-    coordinates: hasCoords ? formatCoordinate(coords) : 'Not available',
-    latitude: hasCoords ? coords.latitude : null,
-    longitude: hasCoords ? coords.longitude : null,
+    coordinates: coords ? formatCoordinate(coords) : 'Not available',
+    latitude: coords?.latitude ?? null,
+    longitude: coords?.longitude ?? null,
   };
 
   const indicators: CellSummaryIndicator[] = (statisticalSummaries ?? []).map(

@@ -25,9 +25,13 @@ function isInBound(
  * Derives the species recorded for the region of a selected cell,
  * without needing the observation layer to be enabled.
  *
- * Uses the same two signals SpeciesSpotlightWidget relies on:
- *   - Partner match: the nearest partner (within the site-association
- *     distance) appears in a species' `partnerIds`.
+ * Uses similar signals to SpeciesSpotlightWidget, but with a stricter
+ * partner rule suited to a citable export:
+ *   - Partner match: the nearest partner appears in a species'
+ *     `partnerIds` AND is within the site-association distance. (The
+ *     on-screen spotlight applies no distance cap here; the export is
+ *     deliberately stricter so a distant partner's species is not
+ *     attributed to this cell.)
  *   - Region bounds: the cell falls within a species' known range.
  *
  * Results are deduplicated by species id, and `stub` species (placeholder
