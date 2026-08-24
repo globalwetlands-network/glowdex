@@ -54,6 +54,10 @@ export function GlobalWetlandsAnalysisWidget({
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Distributions By Indicator
             </h3>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              These indicators are shown because they help distinguish this
+              typology from other coastal wetland typologies.
+            </p>
             <GroupedViolinPlot
               distributions={distributions}
               isLoading={isLoading}
