@@ -11,6 +11,20 @@ function formatNumber(value: number): string {
 }
 
 /**
+ * Maps characters jsPDF's standard fonts (WinAnsi encoding) can't render
+ * to safe ASCII equivalents. The prime/double-prime that `formatcoords`
+ * emits for DMS coordinates are the main offenders — left unmapped they
+ * render as stray glyphs. Applied to every string drawn to the document.
+ */
+export function sanitizePdfText(text: string): string {
+  return text
+    .replace(/′/g, "'") // ′ prime → '
+    .replace(/″/g, '"') // ″ double prime → "
+    .replace(/[‘’]/g, "'") // ‘ ’ curly single quotes → '
+    .replace(/[“”]/g, '"'); // “ ” curly double quotes → "
+}
+
+/**
  * Renders a CellSummary to a PDF and triggers a browser download.
  *
  * jsPDF and jspdf-autotable are imported dynamically so they are
@@ -62,7 +76,10 @@ export async function generateCellSummaryPdf(
     doc.setFont('helvetica', italic ? 'italic' : 'normal');
     doc.setFontSize(size);
     doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(text, contentWidth) as string[];
+    const lines = doc.splitTextToSize(
+      sanitizePdfText(text),
+      contentWidth,
+    ) as string[];
     for (const line of lines) {
       ensureSpace(LINE);
       doc.text(line, MARGIN, y);
@@ -70,7 +87,9 @@ export async function generateCellSummaryPdf(
     }
   };
 
-  const labelValue = (label: string, value: string) => {
+  const labelValue = (rawLabel: string, rawValue: string) => {
+    const label = sanitizePdfText(rawLabel);
+    const value = sanitizePdfText(rawValue);
     ensureSpace(LINE);
     doc.setFontSize(10);
     doc.setTextColor(90, 90, 90);
@@ -96,7 +115,11 @@ export async function generateCellSummaryPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
   doc.setTextColor(...BRAND_GREEN);
-  doc.text(`MBCAM Site Summary — Tile ${summary.location.tileId}`, MARGIN, y);
+  doc.text(
+    sanitizePdfText(`MBCAM Site Summary — Tile ${summary.location.tileId}`),
+    MARGIN,
+    y,
+  );
   y += LINE * 1.4;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -154,12 +177,14 @@ export async function generateCellSummaryPdf(
       startY: y,
       margin: { left: MARGIN, right: MARGIN },
       head: [['Indicator', 'Value', 'Percentile', 'Reading (within typology)']],
-      body: summary.indicators.map((ind) => [
-        ind.label,
-        formatNumber(ind.value),
-        ordinalSuffix(ind.percentile),
-        ind.interpretation,
-      ]),
+      body: summary.indicators.map((ind) =>
+        [
+          ind.label,
+          formatNumber(ind.value),
+          ordinalSuffix(ind.percentile),
+          ind.interpretation,
+        ].map(sanitizePdfText),
+      ),
       styles: { fontSize: 9, cellPadding: 4, textColor: [40, 40, 40] },
       headStyles: { fillColor: BRAND_GREEN, textColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [244, 248, 246] },
@@ -203,12 +228,14 @@ export async function generateCellSummaryPdf(
       startY: y,
       margin: { left: MARGIN, right: MARGIN },
       head: [['Condition', 'Density', 'Std. error', 'Samples']],
-      body: local.conditions.map((c) => [
-        c.siteType,
-        formatNumber(c.totalDensity),
-        formatNumber(c.combinedSE),
-        String(c.samplesN),
-      ]),
+      body: local.conditions.map((c) =>
+        [
+          c.siteType,
+          formatNumber(c.totalDensity),
+          formatNumber(c.combinedSE),
+          String(c.samplesN),
+        ].map(sanitizePdfText),
+      ),
       styles: { fontSize: 9, cellPadding: 4, textColor: [40, 40, 40] },
       headStyles: { fillColor: BRAND_GREEN, textColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [244, 248, 246] },
