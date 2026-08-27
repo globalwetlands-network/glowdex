@@ -42,8 +42,8 @@ export interface InsightRequest {
 
 export interface InsightSource {
   citation: string;
-  doi: string;
-  sections: string[];
+  section: string;
+  doi?: string;
 }
 
 export interface InsightResponse {
