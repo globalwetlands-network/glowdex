@@ -16,7 +16,10 @@ import { useMapViewState } from '../hooks/useMapViewState';
 import { GridLayer } from './GridLayer';
 import { SpeciesDistributionLayer } from '@/components/widgets/SpeciesSpotlight/SpeciesDistributionLayer';
 import { PartnerLayer } from '@/components/widgets/Partner';
-import { LocalSiteLayer } from '@/components/widgets/LocalData';
+import {
+  LocalSiteLayer,
+  LocalSiteTooltip,
+} from '@/components/widgets/LocalData';
 import { MangroveExtentLayer } from '@/components/widgets/MangroveExtent';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import MapTooltip from './MapTooltip';
@@ -223,6 +226,7 @@ export function GridMap({
     id: string;
     name: string;
     country: string;
+    condition: string | null;
   } | null>(null);
   const touchedCell = useRef<RichGridCell | null>(null);
   const longPressActive = useRef<boolean>(false);
@@ -268,6 +272,7 @@ export function GridMap({
     id: string;
     name: string;
     country: string;
+    condition: string | null;
   } | null>(null);
   const [longPressTileInfo, setLongPressTileInfo] = useState<{
     x: number;
@@ -386,6 +391,7 @@ export function GridMap({
           id: sp.id,
           name: sp.name ?? '',
           country: sp.country ?? '',
+          condition: sp.condition ?? null,
         };
         touchedPartner.current = null;
         touchedCell.current = null;
@@ -729,6 +735,7 @@ export function GridMap({
               id: siteFeature.properties?.id ?? '',
               name: siteFeature.properties?.name ?? '',
               country: siteFeature.properties?.country ?? '',
+              condition: siteFeature.properties?.condition ?? null,
             });
             setPartnerHoverInfo(null);
             setSpeciesHoverInfo(null);
@@ -820,11 +827,12 @@ export function GridMap({
             className="absolute z-10 p-2 bg-white rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-10px] text-sm border border-gray-200"
             style={{ left: siteHoverInfo.x, top: siteHoverInfo.y }}
           >
-            <div className="font-bold text-gray-900">{siteHoverInfo.name}</div>
-            <div className="text-gray-600">{siteHoverInfo.country}</div>
-            <div className="text-xs text-[#0f6e56] mt-1">
-              Local Monitoring Site
-            </div>
+            <LocalSiteTooltip
+              site={localSites.find((s) => s.id === siteHoverInfo.id)}
+              name={siteHoverInfo.name}
+              country={siteHoverInfo.country}
+              hoveredCondition={siteHoverInfo.condition}
+            />
           </div>
         )}
 
