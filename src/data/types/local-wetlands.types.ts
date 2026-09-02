@@ -65,11 +65,11 @@ export interface LocalSiteMetadata {
 
 /**
  * A single mapped coordinate for a site. One marker is rendered
- * per point. `condition` is the raw Site_Type from local-sites.csv
- * (including values beyond SiteCondition, e.g. "Restored") — it is
- * intentionally a plain string so unrecognised conditions still
- * render a marker without polluting the strict chart-facing
- * SiteCondition type.
+ * per point. `condition` is the Site_Type from local-sites.csv after
+ * synonym normalisation (e.g. "Restored" becomes "Rehabilitated").
+ * It is intentionally a plain string, not the strict SiteCondition
+ * type, so any future unrecognised condition still renders a marker
+ * without polluting the chart-facing type.
  */
 export interface LocalSitePoint {
   /** [longitude, latitude] — GeoJSON convention. */

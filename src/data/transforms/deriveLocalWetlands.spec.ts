@@ -80,7 +80,7 @@ describe('deriveLocalWetlands', () => {
     expect(sites).toHaveLength(0);
   });
 
-  it('keeps a point for an unrecognised Site_Type like "Restored"', () => {
+  it('normalises "Restored" to "Rehabilitated" on the point', () => {
     const sites = deriveLocalWetlands(
       [
         siteRow({
@@ -94,7 +94,7 @@ describe('deriveLocalWetlands', () => {
       [],
     );
     expect(sites).toHaveLength(1);
-    expect(sites[0].points[0].condition).toBe('Restored');
+    expect(sites[0].points[0].condition).toBe('Rehabilitated');
   });
 
   it('attaches preserved density to a renamed site via the alias map', () => {

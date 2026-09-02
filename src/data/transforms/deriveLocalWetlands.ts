@@ -19,6 +19,20 @@ function isSiteCondition(value: string): value is SiteCondition {
 }
 
 /**
+ * Synonyms folded onto the canonical condition set. "Restored" is
+ * the same category as "Rehabilitated". Applied to both files so a
+ * future monthly data drop using either term stays consistent
+ * without a code change.
+ */
+const CONDITION_ALIASES: Record<string, string> = {
+  Restored: 'Rehabilitated',
+};
+
+function normalizeCondition(value: string): string {
+  return CONDITION_ALIASES[value] ?? value;
+}
+
+/**
  * Normalises a string to a stable kebab-case slug.
  * Strips punctuation and special characters before
  * replacing spaces with hyphens, preventing collisions
@@ -83,7 +97,8 @@ function deriveObservations(
   >();
 
   for (const row of obsRows) {
-    if (!isSiteCondition(row.Site_Type)) {
+    const siteType = normalizeCondition(row.Site_Type);
+    if (!isSiteCondition(siteType)) {
       console.warn(`Skipping unknown Site_Type "${row.Site_Type}"`);
       continue;
     }
@@ -125,7 +140,7 @@ function deriveObservations(
     if (!isNaN(density) && !isNaN(se) && !isNaN(samplesN)) {
       bySite.get(siteId)!.observations.push({
         year,
-        siteType: row.Site_Type,
+        siteType,
         species: row.Species.trim(),
         density,
         se,
@@ -180,9 +195,10 @@ export function deriveLocalWetlands(
     const countryName = row.Country_name.trim();
     const siteId = makeSiteId(locationName, countryName);
 
-    // Accept any non-empty Site_Type for markers (incl. "Restored")
-    // — the strict SiteCondition guard only applies to chart data.
-    const condition = row.Site_Type.trim();
+    // Normalise synonyms (e.g. "Restored" → "Rehabilitated"); accept
+    // any other non-empty Site_Type for markers — the strict
+    // SiteCondition guard only applies to chart data.
+    const condition = normalizeCondition(row.Site_Type.trim());
     const point: LocalSitePoint = { coordinates: [lng, lat], condition };
 
     const existing = siteMap.get(siteId);

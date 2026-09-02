@@ -85,20 +85,22 @@ describe('LocalSiteTooltip', () => {
     expect(screen.queryByText(/ind\/m²/)).not.toBeInTheDocument();
   });
 
-  it('renders a "Restored" badge with no density', () => {
+  it('renders an unknown condition via the fallback with no density', () => {
+    // "Restored" is normalised to "Rehabilitated" upstream, so the
+    // tooltip only ever sees an unknown value defensively.
     render(
       <LocalSiteTooltip
         site={makeSite({
           observations: [],
           availableYears: [],
-          points: [{ coordinates: [39.5, 4.4], condition: 'Restored' }],
+          points: [{ coordinates: [39.5, 4.4], condition: 'Unknown' }],
         })}
         name="Gazi"
         country="Kenya"
-        hoveredCondition="Restored"
+        hoveredCondition="Unknown"
       />,
     );
-    expect(screen.getByText('Restored')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
     expect(screen.queryByText(/ind\/m²/)).not.toBeInTheDocument();
   });
 });
