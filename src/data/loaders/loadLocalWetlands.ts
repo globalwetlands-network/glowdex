@@ -1,25 +1,87 @@
 /**
- * Loads local wetlands monitoring data from CSV.
+ * Loaders for local wetlands monitoring data.
  *
- * Follows the same pattern as loadAllClusters — fetchAsset
- * + parseCsv. Data lives in public/data/local-wetlands-crab-data.csv
- * and is served as a static asset.
+ * The dataset is split across two CSVs plus a meta file, all
+ * served as static assets from public/data/ and refreshed
+ * monthly. Filenames are stable so a refresh is a data drop,
+ * not a code change.
  *
- * Post-conference: replace with GET /api/local/sites
+ *   local-sites.csv         AUTHORITATIVE for coordinates + the
+ *                           site list. One row per coordinate
+ *                           point (per condition); no density.
+ *   local-observations.csv  AUTHORITATIVE for density / species /
+ *                           SE / samples / partner id (feeds the
+ *                           crab-density chart).
+ *   local-meta.json         { "updated": ISO date } — when the
+ *                           local data was last refreshed.
+ *
+ * deriveLocalWetlands joins the two CSVs (points from sites,
+ * observations from observations) into LocalSite objects.
+ *
+ * Post-conference: replace with GET /api/local/sites (mirrors the
+ * canonical-data-store local/manifest.json convention, so the
+ * move is a path change rather than a rework).
  */
 
 import { fetchAsset } from '@/utils/fetchUtils';
 import { parseCsv } from './csvParser';
-import type { LocalObservationRaw } from '../types/local-wetlands.types';
+import type {
+  LocalSiteRaw,
+  LocalObservationRaw,
+} from '../types/local-wetlands.types';
 
-export async function loadLocalWetlands(): Promise<LocalObservationRaw[]> {
-  const response = await fetchAsset('data/local-wetlands-crab-data.csv');
+/** Shape of local-meta.json. */
+export interface LocalMeta {
+  /** ISO date (YYYY-MM-DD) the local data was last refreshed. */
+  updated: string;
+}
+
+/**
+ * Loads site coordinates + site list from local-sites.csv.
+ * Authoritative for where markers appear on the map.
+ */
+export async function loadLocalSites(): Promise<LocalSiteRaw[]> {
+  const response = await fetchAsset('data/local-sites.csv');
   if (!response.ok) {
     throw new Error(
-      `Failed to load local wetlands data: ` +
+      `Failed to load local sites data: ` +
+        `${response.status} ${response.statusText}`.trim(),
+    );
+  }
+  const text = await response.text();
+  return parseCsv<LocalSiteRaw>(text);
+}
+
+/**
+ * Loads density/species/partner observations from
+ * local-observations.csv. Authoritative for the crab-density
+ * chart; joined onto sites by deriveLocalWetlands.
+ */
+export async function loadLocalObservations(): Promise<LocalObservationRaw[]> {
+  const response = await fetchAsset('data/local-observations.csv');
+  if (!response.ok) {
+    throw new Error(
+      `Failed to load local observations data: ` +
         `${response.status} ${response.statusText}`.trim(),
     );
   }
   const text = await response.text();
   return parseCsv<LocalObservationRaw>(text);
+}
+
+/**
+ * Loads local-meta.json (last-refreshed date).
+ * Degrades to null when the file is missing or unparseable — the
+ * "last updated" caption is optional and must never fail the load.
+ */
+export async function loadLocalMeta(): Promise<LocalMeta | null> {
+  try {
+    const response = await fetchAsset('data/local-meta.json');
+    if (!response.ok) return null;
+    const data = (await response.json()) as Partial<LocalMeta>;
+    return typeof data?.updated === 'string' ? { updated: data.updated } : null;
+  } catch (error) {
+    console.warn('Failed to load local meta:', error);
+    return null;
+  }
 }

@@ -28,6 +28,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       indicators: indicatorData.indicators,
       dimensions: indicatorData.dimensions,
       localSites: localData.localSites,
+      localDataUpdated: localData.localDataUpdated,
       isLoading,
       error,
     };
@@ -41,6 +42,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     indicatorData.isLoading,
     indicatorData.error,
     localData.localSites,
+    localData.localDataUpdated,
     localData.isLoading,
   ]);
 

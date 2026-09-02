@@ -325,7 +325,8 @@ export function GridMap({
       captureFirstMapInteraction('click');
 
       const siteFeature = evt.features?.find(
-        (f) => f.layer?.id === 'local-sites',
+        (f) =>
+          f.layer?.id === 'local-sites' || f.layer?.id === 'local-site-points',
       );
 
       if (siteFeature?.properties?.id) {
@@ -366,7 +367,7 @@ export function GridMap({
 
       const siteFeatures =
         mapRef.current?.queryRenderedFeatures(evt.point, {
-          layers: ['local-sites'],
+          layers: ['local-sites', 'local-site-points'],
         }) ?? [];
 
       const partnerFeatures =
@@ -616,7 +617,7 @@ export function GridMap({
     () => [
       'grid-fill',
       'grid-highlight',
-      ...(localSiteLayerEnabled ? ['local-sites'] : []),
+      ...(localSiteLayerEnabled ? ['local-sites', 'local-site-points'] : []),
       'partner-locations',
       'partner-locations-inner',
       ...(speciesLayerEnabled && activeSpeciesId
@@ -705,7 +706,9 @@ export function GridMap({
           } as MapMouseEvent);
 
           const siteFeature = evt.features?.find(
-            (f) => f.layer?.id === 'local-sites',
+            (f) =>
+              f.layer?.id === 'local-sites' ||
+              f.layer?.id === 'local-site-points',
           );
 
           const speciesFeature = evt.features?.find(
