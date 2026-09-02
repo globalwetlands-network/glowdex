@@ -48,6 +48,8 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
+  /** ISO date local data was last refreshed, or null if unavailable. */
+  localDataUpdated: string | null;
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
@@ -88,6 +90,7 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
+  localDataUpdated,
   selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
@@ -273,6 +276,7 @@ export function SidePanel({
           <div className="p-4">
             <LocalWetlandsAnalysisWidget
               localSites={localSites}
+              localDataUpdated={localDataUpdated}
               selectedCell={selectedCell}
               selectedSiteId={selectedSiteId}
               onSiteSelect={onSiteSelect}

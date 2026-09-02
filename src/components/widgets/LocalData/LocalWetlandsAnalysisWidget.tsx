@@ -44,8 +44,36 @@ import { SpeciesCompositionTrigger } from './SpeciesCompositionTrigger';
  * all sites globally is acceptable for small datasets.
  */
 
+/**
+ * Formats an ISO date (YYYY-MM-DD) as "Mon YYYY" for the
+ * "last refreshed" caption. Parsed manually to avoid timezone
+ * shifts from Date parsing of date-only strings.
+ */
+function formatUpdated(iso: string): string | null {
+  const match = /^(\d{4})-(\d{2})-\d{2}/.exec(iso);
+  if (!match) return null;
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const month = months[Number(match[2]) - 1];
+  return month ? `${month} ${match[1]}` : null;
+}
+
 interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
+  /** ISO date local data was last refreshed, or null if unavailable. */
+  localDataUpdated: string | null;
   selectedCell: EnrichedGridCell | null;
   /**
    * Active site ID — single source of truth owned by
@@ -77,17 +105,25 @@ interface LocalWetlandsAnalysisWidgetProps {
 interface SectionHeaderProps {
   localSiteLayerEnabled: boolean;
   onToggle: () => void;
+  /** "Mon YYYY" caption, or null to hide the last-refreshed line. */
+  updatedLabel: string | null;
 }
 
 function SectionHeader({
   localSiteLayerEnabled,
   onToggle,
+  updatedLabel,
 }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-        Local Wetlands Analysis
-      </p>
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Local Wetlands Analysis
+        </p>
+        {updatedLabel && (
+          <p className="text-[10px] text-gray-400">Updated {updatedLabel}</p>
+        )}
+      </div>
       <button
         role="switch"
         aria-checked={localSiteLayerEnabled}
@@ -172,6 +208,7 @@ function LocationSelectors({
 
 export function LocalWetlandsAnalysisWidget({
   localSites,
+  localDataUpdated,
   selectedCell,
   selectedSiteId,
   onSiteSelect,
@@ -181,6 +218,10 @@ export function LocalWetlandsAnalysisWidget({
 }: LocalWetlandsAnalysisWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData } = usePartners();
+
+  const updatedLabel = localDataUpdated
+    ? formatUpdated(localDataUpdated)
+    : null;
 
   /**
    * selectedYear drives the active year when the time
@@ -352,6 +393,7 @@ export function LocalWetlandsAnalysisWidget({
         <SectionHeader
           localSiteLayerEnabled={localSiteLayerEnabled}
           onToggle={handleLayerToggle}
+          updatedLabel={updatedLabel}
         />
         <p className="text-xs text-gray-500">
           Select a monitoring location to view local field data.
@@ -404,6 +446,7 @@ export function LocalWetlandsAnalysisWidget({
         <SectionHeader
           localSiteLayerEnabled={localSiteLayerEnabled}
           onToggle={handleLayerToggle}
+          updatedLabel={updatedLabel}
         />
 
         {/* Site selectors — kept visible for no-data sites so the
@@ -453,6 +496,7 @@ export function LocalWetlandsAnalysisWidget({
       <SectionHeader
         localSiteLayerEnabled={localSiteLayerEnabled}
         onToggle={handleLayerToggle}
+        updatedLabel={updatedLabel}
       />
 
       {/* Site selectors — changing country auto-selects

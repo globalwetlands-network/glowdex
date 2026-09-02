@@ -15,6 +15,8 @@ export interface DataContextValue {
   indicators: Indicator[];
   dimensions: IndicatorDimension[];
   localSites: LocalSite[];
+  /** ISO date local data was last refreshed, or null if unavailable. */
+  localDataUpdated: string | null;
   isLoading: boolean;
   /**
    * Error from indicatorData only. useScientificData and

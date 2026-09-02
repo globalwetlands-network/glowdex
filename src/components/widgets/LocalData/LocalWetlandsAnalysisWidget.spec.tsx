@@ -23,6 +23,7 @@ function makeSite(overrides: Partial<LocalSite> = {}): LocalSite {
     partnerId: null,
     availableYears: [],
     observations: [],
+    points: [{ coordinates: [39.6, -4.0], condition: 'Reference' }],
     ...overrides,
   };
 }
@@ -46,6 +47,7 @@ function renderWidget(
 ) {
   const props = {
     localSites,
+    localDataUpdated: null,
     selectedCell: null,
     selectedSiteId: noDataSite.id,
     onSiteSelect: vi.fn(),
@@ -86,5 +88,15 @@ describe('LocalWetlandsAnalysisWidget — no-data location', () => {
     });
 
     expect(onSiteSelect).toHaveBeenCalledWith(otherSite.id);
+  });
+
+  it('shows a formatted "Updated" caption when localDataUpdated is set', () => {
+    renderWidget({ localDataUpdated: '2026-09-01' });
+    expect(screen.getByText('Updated Sep 2026')).toBeInTheDocument();
+  });
+
+  it('omits the "Updated" caption when localDataUpdated is null', () => {
+    renderWidget({ localDataUpdated: null });
+    expect(screen.queryByText(/^Updated /)).not.toBeInTheDocument();
   });
 });

@@ -60,6 +60,7 @@ function AppShell() {
     typologies,
     indicators,
     localSites,
+    localDataUpdated,
     isLoading,
     error,
   } = useData();
@@ -667,6 +668,7 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
+        localDataUpdated={localDataUpdated}
         selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
         localSiteLayerEnabled={localSiteLayerEnabled}
@@ -706,6 +708,7 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
+      localDataUpdated,
       selectedSiteId,
       handleSiteSelect,
       localSiteLayerEnabled,
