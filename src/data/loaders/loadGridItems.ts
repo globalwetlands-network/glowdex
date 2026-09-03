@@ -1,4 +1,4 @@
-import { fetchAsset } from '@/utils/fetchUtils';
+import { datasetClient } from '@/data/store/datasetClient';
 import { parseCsv } from './csvParser';
 import type { GridItem, GridItemRaw } from '../types/grid.types';
 
@@ -15,7 +15,7 @@ import type { GridItem, GridItemRaw } from '../types/grid.types';
  * @remarks Fetches data from /data/grid-items.csv at runtime.
  */
 export async function loadGridItems(): Promise<GridItem[]> {
-  const response = await fetchAsset('data/grid-items.csv');
+  const response = await fetch(await datasetClient.assetUrl('grid-items.csv'));
   if (!response.ok) {
     throw new Error(`Failed to load grid items: ${response.statusText} `);
   }

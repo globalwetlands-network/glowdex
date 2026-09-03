@@ -1,10 +1,11 @@
 /**
  * Loaders for local wetlands monitoring data.
  *
- * The dataset is split across two CSVs plus a meta file, all
- * served as static assets from public/data/ and refreshed
- * monthly. Filenames are stable so a refresh is a data drop,
- * not a code change.
+ * The dataset is split across two CSVs plus a meta file, served
+ * from the canonical store's fixed `local/` path (via
+ * datasetClient.localUrl) on its own monthly cadence — NOT behind
+ * the versioned manifest. Filenames are stable so a refresh is a
+ * data drop, not a code change.
  *
  *   local-sites.csv         AUTHORITATIVE for coordinates + the
  *                           site list. One row per coordinate
@@ -23,7 +24,7 @@
  * move is a path change rather than a rework).
  */
 
-import { fetchAsset } from '@/utils/fetchUtils';
+import { datasetClient } from '@/data/store/datasetClient';
 import { parseCsv } from './csvParser';
 import type {
   LocalSiteRaw,
@@ -41,7 +42,7 @@ export interface LocalMeta {
  * Authoritative for where markers appear on the map.
  */
 export async function loadLocalSites(): Promise<LocalSiteRaw[]> {
-  const response = await fetchAsset('data/local-sites.csv');
+  const response = await fetch(datasetClient.localUrl('local-sites.csv'));
   if (!response.ok) {
     throw new Error(
       `Failed to load local sites data: ` +
@@ -58,7 +59,9 @@ export async function loadLocalSites(): Promise<LocalSiteRaw[]> {
  * chart; joined onto sites by deriveLocalWetlands.
  */
 export async function loadLocalObservations(): Promise<LocalObservationRaw[]> {
-  const response = await fetchAsset('data/local-observations.csv');
+  const response = await fetch(
+    datasetClient.localUrl('local-observations.csv'),
+  );
   if (!response.ok) {
     throw new Error(
       `Failed to load local observations data: ` +
@@ -76,7 +79,7 @@ export async function loadLocalObservations(): Promise<LocalObservationRaw[]> {
  */
 export async function loadLocalMeta(): Promise<LocalMeta | null> {
   try {
-    const response = await fetchAsset('data/local-meta.json');
+    const response = await fetch(datasetClient.localUrl('local-meta.json'));
     if (!response.ok) return null;
     const data = (await response.json()) as Partial<LocalMeta>;
     return typeof data?.updated === 'string' ? { updated: data.updated } : null;
