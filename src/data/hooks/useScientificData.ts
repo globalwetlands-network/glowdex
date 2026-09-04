@@ -104,6 +104,11 @@ export function useScientificData(): ScientificData {
   }, []);
 
   useEffect(() => {
+    // Guard against overlapping loads: if reload() re-runs this effect (or the
+    // hook unmounts) while a load is in flight, ignore the stale result so an
+    // older request can't win the race and overwrite newer state.
+    let cancelled = false;
+
     /** Loads all scientific data asynchronously */
     async function load() {
       try {
@@ -115,6 +120,7 @@ export function useScientificData(): ScientificData {
         console.timeEnd(timerLabel);
         console.log(`Loaded ${loadedData.gridCells.length} grid cells`);
 
+        if (cancelled) return;
         setData((prev) => ({
           ...prev,
           isLoading: false,
@@ -124,6 +130,7 @@ export function useScientificData(): ScientificData {
       } catch (error) {
         console.error('Failed to load scientific data:', error);
 
+        if (cancelled) return;
         // Surface the error so the app can show a retryable error state.
         setData((prev) => ({
           ...prev,
@@ -134,6 +141,10 @@ export function useScientificData(): ScientificData {
     }
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [reloadIndex]); // Reload when reload() bumps the index
 
   return { ...data, reload };

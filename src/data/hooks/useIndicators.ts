@@ -43,21 +43,32 @@ export function useIndicators() {
   }, []);
 
   useEffect(() => {
+    // Guard against overlapping loads: if reload() re-runs this effect (or the
+    // hook unmounts) while a load is in flight, ignore the stale result so an
+    // older request can't win the race and overwrite newer state.
+    let cancelled = false;
+
     /**
      * Load indicators
      */
     async function load() {
       try {
         const data = await loadIndicators();
+        if (cancelled) return;
         setIndicators(data);
         setIsLoading(false);
       } catch (err) {
         console.error('Failed to load indicators:', err);
+        if (cancelled) return;
         setError(err instanceof Error ? err : new Error('Unknown error'));
         setIsLoading(false);
       }
     }
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [reloadIndex]);
 
   const dimensions: IndicatorDimension[] = useMemo(() => {
