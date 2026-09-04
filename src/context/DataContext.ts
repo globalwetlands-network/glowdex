@@ -17,15 +17,21 @@ export interface DataContextValue {
   localSites: LocalSite[];
   /** ISO date local data was last refreshed, or null if unavailable. */
   localDataUpdated: string | null;
+  /** Frontend's loaded dataset version (store manifest), or null in fallback mode. */
+  datasetVersion: string | null;
   isLoading: boolean;
   /**
-   * Error from indicatorData only. useScientificData and
-   * useLocalWetlands handle errors internally by logging
-   * and returning empty state. If uniform error surfacing
-   * is needed post-conference, expose errors from all three
-   * hooks here.
+   * Error from the critical loaders — scientific data and indicators. Either
+   * failing means the app cannot render a meaningful map, so the error is
+   * surfaced for the full-screen DataUnavailable state. useLocalWetlands is
+   * non-critical and stays graceful (never surfaced here).
    */
   error: Error | null;
+  /**
+   * Re-attempts the critical loads after clearing the cached manifest promise.
+   * Wired to the DataUnavailable retry button.
+   */
+  retry: () => void;
 }
 
 export const DataContext = createContext<DataContextValue | undefined>(

@@ -79,3 +79,26 @@ export interface StatisticsResponse {
   gridCellId: number;
   statistics: AIStatisticalContextV1;
 }
+
+/** How the backend resolved its dataset at boot. Mirrors the backend enum. */
+export type DatasetSourceMode = 'manifest' | 'legacy' | 'local';
+
+/**
+ * Shape of `GET /api/meta/dataset` — the dataset the backend is currently
+ * serving. Mirrors `DatasetMetaResponse` in glowdex-api. `dataset_version` is
+ * present only in `manifest` mode; in `legacy`/`local` mode there is no
+ * manifest, so version fields are absent — the frontend skew check treats that
+ * as "nothing to compare" rather than diffing against a missing value.
+ */
+export interface DatasetMetaResponse {
+  mode: DatasetSourceMode;
+  hash: string;
+  buildDate: string;
+  row_count: number;
+  dataset_version?: string;
+  schema_version?: string;
+  typology_scheme?: string;
+  nclust?: number;
+  habitat_scope?: string;
+  built?: string;
+}

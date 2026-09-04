@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import logo from '@/assets/globalwetlands.png';
 import { Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
+import { DatasetVersionBadge } from './DatasetVersionBadge';
 import type { MenuItemKey } from '@/app/content/menuContent';
 
 interface TopBarProps {
@@ -92,6 +93,8 @@ export function TopBar({ onLogoClick }: TopBarProps) {
 
       {/* Right side: Action buttons */}
       <div className="flex items-center gap-2">
+        <DatasetVersionBadge />
+
         {/* Menu button with dropdown */}
         <div className="relative" ref={menuRef}>
           <button
