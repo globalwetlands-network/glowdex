@@ -40,13 +40,17 @@ into a reviewed PR in one step. Optional argument: review effort (default `high`
 
 3. **Derive PR inputs.**
    - Base branch: `develop`.
-   - Linear id from the branch name `feature/glo-<n>-<slug>` → `GLO-<n>`; title
-     `GLO-<n>: <readable title>` (from the Linear slug or the primary commit subject).
-   - Body from `.github/pull_request_template.md` (Read it), filling every section:
-     **What & Why**, **Key Changes** (from `git log develop..HEAD` and the diff), **Linear**
-     (`https://linear.app/glowdex/issue/GLO-<n>`), **How to Test**, and a **Notes for
-     reviewers** section containing the self-review notes from step 2. Write the body to a temp
-     file and pass it with `--body-file`.
+   - Title + tracking: if the branch matches `feature/glo-<n>-<slug>`, derive `GLO-<n>`, title
+     `GLO-<n>: <readable title>`, and include a Linear link
+     (`https://linear.app/glowdex/issue/GLO-<n>`). For `chore/` or other branches with no Linear
+     issue, title from the primary commit subject and mark the Linear/tracking section `N/A` —
+     never fabricate a link.
+   - Body from `.github/pull_request_template.md` (Read it) — populate **every section the
+     template actually defines** (e.g. What & Why, Key Changes, Linear, How to Test, Screenshots
+     and Recordings), drawing on `git log develop..HEAD` and the diff, and fold the self-review
+     notes from step 2 into the notes section. Drop the template's `# ✨ PR Title` placeholder
+     line — the title is passed via `--title`, not the body. Write the body to a temp file and
+     pass it with `--body-file`.
 
 4. **Create or update the PR.**
    - If a PR already exists for the branch (`gh pr view --json number,url` succeeds), update its
@@ -58,7 +62,8 @@ into a reviewed PR in one step. Optional argument: review effort (default `high`
    not work):
 
    ```
-   gh api --method POST repos/<owner>/<repo>/pulls/<n>/requested_reviewers \
+   gh api --method POST \
+     "repos/$(gh repo view --json nameWithOwner -q .nameWithOwner)/pulls/<n>/requested_reviewers" \
      -f "reviewers[]=copilot-pull-request-reviewer[bot]"
    ```
 
