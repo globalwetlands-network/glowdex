@@ -10,10 +10,11 @@ import type { GridGeoJSON } from '../types/geo.types';
  *
  * @returns Promise resolving to GeoJSON FeatureCollection
  *
- * @remarks Fetches data from /data/grid.geojson at runtime.
+ * @remarks Loads `grid.geojson` via datasetClient — from the canonical store
+ * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
  */
 export async function loadGridGeoJson(): Promise<GridGeoJSON> {
-  const response = await fetch(await datasetClient.assetUrl('grid.geojson'));
+  const response = await datasetClient.fetchAsset('grid.geojson');
   if (!response.ok) {
     throw new Error(`Failed to load GeoJSON: ${response.statusText}`);
   }

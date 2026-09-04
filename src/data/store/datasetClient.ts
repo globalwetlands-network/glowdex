@@ -18,7 +18,10 @@
 import { getAssetUrl } from '@/utils/fetchUtils';
 import type { Manifest } from './manifest.types';
 
-/** Thrown when the store's manifest cannot be resolved (unreachable / malformed). */
+/** How long to wait on a store request before aborting (cross-origin, can stall). */
+const STORE_TIMEOUT_MS = 30000;
+
+/** Thrown when a store request cannot be resolved (unreachable / malformed / timed out). */
 export class DataStoreError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
@@ -29,36 +32,75 @@ export class DataStoreError extends Error {
 /** Read lazily (not a module-level const) so tests can `vi.stubEnv`. */
 function storeUrl(): string | undefined {
   const value = import.meta.env.VITE_DATA_STORE_URL as string | undefined;
-  return value ? value.replace(/\/+$/, '') : undefined;
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.replace(/\/+$/, '') : undefined;
+}
+
+/**
+ * `fetch` with an abort timeout, translating network/timeout failures into a
+ * `DataStoreError`. Same shape as the API client's timeout handling
+ * (`src/api/client.ts`); cross-origin store requests can otherwise hang forever.
+ */
+async function fetchWithTimeout(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), STORE_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === 'AbortError') {
+      throw new DataStoreError(
+        `Data store request to ${url} timed out after ${STORE_TIMEOUT_MS}ms`,
+        { cause },
+      );
+    }
+    throw new DataStoreError(`Could not reach the data store at ${url}`, {
+      cause,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 let manifestPromise: Promise<Manifest> | null = null;
 
+function isValidManifest(value: unknown): value is Manifest {
+  const m = value as Partial<Manifest> | null;
+  return (
+    typeof m === 'object' &&
+    m !== null &&
+    typeof m.path === 'string' &&
+    m.path.length > 0 &&
+    typeof m.dataset_version === 'string' &&
+    m.dataset_version.length > 0
+  );
+}
+
 async function fetchManifest(base: string): Promise<Manifest> {
   const url = `${base}/manifest.json`;
-  let response: Response;
-  try {
-    response = await fetch(url);
-  } catch (cause) {
-    throw new DataStoreError(`Could not reach the data store at ${url}`, {
-      cause,
-    });
-  }
+  const response = await fetchWithTimeout(url);
+
   if (!response.ok) {
     throw new DataStoreError(
       `Data store manifest request failed: ${response.status} ${response.statusText}`.trim(),
     );
   }
+
+  let parsed: unknown;
   try {
-    return (await response.json()) as Manifest;
+    parsed = await response.json();
   } catch (cause) {
     throw new DataStoreError(
       `Data store manifest at ${url} was not valid JSON`,
-      {
-        cause,
-      },
+      { cause },
     );
   }
+
+  if (!isValidManifest(parsed)) {
+    throw new DataStoreError(
+      `Data store manifest at ${url} is missing a valid "path"/"dataset_version"`,
+    );
+  }
+  return parsed;
 }
 
 /**
@@ -112,10 +154,22 @@ function localUrl(filename: string): string {
   return `${base}/local/${filename}`;
 }
 
+/** Fetch a versioned bundle asset (resolves the manifest first) with a timeout. */
+async function fetchAsset(filename: string): Promise<Response> {
+  return fetchWithTimeout(await assetUrl(filename));
+}
+
+/** Fetch a local-data asset from the fixed `local/` path with a timeout. */
+async function fetchLocal(filename: string): Promise<Response> {
+  return fetchWithTimeout(localUrl(filename));
+}
+
 export const datasetClient = {
   resolveManifest,
   resetManifest,
   bundleBase,
   assetUrl,
   localUrl,
+  fetchAsset,
+  fetchLocal,
 };

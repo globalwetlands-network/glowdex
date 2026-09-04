@@ -43,6 +43,7 @@ jobs:
           VITE_GMW_LAYER_ENABLED: ${{ vars.VITE_GMW_LAYER_ENABLED }}
           VITE_GMW_MAPBOX_TOKEN: ${{ vars.VITE_GMW_MAPBOX_TOKEN }}
           # Canonical data store (GLO-176). Leave the repo/environment variable
-          # UNSET until the coordinated cutover (after GLO-177): empty → the app
-          # falls back to the bundled public/data/ copies, so the build is inert.
+          # UNSET until the coordinated cutover (after GLO-177): empty → dataset
+          # reads stay on the bundled public/data/ copies (only the index.html
+          # preconnect warms the store connection).
           VITE_DATA_STORE_URL: ${{ vars.VITE_DATA_STORE_URL }}

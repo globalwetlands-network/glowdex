@@ -39,7 +39,10 @@ describe('datasetClient', () => {
 
       const manifest = await datasetClient.resolveManifest();
       expect(manifest.dataset_version).toBe('2026.09.0');
-      expect(fetch).toHaveBeenCalledWith(`${STORE}/manifest.json`);
+      expect(fetch).toHaveBeenCalledWith(
+        `${STORE}/manifest.json`,
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
 
       await expect(datasetClient.assetUrl('grid-items.csv')).resolves.toBe(
         `${STORE}/datasets/2026.09.0/grid-items.csv`,
@@ -94,6 +97,19 @@ describe('datasetClient', () => {
         status: 200,
         statusText: 'OK',
         json: () => Promise.reject(new SyntaxError('Unexpected token')),
+      } as unknown as Response);
+
+      await expect(datasetClient.resolveManifest()).rejects.toBeInstanceOf(
+        DataStoreError,
+      );
+    });
+
+    it('throws DataStoreError when the manifest is valid JSON but missing path/version', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: () => Promise.resolve({ dataset_version: '2026.09.0' }), // no path
       } as unknown as Response);
 
       await expect(datasetClient.resolveManifest()).rejects.toBeInstanceOf(

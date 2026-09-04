@@ -42,7 +42,7 @@ export interface LocalMeta {
  * Authoritative for where markers appear on the map.
  */
 export async function loadLocalSites(): Promise<LocalSiteRaw[]> {
-  const response = await fetch(datasetClient.localUrl('local-sites.csv'));
+  const response = await datasetClient.fetchLocal('local-sites.csv');
   if (!response.ok) {
     throw new Error(
       `Failed to load local sites data: ` +
@@ -59,9 +59,7 @@ export async function loadLocalSites(): Promise<LocalSiteRaw[]> {
  * chart; joined onto sites by deriveLocalWetlands.
  */
 export async function loadLocalObservations(): Promise<LocalObservationRaw[]> {
-  const response = await fetch(
-    datasetClient.localUrl('local-observations.csv'),
-  );
+  const response = await datasetClient.fetchLocal('local-observations.csv');
   if (!response.ok) {
     throw new Error(
       `Failed to load local observations data: ` +
@@ -79,7 +77,7 @@ export async function loadLocalObservations(): Promise<LocalObservationRaw[]> {
  */
 export async function loadLocalMeta(): Promise<LocalMeta | null> {
   try {
-    const response = await fetch(datasetClient.localUrl('local-meta.json'));
+    const response = await datasetClient.fetchLocal('local-meta.json');
     if (!response.ok) return null;
     const data = (await response.json()) as Partial<LocalMeta>;
     return typeof data?.updated === 'string' ? { updated: data.updated } : null;

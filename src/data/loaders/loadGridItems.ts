@@ -12,10 +12,11 @@ import type { GridItem, GridItemRaw } from '../types/grid.types';
  *
  * @returns Promise resolving to array of grid cell metadata objects
  *
- * @remarks Fetches data from /data/grid-items.csv at runtime.
+ * @remarks Loads `grid-items.csv` via datasetClient — from the canonical store
+ * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
  */
 export async function loadGridItems(): Promise<GridItem[]> {
-  const response = await fetch(await datasetClient.assetUrl('grid-items.csv'));
+  const response = await datasetClient.fetchAsset('grid-items.csv');
   if (!response.ok) {
     throw new Error(`Failed to load grid items: ${response.statusText} `);
   }
