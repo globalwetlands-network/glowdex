@@ -13,6 +13,8 @@ function siteRow(over: Partial<LocalSiteRaw> = {}): LocalSiteRaw {
     Location_long: '31.0125925',
     Year: '2026',
     Site_Type: 'Reference',
+    site_id: 'za-bayhead',
+    partner_id: 'uwc-za',
     ...over,
   };
 }
@@ -29,7 +31,7 @@ function obsRow(over: Partial<LocalObservationRaw> = {}): LocalObservationRaw {
     Density: '10',
     SE: '1',
     Samples_n: '5',
-    Partner_id: 'uwc-za',
+    site_id: 'za-bayhead',
     ...over,
   };
 }
@@ -54,6 +56,7 @@ describe('deriveLocalWetlands', () => {
     );
 
     expect(sites).toHaveLength(1);
+    expect(sites[0].id).toBe('za-bayhead');
     expect(sites[0].points).toHaveLength(3);
     expect(sites[0].points.map((p) => p.condition)).toEqual([
       'Degraded',
@@ -73,6 +76,8 @@ describe('deriveLocalWetlands', () => {
           Location_lat: '',
           Location_long: '',
           Site_Type: '',
+          site_id: 'cn-zhuhai',
+          partner_id: '',
         }),
       ],
       [],
@@ -89,6 +94,8 @@ describe('deriveLocalWetlands', () => {
           Location_lat: '4.42483',
           Location_long: '39.53684',
           Site_Type: 'Restored',
+          site_id: 'ke-gazi',
+          partner_id: 'wiomn-ke',
         }),
       ],
       [],
@@ -97,7 +104,10 @@ describe('deriveLocalWetlands', () => {
     expect(sites[0].points[0].condition).toBe('Rehabilitated');
   });
 
-  it('attaches preserved density to a renamed site via the alias map', () => {
+  it('joins observations to a renamed site by stable site_id', () => {
+    // The sites file calls it "Southern Moreton Bay"; the observations
+    // file still says "Moreton Bay". The shared site_id joins them with
+    // no name matching or bridging map.
     const sites = deriveLocalWetlands(
       [
         siteRow({
@@ -106,6 +116,8 @@ describe('deriveLocalWetlands', () => {
           Location_lat: '-27.693817',
           Location_long: '153.322803',
           Site_Type: 'Reference',
+          site_id: 'au-moreton-bay',
+          partner_id: 'griffith-university-au',
         }),
       ],
       [
@@ -114,42 +126,50 @@ describe('deriveLocalWetlands', () => {
           Location_name: 'Moreton Bay',
           Site_Type: 'Reference',
           Density: '9.2',
-          Partner_id: 'griffith-university-au',
+          site_id: 'au-moreton-bay',
         }),
       ],
     );
 
-    const site = sites.find((s) => s.id === 'southern-moreton-bay-australia');
+    const site = sites.find((s) => s.id === 'au-moreton-bay');
     expect(site).toBeDefined();
     expect(site!.observations).toHaveLength(1);
     expect(site!.observations[0].density).toBeCloseTo(9.2);
     expect(site!.availableYears).toEqual([2026]);
-    // Partner id preserved from the observations file.
+    // Partner id comes from the sites file.
     expect(site!.partnerId).toBe('griffith-university-au');
   });
 
-  it('resolves partner from the observations Partner_id first', () => {
-    const sites = deriveLocalWetlands(
-      [siteRow()],
-      [obsRow({ Partner_id: 'uwc-za' })],
-    );
+  it('reads partner_id from the sites file', () => {
+    const sites = deriveLocalWetlands([siteRow({ partner_id: 'uwc-za' })], []);
     expect(sites[0].partnerId).toBe('uwc-za');
   });
 
-  it('falls back to the location partner map for new sites without observations', () => {
+  it('serves a site with no observations from the sites file alone', () => {
     const sites = deriveLocalWetlands(
       [
         siteRow({
           Location_name: 'Beachwood',
           Location_lat: '-29.8064421',
           Location_long: '31.0383481',
+          site_id: 'za-beachwood',
+          partner_id: 'uwc-za',
         }),
       ],
       [],
     );
+    expect(sites[0].id).toBe('za-beachwood');
     expect(sites[0].partnerId).toBe('uwc-za');
     // No density data -> empty observations -> "to be analysed" state.
     expect(sites[0].observations).toHaveLength(0);
     expect(sites[0].availableYears).toHaveLength(0);
+  });
+
+  it('drops an observation whose site_id is missing', () => {
+    const sites = deriveLocalWetlands(
+      [siteRow()],
+      [obsRow({ site_id: '', Density: '10' })],
+    );
+    expect(sites[0].observations).toHaveLength(0);
   });
 });

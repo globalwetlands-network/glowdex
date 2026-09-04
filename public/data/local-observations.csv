@@ -1,16 +1,16 @@
-Country_name,Location_name,Location_lat,Location_long,Year,Site_Type,Species,Density,SE,Samples_n,Partner_id
-Australia,Moreton Bay,-27.701531,153.324278,2026,Reference,1,9.23524181,0.550545955,25,griffith-university-au
-Australia,Moreton Bay,-27.701531,153.324278,2026,Rehabilitated,2,24.98428955,0.641379551,3,griffith-university-au
-Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Degraded,3,22.36094584,0.899225452,23,universidad-costa-rica-cr
-Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Reference,4,18.05952862,0.921908343,20,universidad-costa-rica-cr
-Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Rehabilitated,5,19.55473638,0.951938011,27,universidad-costa-rica-cr
-Philippines,Rasa Island,9.237414,118.439216,2026,Degraded,6,7.644444445,0.569470853,5,katala-foundation-ph
-Philippines,Rasa Island,9.237414,118.439216,2026,Rehabilitated,7,3.272727273,0.156141491,11,katala-foundation-ph
-Philippines,Rasa Island,9.237414,118.439216,2026,Rehabilitated,8,6.846115288,0.452559758,7,katala-foundation-ph
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Degraded,9,7.289138678,2.690953415,2,uwc-za
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Reference,10,11.32863089,2.976318586,5,uwc-za
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Rehabilitated,11,1.342,1.684,2,uwc-za
-India,Jharkali Sundarbans,22.022897,88.677686,2026,Reference,12,,,,iiser-kolkata-in
-Hong Kong,Hong Kong Wetland Park,22.471054,114.008186,2026,Reference,13,,,,waosd-hk
-Madagascar,Antsohihy,-14.866129,47.975459,2026,Reference,14,,,,bondy-international-mg
-Kenya,Gazi,-4.420003,39.520199,2026,Reference,15,,,,wiomn-ke
+Country_name,Location_name,Location_lat,Location_long,Year,Site_Type,Species,Density,SE,Samples_n,site_id
+Australia,Moreton Bay,-27.701531,153.324278,2026,Reference,1,9.23524181,0.550545955,25,au-moreton-bay
+Australia,Moreton Bay,-27.701531,153.324278,2026,Rehabilitated,2,24.98428955,0.641379551,3,au-moreton-bay
+Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Degraded,3,22.36094584,0.899225452,23,cr-isla-chira
+Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Reference,4,18.05952862,0.921908343,20,cr-isla-chira
+Costa Rica,Chira Island,10.11642424,-85.1905803,2026,Rehabilitated,5,19.55473638,0.951938011,27,cr-isla-chira
+Philippines,Rasa Island,9.237414,118.439216,2026,Degraded,6,7.644444445,0.569470853,5,ph-rasa-island
+Philippines,Rasa Island,9.237414,118.439216,2026,Rehabilitated,7,3.272727273,0.156141491,11,ph-rasa-island
+Philippines,Rasa Island,9.237414,118.439216,2026,Rehabilitated,8,6.846115288,0.452559758,7,ph-rasa-island
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Degraded,9,7.289138678,2.690953415,2,za-bayhead
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Reference,10,11.32863089,2.976318586,5,za-bayhead
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Rehabilitated,11,1.342,1.684,2,za-bayhead
+India,Jharkali Sundarbans,22.022897,88.677686,2026,Reference,12,,,,in-sundarbans
+Hong Kong,Hong Kong Wetland Park,22.471054,114.008186,2026,Reference,13,,,,hk-wetland-park
+Madagascar,Antsohihy,-14.866129,47.975459,2026,Reference,14,,,,mg-antsohihy
+Kenya,Gazi,-4.420003,39.520199,2026,Reference,15,,,,ke-gazi

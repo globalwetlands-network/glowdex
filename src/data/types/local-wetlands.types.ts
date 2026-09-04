@@ -12,6 +12,10 @@ export interface LocalSiteRaw {
   Location_long: string;
   Year: string;
   Site_Type: string;
+  /** Stable per-site id (e.g. `za-bayhead`); the join key onto observations. */
+  site_id: string;
+  /** Partner organisation id owning the site (matches PARTNER_REGISTRY). */
+  partner_id: string;
 }
 
 /**
@@ -31,7 +35,8 @@ export interface LocalObservationRaw {
   Density: string;
   SE: string;
   Samples_n: string;
-  Partner_id?: string;
+  /** Stable per-site id; joins onto the sites file. */
+  site_id: string;
 }
 
 export type SiteCondition = 'Reference' | 'Degraded' | 'Rehabilitated';
@@ -55,10 +60,8 @@ export interface LocalSiteMetadata {
    */
   coordinates: [number, number];
   /**
-   * Partner organisation ID matching PARTNER_REGISTRY.
-   * null when no partner association is available.
-   * TODO: Replace hardcoded mapping with Partner_id
-   * column from CSV once it is available.
+   * Partner organisation ID matching PARTNER_REGISTRY, sourced from the
+   * `partner_id` column of the sites file. null when the column is empty.
    */
   partnerId: string | null;
 }

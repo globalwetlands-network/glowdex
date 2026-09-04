@@ -1,41 +1,39 @@
-Country_name,Location_name,Location_lat,Location_long,Year,Site_Type
-Costa Rica,Isla Chira,10.1146580,-85.1911860,2026,Degraded
-Costa Rica,Isla Chira,10.1166940,-85.1900280,2026,Reference
-Costa Rica,Isla Chira,10.1156400,-85.1908820,2026,Rehabilitated
-Philippines,Rasa Island,9.2400280,118.4348890,2026,Degraded
-Philippines,Rasa Island,9.2346940,118.4401670,2026,Rehabilitated
-Philippines,Rasa Island,9.2125200,118.4276297,2026,Reference
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Degraded
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Reference
-South Africa,Bayhead,-29.8896064,31.0125925,2026,Rehabilitated
-South Africa,Beachwood,-29.8064421,31.0383481,2026,Degraded
-South Africa,Beachwood,-29.9013591,31.0179211,2026,Reference
-South Africa,Beachwood,-29.8059145,31.0408006,2026,Rehabilitated
-South Africa,Mlalazi,-28.9438357,31.7826031,2026,Degraded
-South Africa,Mlalazi,-28.9548352,31.7739831,2026,Reference
-South Africa,Mlalazi,-28.9448517,31.7827382,2026,Rehabilitated
-South Africa,Mtata,-31.9438389,29.1846278,2026,Degraded
-South Africa,Mtata,-31.9441444,29.1842198,2026,Reference
-South Africa,Mtata,-31.9435101,29.1846561,2026,Rehabilitated
-South Africa,Mngazana,-31.6957097,29.4083582,2026,Degraded
-South Africa,Mngazana,-31.6976449,29.4078644,2026,Reference
-South Africa,Mngazana,-31.6970228,29.4074976,2026,Rehabilitated
-South Africa,Ntafufu,-31.5605762,29.6246569,2026,Degraded
-South Africa,Ntafufu,-31.5630191,29.6329111,2026,Reference
-South Africa,Ntafufu,-31.5604108,29.6242985,2026,Rehabilitated
-South Africa,Mzimvubu,-31.6190871,29.5486881,2026,Rehabilitated
-South Africa,Mzimvubu,-31.6192142,29.5485171,2026,Rehabilitated
-South Africa,Mzimvubu,-31.6182366,29.5480306,2026,Rehabilitated
-India,Sundarbans,22.0097000,88.7287000,2026,Reference
-India,Sundarbans,21.8520000,88.1158000,2026,Rehabilitated
-Hong Kong,Hong Kong Wetland Park,22.4710540,114.0081860,2026,Reference
-China,Zhuhai,,,2026,
-China,Guangxi,,,2026,
-Madagascar,Antsohihy,-14.8661290,47.9754590,2026,Reference
-Kenya,Gazi,-4.4200030,39.5201990,2026,Reference
-Australia,Southern Moreton Bay,-27.6938170,153.3228030,2026,Reference
-Australia,Southern Moreton Bay,-27.7599640,153.3448830,2026,Reference
-Australia,Southern Moreton Bay,-27.6890220,153.2918140,2026,Rehabilitated
-Kenya,Gazi,4.4248300,39.5368400,2026,Reference
-Kenya,Gazi,4.4248910,39.5370600,2026,Degraded
-Kenya,Gazi,4.4246900,39.5367400,2026,Restored
+Country_name,Location_name,Location_lat,Location_long,Year,Site_Type,site_id,partner_id
+Costa Rica,Isla Chira,10.1146580,-85.1911860,2026,Degraded,cr-isla-chira,universidad-costa-rica-cr
+Costa Rica,Isla Chira,10.1166940,-85.1900280,2026,Reference,cr-isla-chira,universidad-costa-rica-cr
+Costa Rica,Isla Chira,10.1156400,-85.1908820,2026,Rehabilitated,cr-isla-chira,universidad-costa-rica-cr
+Philippines,Rasa Island,9.2400280,118.4348890,2026,Degraded,ph-rasa-island,katala-foundation-ph
+Philippines,Rasa Island,9.2346940,118.4401670,2026,Rehabilitated,ph-rasa-island,katala-foundation-ph
+Philippines,Rasa Island,9.2125200,118.4276297,2026,Reference,ph-rasa-island,katala-foundation-ph
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Degraded,za-bayhead,uwc-za
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Reference,za-bayhead,uwc-za
+South Africa,Bayhead,-29.8896064,31.0125925,2026,Rehabilitated,za-bayhead,uwc-za
+South Africa,Beachwood,-29.8064421,31.0383481,2026,Degraded,za-beachwood,uwc-za
+South Africa,Beachwood,-29.9013591,31.0179211,2026,Reference,za-beachwood,uwc-za
+South Africa,Beachwood,-29.8059145,31.0408006,2026,Rehabilitated,za-beachwood,uwc-za
+South Africa,Mlalazi,-28.9438357,31.7826031,2026,Degraded,za-mlalazi,uwc-za
+South Africa,Mlalazi,-28.9548352,31.7739831,2026,Reference,za-mlalazi,uwc-za
+South Africa,Mlalazi,-28.9448517,31.7827382,2026,Rehabilitated,za-mlalazi,uwc-za
+South Africa,Mtata,-31.9438389,29.1846278,2026,Degraded,za-mtata,uwc-za
+South Africa,Mtata,-31.9441444,29.1842198,2026,Reference,za-mtata,uwc-za
+South Africa,Mtata,-31.9435101,29.1846561,2026,Rehabilitated,za-mtata,uwc-za
+South Africa,Mngazana,-31.6957097,29.4083582,2026,Degraded,za-mngazana,uwc-za
+South Africa,Mngazana,-31.6976449,29.4078644,2026,Reference,za-mngazana,uwc-za
+South Africa,Mngazana,-31.6970228,29.4074976,2026,Rehabilitated,za-mngazana,uwc-za
+South Africa,Ntafufu,-31.5605762,29.6246569,2026,Degraded,za-ntafufu,uwc-za
+South Africa,Ntafufu,-31.5630191,29.6329111,2026,Reference,za-ntafufu,uwc-za
+South Africa,Ntafufu,-31.5604108,29.6242985,2026,Rehabilitated,za-ntafufu,uwc-za
+South Africa,Mzimvubu,-31.6190871,29.5486881,2026,Rehabilitated,za-mzimvubu,uwc-za
+South Africa,Mzimvubu,-31.6192142,29.5485171,2026,Rehabilitated,za-mzimvubu,uwc-za
+South Africa,Mzimvubu,-31.6182366,29.5480306,2026,Rehabilitated,za-mzimvubu,uwc-za
+India,Sundarbans,22.0097000,88.7287000,2026,Reference,in-sundarbans,iiser-kolkata-in
+India,Sundarbans,21.8520000,88.1158000,2026,Rehabilitated,in-sundarbans,iiser-kolkata-in
+Hong Kong,Hong Kong Wetland Park,22.4710540,114.0081860,2026,Reference,hk-wetland-park,waosd-hk
+Madagascar,Antsohihy,-14.8661290,47.9754590,2026,Reference,mg-antsohihy,bondy-international-mg
+Kenya,Gazi,-4.4200030,39.5201990,2026,Reference,ke-gazi,wiomn-ke
+Australia,Southern Moreton Bay,-27.6938170,153.3228030,2026,Reference,au-moreton-bay,griffith-university-au
+Australia,Southern Moreton Bay,-27.7599640,153.3448830,2026,Reference,au-moreton-bay,griffith-university-au
+Australia,Southern Moreton Bay,-27.6890220,153.2918140,2026,Rehabilitated,au-moreton-bay,griffith-university-au
+Kenya,Gazi,4.4248300,39.5368400,2026,Reference,ke-gazi,wiomn-ke
+Kenya,Gazi,4.4248910,39.5370600,2026,Degraded,ke-gazi,wiomn-ke
+Kenya,Gazi,4.4246900,39.5367400,2026,Restored,ke-gazi,wiomn-ke
