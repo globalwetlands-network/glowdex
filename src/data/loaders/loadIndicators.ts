@@ -1,5 +1,5 @@
 import { Habitat } from '@/types/enums/habitat.enum';
-import { fetchAsset } from '@/utils/fetchUtils';
+import { datasetClient } from '@/data/store/datasetClient';
 import type { Indicator } from '@/features/widgets/types/indicator.types';
 
 // Types for raw JSON structure
@@ -54,13 +54,14 @@ function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
 /**
  * Loads indicator definitions and metadata
  *
- * Fetches from /data/indicator-labels.json
+ * Loads `indicator-labels.json` via datasetClient — from the canonical store
+ * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
  * Applies transformation to normalize habitat labels and prefixes.
  *
  * @returns Promise resolving to array of Indicator objects
  */
 export async function loadIndicators(): Promise<Indicator[]> {
-  const response = await fetchAsset('data/indicator-labels.json');
+  const response = await datasetClient.fetchAsset('indicator-labels.json');
   if (!response.ok) {
     throw new Error(`Failed to load indicators: ${response.statusText}`);
   }

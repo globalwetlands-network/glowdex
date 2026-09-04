@@ -7,6 +7,9 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- Warm the DNS/TLS connection to the canonical data store (GLO-176) so the
+         manifest → bundle round trip starts sooner, esp. from SA/AU. -->
+    <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
     <meta name="theme-color" content="#0a5c47" />
     <meta
       name="viewport"

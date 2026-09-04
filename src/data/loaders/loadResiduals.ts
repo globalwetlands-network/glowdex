@@ -1,4 +1,4 @@
-import { fetchAsset } from '@/utils/fetchUtils';
+import { datasetClient } from '@/data/store/datasetClient';
 import { parseCsv } from './csvParser';
 import type { Residuals, ResidualsRaw } from '../types/grid.types';
 
@@ -17,10 +17,12 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
  *
  * @returns Promise resolving to array of residual objects
  *
- * @remarks Fetches data from /data/grid-items-residuals.csv at runtime.
+ * @remarks Loads `grid-items-residuals.csv` via datasetClient — from the
+ * canonical store bundle when VITE_DATA_STORE_URL is set, else the same-origin
+ * /data/ copy.
  */
 export async function loadResiduals(): Promise<Residuals[]> {
-  const response = await fetchAsset('data/grid-items-residuals.csv');
+  const response = await datasetClient.fetchAsset('grid-items-residuals.csv');
   if (!response.ok) {
     throw new Error(`Failed to load residuals: ${response.statusText}`);
   }

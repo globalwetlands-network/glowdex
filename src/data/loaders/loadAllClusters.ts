@@ -1,4 +1,4 @@
-import { fetchAsset } from '@/utils/fetchUtils';
+import { datasetClient } from '@/data/store/datasetClient';
 import { parseCsv } from './csvParser';
 import type { ClusterRaw } from '../types/cluster.types';
 
@@ -12,10 +12,11 @@ import type { ClusterRaw } from '../types/cluster.types';
  *
  * @returns Promise resolving to array of raw cluster definitions
  *
- * @remarks Fetches data from /data/all-clusters.csv at runtime.
+ * @remarks Loads `all-clusters.csv` via datasetClient — from the canonical store
+ * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
  */
 export async function loadAllClusters(): Promise<ClusterRaw[]> {
-  const response = await fetchAsset('data/all-clusters.csv');
+  const response = await datasetClient.fetchAsset('all-clusters.csv');
   if (!response.ok) {
     throw new Error(`Failed to load clusters: ${response.statusText}`);
   }
