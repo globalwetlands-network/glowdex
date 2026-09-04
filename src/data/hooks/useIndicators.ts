@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { loadIndicators } from '../loaders/loadIndicators';
 import type {
@@ -33,6 +33,14 @@ export function useIndicators() {
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [reloadIndex, setReloadIndex] = useState(0);
+
+  /** Re-attempts the load (used by the retry flow after resetting the manifest). */
+  const reload = useCallback(() => {
+    setIsLoading(true);
+    setError(null);
+    setReloadIndex((index) => index + 1);
+  }, []);
 
   useEffect(() => {
     /**
@@ -50,11 +58,11 @@ export function useIndicators() {
       }
     }
     load();
-  }, []);
+  }, [reloadIndex]);
 
   const dimensions: IndicatorDimension[] = useMemo(() => {
     return groupByDimension(indicators);
   }, [indicators]);
 
-  return { indicators, dimensions, isLoading, error };
+  return { indicators, dimensions, isLoading, error, reload };
 }

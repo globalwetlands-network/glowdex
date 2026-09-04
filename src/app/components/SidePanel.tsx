@@ -64,6 +64,8 @@ interface SidePanelProps {
   scrollToPartnerSignal?: number;
   scrollToTopSignal?: number;
   showAnalysisBadge?: boolean;
+  /** True when frontend/backend dataset versions disagree; degrades the assistant. */
+  dataSkewed?: boolean;
 }
 
 /**
@@ -105,6 +107,7 @@ export function SidePanel({
   scrollToPartnerSignal,
   scrollToTopSignal,
   showAnalysisBadge,
+  dataSkewed,
 }: SidePanelProps) {
   const { containerRef: analysisPanelRef, localDataRef } = useAnalysisScroll(
     scrollToTopSignal,
@@ -215,6 +218,7 @@ export function SidePanel({
                     localSiteContext={localSiteContext}
                     isLocalContextPending={isLocalContextPending}
                     hasMangrove={selectedCell?.mangroves ?? false}
+                    dataSkewed={dataSkewed}
                   />
                 </CollapsibleSection>
               </div>

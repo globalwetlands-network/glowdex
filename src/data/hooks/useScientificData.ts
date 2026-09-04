@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { GridGeoJSON } from '../types/geo.types';
 import type { RichGridCell } from '../types/grid.types';
@@ -18,7 +18,18 @@ interface ScientificData {
   gridCells: RichGridCell[];
   typologies: TypologyMap | null;
   geojson: GridGeoJSON | null;
+  /**
+   * Load failure, or null when loading/loaded. Scientific data is critical:
+   * unlike local data we surface this so the app can show an error state with
+   * retry rather than a blank map.
+   */
+  error: Error | null;
+  /** Re-attempts the load (used by the retry flow after resetting the manifest). */
+  reload: () => void;
 }
+
+/** Internal state shape — the returned `reload` is merged in by the hook. */
+type ScientificDataState = Omit<ScientificData, 'reload'>;
 
 /**
  * Loads and processes all scientific data for the application
@@ -35,7 +46,9 @@ interface ScientificData {
  * @throws Error if any data loading or transformation fails
  *
  */
-async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
+async function loadAllData(): Promise<
+  Omit<ScientificData, 'isLoading' | 'error' | 'reload'>
+> {
   // Load all raw data sources in parallel
   const [gridItems, residuals, rawClusters, geojson] = await Promise.all([
     loadGridItems(),
@@ -70,18 +83,25 @@ async function loadAllData(): Promise<Omit<ScientificData, 'isLoading'>> {
  * @remarks Data loading is logged to console with timing information.
  *          Check browser console for load time and cell count.
  *
- * @remarks On error, loading state is set to false to prevent UI hanging.
- *          Error details are logged to console.
+ * @remarks On error the error is surfaced (not swallowed) so the app can render
+ *          a full-screen error state with retry. Call `reload()` to re-attempt.
  *
  * ```
  */
 export function useScientificData(): ScientificData {
-  const [data, setData] = useState<ScientificData>({
+  const [reloadIndex, setReloadIndex] = useState(0);
+  const [data, setData] = useState<ScientificDataState>({
     isLoading: true,
     gridCells: [],
     typologies: null,
     geojson: null,
+    error: null,
   });
+
+  const reload = useCallback(() => {
+    setData((prev) => ({ ...prev, isLoading: true, error: null }));
+    setReloadIndex((index) => index + 1);
+  }, []);
 
   useEffect(() => {
     /** Loads all scientific data asynchronously */
@@ -95,20 +115,26 @@ export function useScientificData(): ScientificData {
         console.timeEnd(timerLabel);
         console.log(`Loaded ${loadedData.gridCells.length} grid cells`);
 
-        setData({
+        setData((prev) => ({
+          ...prev,
           isLoading: false,
+          error: null,
           ...loadedData,
-        });
+        }));
       } catch (error) {
         console.error('Failed to load scientific data:', error);
 
-        // Stop loading state to prevent UI from hanging indefinitely
-        setData((prev) => ({ ...prev, isLoading: false }));
+        // Surface the error so the app can show a retryable error state.
+        setData((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error : new Error('Unknown error'),
+        }));
       }
     }
 
     load();
-  }, []); // Empty dependency array: load only once on mount
+  }, [reloadIndex]); // Reload when reload() bumps the index
 
-  return data;
+  return { ...data, reload };
 }
