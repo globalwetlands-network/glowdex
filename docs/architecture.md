@@ -145,6 +145,7 @@ loader ──▶ datasetClient.fetchAsset('grid-items.csv') ──▶ VITE_DATA_
 - **Local monitoring data (fixed path).** `local-sites.csv`, `local-observations.csv`, and
   `local-meta.json` are served from a fixed `${store}/local/` path on their own monthly
   cadence — **not** behind the manifest.
-- **Bundled app assets stay in the repo.** `src/utils/fetchUtils.ts` (`getAssetUrl` /
-  `fetchAsset`) still serves same-origin static assets such as the logo and species images.
-  Those are app assets, not dataset files, and are unrelated to the store.
+- **Bundled app assets stay in the repo.** Static assets such as the logo and species images
+  live under `src/assets/` and are imported directly (`import logo from '@/assets/…'`, so Vite
+  fingerprints and bundles them at build). Those are app assets, not dataset files, and never
+  touch the store.
