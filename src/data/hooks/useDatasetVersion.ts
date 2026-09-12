@@ -8,9 +8,10 @@ export const DATASET_VERSION_QUERY_KEY = ['dataset', 'manifest', 'version'];
 /**
  * The dataset version the frontend has loaded, read from the store manifest.
  *
- * Returns the manifest's `dataset_version` in store mode, or `null` in fallback
- * mode (no `VITE_DATA_STORE_URL`) or when the manifest can't be resolved. The
- * manifest is cached by the client, so this adds no extra network request.
+ * Returns the manifest's `dataset_version`, or `null` while it is still
+ * resolving or when the store can't be reached (unset/wrong
+ * `VITE_DATA_STORE_URL`, network failure). The manifest is cached by the
+ * client, so this adds no extra network request.
  *
  * Backed by React Query so `DataProvider.retry()` can invalidate it after
  * `datasetClient.resetManifest()` — otherwise a recovered retry would keep
@@ -24,7 +25,8 @@ export function useDatasetVersion(): string | null {
         const manifest = await datasetClient.resolveManifest();
         return manifest.dataset_version;
       } catch {
-        // Fallback mode / unreachable store: no version to show.
+        // Unreachable / misconfigured store: no version to show. The critical
+        // loaders surface the failure to the user; the badge just hides.
         return null;
       }
     },

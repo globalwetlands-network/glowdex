@@ -144,17 +144,22 @@ describe('datasetClient', () => {
     });
   });
 
-  describe('fallback mode (VITE_DATA_STORE_URL unset)', () => {
+  describe('unconfigured store (VITE_DATA_STORE_URL unset)', () => {
     beforeEach(() => {
       vi.stubEnv('VITE_DATA_STORE_URL', '');
     });
 
-    it('resolves asset URLs to same-origin public/data without fetching a manifest', async () => {
-      await expect(datasetClient.assetUrl('grid-items.csv')).resolves.toBe(
-        '/data/grid-items.csv',
+    it('fails loudly instead of falling back to same-origin repo copies', async () => {
+      // No same-origin fallback: a missing store URL must error, not silently
+      // serve stale data (GLO-185).
+      await expect(
+        datasetClient.assetUrl('grid-items.csv'),
+      ).rejects.toBeInstanceOf(DataStoreError);
+      await expect(datasetClient.resolveManifest()).rejects.toBeInstanceOf(
+        DataStoreError,
       );
-      expect(datasetClient.localUrl('local-sites.csv')).toBe(
-        '/data/local-sites.csv',
+      expect(() => datasetClient.localUrl('local-sites.csv')).toThrow(
+        DataStoreError,
       );
       expect(fetch).not.toHaveBeenCalled();
     });

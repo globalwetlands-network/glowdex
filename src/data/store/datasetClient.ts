@@ -1,21 +1,17 @@
 /**
  * Client for the canonical data store (GLO-174/175).
  *
- * When `VITE_DATA_STORE_URL` is set, the app loads its dataset from the remote
- * store: resolve `manifest.json` once (cached), then read the immutable bundle
- * it points at. Local monitoring data lives at a fixed `local/` path, on its own
- * monthly cadence — NOT behind the manifest.
+ * The app loads its dataset from the remote store pointed at by
+ * `VITE_DATA_STORE_URL`: resolve `manifest.json` once (cached), then read the
+ * immutable bundle it points at. Local monitoring data lives at a fixed
+ * `local/` path, on its own monthly cadence — NOT behind the manifest.
  *
- * When the var is unset/empty, the client falls back to the same-origin repo
- * copies under `public/data/` via `getAssetUrl` (current behaviour). This keeps
- * the store cutover a config change (set the var) rather than a code change, so
- * merging this before the cutover is inert.
- *
- * `getAssetUrl` cannot be reused for the store: it returns a same-origin
- * `pathname` and its traversal guard throws on an absolute `https://` URL. It is
- * only used here for the fallback path.
+ * `VITE_DATA_STORE_URL` is required. If it is unset/empty every request fails
+ * loudly with a `DataStoreError` — there is no same-origin fallback (removed in
+ * GLO-185, along with the repo copies under `public/data/`). A missing or wrong
+ * store URL therefore surfaces immediately rather than silently serving stale
+ * data.
  */
-import { getAssetUrl } from '@/utils/fetchUtils';
 import type { Manifest } from './manifest.types';
 
 /** How long to wait on a store request before aborting (cross-origin, can stall). */
@@ -140,17 +136,19 @@ async function bundleBase(): Promise<string> {
 
 /** URL for a versioned bundle asset (e.g. `grid-items.csv`). */
 async function assetUrl(filename: string): Promise<string> {
-  if (!storeUrl()) return getAssetUrl(`data/${filename}`);
   return `${await bundleBase()}${filename}`;
 }
 
 /**
  * URL for a local-data asset at the fixed `local/` path (e.g.
  * `local-sites.csv`). Not behind the manifest — local data has its own cadence.
+ * Throws if the store URL is unset (no fallback).
  */
 function localUrl(filename: string): string {
   const base = storeUrl();
-  if (!base) return getAssetUrl(`data/${filename}`);
+  if (!base) {
+    throw new DataStoreError('VITE_DATA_STORE_URL is not configured');
+  }
   return `${base}/local/${filename}`;
 }
 

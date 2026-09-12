@@ -1,27 +1,23 @@
 import { useData } from '@/context/DataContext';
 
 /**
- * Shows which dataset version the app is on. In store mode it renders the
- * loaded manifest version (e.g. `v2026.09.0`); in fallback mode (no store
- * manifest) it renders a static `local` label so users can tell they are
- * viewing bundled repo copies rather than the canonical store.
+ * Shows which dataset version the app is on: the manifest's `dataset_version`
+ * loaded from the canonical store (e.g. `v2026.09.0`). Renders nothing until the
+ * manifest resolves — there are no bundled repo copies to fall back to, so a
+ * failed resolve is surfaced by the app's error state, not this badge.
  *
  * Styled for the green TopBar.
  */
 export function DatasetVersionBadge() {
   const { datasetVersion } = useData();
-  const label = datasetVersion ? `v${datasetVersion}` : 'local';
+  if (!datasetVersion) return null;
 
   return (
     <span
       className="px-2 py-1 text-white/60 text-[11px] font-medium tracking-wide rounded bg-white/5"
-      title={
-        datasetVersion
-          ? `Dataset version ${datasetVersion}`
-          : 'Viewing local bundled data'
-      }
+      title={`Dataset version ${datasetVersion}`}
     >
-      {label}
+      v{datasetVersion}
     </span>
   );
 }
