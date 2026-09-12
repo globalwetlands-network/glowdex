@@ -17,7 +17,7 @@ export interface DataContextValue {
   localSites: LocalSite[];
   /** ISO date local data was last refreshed, or null if unavailable. */
   localDataUpdated: string | null;
-  /** Frontend's loaded dataset version (store manifest), or null in fallback mode. */
+  /** Frontend's loaded dataset version (store manifest), or null until it resolves. */
   datasetVersion: string | null;
   isLoading: boolean;
   /**

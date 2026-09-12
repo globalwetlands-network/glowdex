@@ -15,7 +15,7 @@ export const DATASET_VERSION_QUERY_KEY = ['dataset', 'manifest', 'version'];
  *
  * Backed by React Query so `DataProvider.retry()` can invalidate it after
  * `datasetClient.resetManifest()` — otherwise a recovered retry would keep
- * showing the stale version (or `local`).
+ * showing the stale version.
  */
 export function useDatasetVersion(): string | null {
   const { data } = useQuery({

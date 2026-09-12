@@ -24,8 +24,9 @@ interface DatasetSkew {
  * disagree — the map would then show cells or indicators the assistant's
  * backend context doesn't know about.
  *
- * Skew is only meaningful when BOTH versions are present. In fallback/legacy
- * mode either side may have no version, which means "nothing to compare".
+ * Skew is only meaningful when BOTH versions are present. If either side has no
+ * version yet (still resolving, or the store/backend is unreachable) there is
+ * "nothing to compare".
  */
 export function useDatasetSkew(): DatasetSkew {
   const frontendVersion = useDatasetVersion();
