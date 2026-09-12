@@ -50,10 +50,10 @@ jobs:
           VITE_PUBLIC_POSTHOG_ENABLED: ${{ vars.VITE_PUBLIC_POSTHOG_ENABLED }}
           VITE_PUBLIC_CONFERENCE_MODE: ${{ vars.VITE_PUBLIC_CONFERENCE_MODE }}
           VITE_PUBLIC_FEATURE_AI_SUGGESTIONS: ${{ vars.VITE_PUBLIC_FEATURE_AI_SUGGESTIONS }}
-          # Canonical data store (GLO-176). Leave the repo/environment variable
-          # UNSET until the coordinated cutover (after GLO-177): empty → dataset
-          # reads stay on the bundled public/data/ copies (only the index.html
-          # preconnect warms the store connection).
+          # Canonical data store (GLO-176). REQUIRED after the GLO-185 cutover:
+          # this repo/environment variable must be set. There are no bundled
+          # public/data/ copies to fall back to, so an empty value ships a build
+          # that fails to load its data.
           VITE_DATA_STORE_URL: ${{ vars.VITE_DATA_STORE_URL }}
 
       - name: Setup Pages

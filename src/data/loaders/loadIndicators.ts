@@ -55,7 +55,7 @@ function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
  * Loads indicator definitions and metadata
  *
  * Loads `indicator-labels.json` via datasetClient — from the canonical store
- * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
+ * bundle pointed at by VITE_DATA_STORE_URL.
  * Applies transformation to normalize habitat labels and prefixes.
  *
  * @returns Promise resolving to array of Indicator objects

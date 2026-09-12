@@ -18,8 +18,7 @@ import type { Residuals, ResidualsRaw } from '../types/grid.types';
  * @returns Promise resolving to array of residual objects
  *
  * @remarks Loads `grid-items-residuals.csv` via datasetClient — from the
- * canonical store bundle when VITE_DATA_STORE_URL is set, else the same-origin
- * /data/ copy.
+ * canonical store bundle pointed at by VITE_DATA_STORE_URL.
  */
 export async function loadResiduals(): Promise<Residuals[]> {
   const response = await datasetClient.fetchAsset('grid-items-residuals.csv');

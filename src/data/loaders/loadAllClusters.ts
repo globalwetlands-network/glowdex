@@ -13,7 +13,7 @@ import type { ClusterRaw } from '../types/cluster.types';
  * @returns Promise resolving to array of raw cluster definitions
  *
  * @remarks Loads `all-clusters.csv` via datasetClient — from the canonical store
- * bundle when VITE_DATA_STORE_URL is set, else the same-origin /data/ copy.
+ * bundle pointed at by VITE_DATA_STORE_URL.
  */
 export async function loadAllClusters(): Promise<ClusterRaw[]> {
   const response = await datasetClient.fetchAsset('all-clusters.csv');
