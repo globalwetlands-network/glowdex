@@ -133,10 +133,11 @@ src/
 ├── utils/               # Pure utility functions
 │
 └── shared/              # Shared UI components
-
-public/
-└── data/                # Static CSV & GeoJSON assets
 ```
+
+> CSV & GeoJSON assets are no longer bundled in `public/data/` (removed in the
+> GLO-185 cutover). Data is fetched at runtime from the canonical data store via
+> `VITE_DATA_STORE_URL`.
 
 ### Design Principles
 

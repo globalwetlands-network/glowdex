@@ -39,8 +39,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [queryClient, reloadScience, reloadIndicators]);
 
   const value = useMemo<DataContextValue>(() => {
-    const isLoading =
-      scienceData.isLoading || indicatorData.isLoading || localData.isLoading;
+    // Critical loaders only. Local data is non-critical/best-effort — a stalled
+    // local store must not hold the whole map on LoadingState (it can hang until
+    // the 30s store timeout). The map renders as soon as the scientific bundle is
+    // ready; local sites populate in the background once available.
+    const isLoading = scienceData.isLoading || indicatorData.isLoading;
     // Critical loaders only — local data stays graceful and never errors the app.
     const error = scienceData.error ?? indicatorData.error;
 
@@ -69,7 +72,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     indicatorData.error,
     localData.localSites,
     localData.localDataUpdated,
-    localData.isLoading,
     datasetVersion,
     retry,
   ]);

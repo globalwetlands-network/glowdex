@@ -4,6 +4,7 @@ import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
 import type { LocalSiteContext } from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
+import { useBackendVersion } from '@/api/hooks/useBackendVersion';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 
 interface AnalysisAssistantWidgetProps {
@@ -41,6 +42,13 @@ export function AnalysisAssistantWidget({
     cellHasMangrove: hasMangrove,
   });
 
+  // Backend dataset version keys the insight cache so it is version-aware:
+  // an insight generated from a pre-skew backend context lives under a
+  // different cache entry than a post-skew one. Without this, a resolved
+  // dataset-skew transition could re-serve a stale initialInsight.
+  const { data: backendMeta } = useBackendVersion();
+  const datasetVersion = backendMeta?.dataset_version ?? null;
+
   const {
     data: initialInsight,
     isLoading: isInsightLoading,
@@ -49,6 +57,7 @@ export function AnalysisAssistantWidget({
     queryKey: [
       'insight',
       {
+        datasetVersion,
         gridCellId: selectedCellId,
         localSiteContext: localSiteContext ? localSiteContext.siteName : null,
       },
