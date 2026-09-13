@@ -12,7 +12,6 @@ import type { ObservationPoint } from '@/api/species';
 import type { LocalSiteContext } from '@/api/types';
 
 // Data
-import { SPECIES_SPOTLIGHT_DATA } from '@/data/speciesSpotlight';
 import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
 
 // Feature Hooks & Components
@@ -24,7 +23,9 @@ import { GridMap as Map } from '@/features/map/components/Map';
 import { useFilteredGridCells } from '@/features/widgets/hooks/useFilteredGridCells';
 import { useIndicatorDistributions } from '@/features/widgets/hooks/useIndicatorDistributions';
 import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
+import { useDatasetSkew } from '@/data/hooks/useDatasetSkew';
 import { usePartners } from '@/api/hooks/usePartners';
+import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
 import {
   calculateDistance,
   findCellContainingPoint,
@@ -36,6 +37,7 @@ import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands
 import { AppLayout } from './components/AppLayout';
 import { WelcomeModal } from './components/WelcomeModal';
 import { LoadingState } from './components/LoadingState';
+import { DataUnavailable } from './components/DataUnavailable';
 import { SidePanel } from './components/SidePanel';
 import { TopBar } from './components/TopBar';
 
@@ -60,9 +62,12 @@ function AppShell() {
     typologies,
     indicators,
     localSites,
+    localDataUpdated,
     isLoading,
     error,
+    retry,
   } = useData();
+  const { skewActive } = useDatasetSkew();
   const { filterState, setFilterState } = useFilter();
   const { selectedCellId, setSelectedCellId } = useSelection();
 
@@ -98,13 +103,17 @@ function AppShell() {
     [],
   );
 
+  // Species names come from the backend registry (single source of truth)
+  // via the shared, 24h-cached species config query.
+  const { data: speciesConfigData } = useSpeciesConfig();
   const activeSpeciesName = useMemo(() => {
     if (!speciesLayerState.speciesId) return '';
     return (
-      SPECIES_SPOTLIGHT_DATA.find((s) => s.id === speciesLayerState.speciesId)
-        ?.commonName ?? ''
+      speciesConfigData?.species.find(
+        (s) => s.id === speciesLayerState.speciesId,
+      )?.commonName ?? ''
     );
-  }, [speciesLayerState.speciesId]);
+  }, [speciesLayerState.speciesId, speciesConfigData]);
 
   const [speciesFlyTarget, setSpeciesFlyTarget] = useState<{
     lng: number;
@@ -138,8 +147,9 @@ function AppShell() {
     [posthog],
   );
 
-  // Mangrove layer state
-  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(false);
+  // Mangrove layer state — on by default so the habitat extent
+  // overlay is visible when the map loads (user can toggle it off).
+  const [mangroveLayerEnabled, setMangroveLayerEnabled] = useState(true);
 
   const handleMangroveLayerToggle = useCallback(
     (enabled: boolean) => {
@@ -418,7 +428,11 @@ function AppShell() {
   const filteredGridCells = useFilteredGridCells(gridCells || [], filterState);
 
   // 1a. Fetch backend statistics for the selected cell (Single Source of Truth)
-  const { data: cellStats } = useGlobalStatistics(selectedCellId);
+  // Suppress statistics during version skew — the backend context may disagree
+  // with the map, so we hold rather than show stale numbers.
+  const { data: cellStats } = useGlobalStatistics(
+    skewActive ? null : selectedCellId,
+  );
 
   // 2. Calculate distributions for widgets based on filtered cells
   const distributions = useIndicatorDistributions(
@@ -572,45 +586,42 @@ function AppShell() {
     }
   }, [posthog]);
 
-  // Render map area
+  // Render map area. Loading/error are handled by the top-level three-way
+  // render below, so this only ever renders the map itself.
   const mapArea = useMemo(
-    () =>
-      isLoading ? (
-        <LoadingState />
-      ) : (
-        <Map
-          allGridCells={gridCells || []}
-          filteredGridCells={filteredGridCells}
-          geojson={geojson!}
-          typologies={typologies!}
-          selectedCellId={selectedCellId}
-          selectedCell={selectedCell}
-          typologyScale={filterState.typologyScale}
-          onCellSelect={handleCellSelect}
-          activeObservations={speciesLayerState.observations}
-          activeSpeciesId={speciesLayerState.speciesId}
-          activeSpeciesName={activeSpeciesName}
-          speciesLayerEnabled={speciesLayerState.enabled}
-          partnerLayerEnabled={partnerLayerEnabled}
-          mangroveLayerEnabled={mangroveLayerEnabled}
-          speciesFlyTarget={speciesFlyTarget}
-          onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
-          onPartnerClick={handlePartnerClick}
-          localSites={localSites}
-          localSiteLayerEnabled={localSiteLayerEnabled}
-          selectedSiteId={selectedSiteId}
-          onSiteClick={handleSiteClickFromMap}
-          siteFlyTarget={siteFlyTarget}
-          onSiteFlyComplete={() => setSiteFlyTarget(null)}
-          partnerFlyTarget={partnerFlyTarget}
-          onPartnerFlyComplete={() => setPartnerFlyTarget(null)}
-          onLocationSearched={handleLocationSearched}
-          onLocationSearchCleared={handleLocationSearchCleared}
-          resetViewSignal={resetViewSignal}
-        />
-      ),
+    () => (
+      <Map
+        allGridCells={gridCells || []}
+        filteredGridCells={filteredGridCells}
+        geojson={geojson!}
+        typologies={typologies!}
+        selectedCellId={selectedCellId}
+        selectedCell={selectedCell}
+        typologyScale={filterState.typologyScale}
+        onCellSelect={handleCellSelect}
+        activeObservations={speciesLayerState.observations}
+        activeSpeciesId={speciesLayerState.speciesId}
+        activeSpeciesName={activeSpeciesName}
+        speciesLayerEnabled={speciesLayerState.enabled}
+        partnerLayerEnabled={partnerLayerEnabled}
+        mangroveLayerEnabled={mangroveLayerEnabled}
+        speciesFlyTarget={speciesFlyTarget}
+        onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
+        onPartnerClick={handlePartnerClick}
+        localSites={localSites}
+        localSiteLayerEnabled={localSiteLayerEnabled}
+        selectedSiteId={selectedSiteId}
+        onSiteClick={handleSiteClickFromMap}
+        siteFlyTarget={siteFlyTarget}
+        onSiteFlyComplete={() => setSiteFlyTarget(null)}
+        partnerFlyTarget={partnerFlyTarget}
+        onPartnerFlyComplete={() => setPartnerFlyTarget(null)}
+        onLocationSearched={handleLocationSearched}
+        onLocationSearchCleared={handleLocationSearchCleared}
+        resetViewSignal={resetViewSignal}
+      />
+    ),
     [
-      isLoading,
       gridCells,
       filteredGridCells,
       geojson,
@@ -662,6 +673,7 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
+        localDataUpdated={localDataUpdated}
         selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
         localSiteLayerEnabled={localSiteLayerEnabled}
@@ -672,11 +684,14 @@ function AppShell() {
         onViewLocalData={handleSiteSelect}
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
+        speciesConfig={speciesConfigData?.species ?? []}
+        partners={partnersData?.partners ?? []}
         onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
         scrollToTopSignal={scrollToTopSignal}
         showAnalysisBadge={showAnalysisBadge}
+        dataSkewed={skewActive}
       />
     ),
     [
@@ -699,30 +714,30 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
+      localDataUpdated,
       selectedSiteId,
       handleSiteSelect,
       localSiteLayerEnabled,
       handleLocalSiteLayerToggle,
       localSiteContext,
       isLocalContextPending,
+      speciesConfigData,
+      partnersData,
       scrollToLocalDataSignal,
       scrollToPartnerSignal,
       scrollToTopSignal,
       showAnalysisBadge,
+      skewActive,
     ],
   );
 
+  // Three-way top-level render: loading, error (never a blank map), else app.
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   if (error) {
-    return (
-      <div className="flex items-center justify-center w-screen h-screen bg-gray-50 text-gray-500">
-        <div className="text-center space-y-2">
-          <p className="font-medium text-gray-700">
-            Unable to load scientific data.
-          </p>
-          <p className="text-xs text-gray-400">{error.message}</p>
-        </div>
-      </div>
-    );
+    return <DataUnavailable error={error} onRetry={retry} />;
   }
 
   return (

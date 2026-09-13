@@ -22,17 +22,9 @@
  */
 
 import Plot from 'react-plotly.js';
-import type {
-  LocalObservation,
-  SiteCondition,
-} from '@/data/types/local-wetlands.types';
+import type { LocalObservation } from '@/data/types/local-wetlands.types';
 import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
-
-const CONDITION_COLORS: Record<SiteCondition, string> = {
-  Reference: '#4a7c59',
-  Degraded: '#b85c4a',
-  Rehabilitated: '#c49a3c',
-};
+import { SITE_CONDITION_COLORS } from '@/data/constants/localWetlands.constants';
 
 interface SiteConditionChartProps {
   observations: LocalObservation[];
@@ -58,10 +50,10 @@ export function SiteConditionChart({
       width: 6,
     },
     marker: {
-      color: aggregated.map((a) => CONDITION_COLORS[a.siteType]),
+      color: aggregated.map((a) => SITE_CONDITION_COLORS[a.siteType]),
       opacity: 0.85,
       line: {
-        color: aggregated.map((a) => CONDITION_COLORS[a.siteType]),
+        color: aggregated.map((a) => SITE_CONDITION_COLORS[a.siteType]),
         width: 1,
       },
     },

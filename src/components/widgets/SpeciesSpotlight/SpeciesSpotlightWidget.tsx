@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { Info } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
-import type { SpeciesSpotlightData } from '@/data/speciesSpotlight';
-import {
-  SPECIES_SPOTLIGHT_DATA,
-  CONSERVATION_STATUS_INFO,
-} from '@/data/speciesSpotlight';
-import type { ObservationPoint, RegionBoundResponse } from '@/api/species';
+import { CONSERVATION_STATUS_INFO } from '@/data/speciesSpotlight';
+import type {
+  ObservationPoint,
+  RegionBoundResponse,
+  SpeciesConfigResponse,
+} from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { PartnerResponse } from '@/api/partners';
 import type { TypologyMap } from '@/data/types/cluster.types';
@@ -16,7 +16,6 @@ import { TileCapsule } from '@/components/shared/TileCapsule';
 import { SpeciesTab } from './SpeciesTab';
 
 interface SpeciesSpotlightWidgetProps {
-  species?: SpeciesSpotlightData[];
   onSpeciesLayerToggle: (
     speciesId: string,
     observations: ObservationPoint[],
@@ -108,7 +107,6 @@ function isInBound(
 }
 
 export function SpeciesSpotlightWidget({
-  species = SPECIES_SPOTLIGHT_DATA,
   onSpeciesLayerToggle,
   selectedCell,
   partners,
@@ -141,6 +139,15 @@ export function SpeciesSpotlightWidget({
   } | null>(null);
 
   const { data: speciesConfigData } = useSpeciesConfig();
+
+  // The species list — including all display content — now comes from the
+  // backend registry via GET /api/species/config (single source of truth).
+  // Empty until the (24h-cached) config query resolves; the existing
+  // `!speciesConfigData` guards below keep selection from flashing.
+  const species: SpeciesConfigResponse[] = useMemo(
+    () => speciesConfigData?.species ?? [],
+    [speciesConfigData],
+  );
 
   const handleTabChange = (idx: number) => {
     if (idx !== effectiveIndex) {

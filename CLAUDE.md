@@ -102,12 +102,15 @@ Miss step 3 or 4 and the build ships with the var empty/undefined.
 
 ## Claude Code skills
 
-Repo skills live in `.claude/skills/`. Two are available: **issue-spec** (draft a Linear
-issue from a rough idea) and **pr-review** (check a diff against a Linear issue's Definition
-of Done). Type `/` in a Claude Code session to see and run them.
+Repo skills live in `.claude/skills/`. Three are available: **issue-spec** (draft a Linear
+issue from a rough idea), **pr-review** (check a diff against a Linear issue's Definition
+of Done), and **ship-pr** (review a pushed feature branch, open a PR against `develop` with the
+template filled in, and request a Copilot review). Type `/` in a Claude Code session to see and
+run them.
 
 ## Git / branch naming
 
 - Branch from Linear issues: `feature/glo-<number>-<kebab-slug>` (or `chore/<slug>`).
-- PRs target `main` (default branch). Fill out `.github/pull_request_template.md`.
+- PRs target `develop` (though `main` remains the repo's default branch). Fill out
+  `.github/pull_request_template.md`.
 - **Never run git commit/push here** — the maintainer commits and pushes manually.

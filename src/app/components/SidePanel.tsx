@@ -6,12 +6,14 @@ import type { TypologyMap } from '@/data/types/cluster.types';
 import type { FilterState } from '@/features/widgets/types/filter.types';
 import type { EnrichedGridCell } from '../types/app.types';
 import type { DistributionsByDimension } from '@/features/widgets/types/indicator.types';
-import type { ObservationPoint } from '@/api/species';
+import type { ObservationPoint, SpeciesConfigResponse } from '@/api/species';
+import type { PartnerResponse } from '@/api/partners';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { LocalSiteContext } from '@/api/types';
 
 import { FilterControls } from '@/features/widgets/components/FilterControls';
 import { SelectionPanel } from '@/features/widgets/components/SelectionPanel';
+import { DownloadSummaryButton } from '@/features/widgets/components/DownloadSummaryButton';
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
@@ -46,6 +48,8 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
+  /** ISO date local data was last refreshed, or null if unavailable. */
+  localDataUpdated: string | null;
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
@@ -53,11 +57,15 @@ interface SidePanelProps {
   onViewLocalData: (siteId: string) => void;
   localSiteContext: LocalSiteContext | null;
   isLocalContextPending: boolean;
+  speciesConfig: SpeciesConfigResponse[];
+  partners: PartnerResponse[];
   onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
   scrollToPartnerSignal?: number;
   scrollToTopSignal?: number;
   showAnalysisBadge?: boolean;
+  /** True when frontend/backend dataset versions disagree; degrades the assistant. */
+  dataSkewed?: boolean;
 }
 
 /**
@@ -84,6 +92,7 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
+  localDataUpdated,
   selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
@@ -91,11 +100,14 @@ export function SidePanel({
   onViewLocalData,
   localSiteContext,
   isLocalContextPending,
+  speciesConfig,
+  partners,
   onSiteAssociated,
   scrollToLocalDataSignal,
   scrollToPartnerSignal,
   scrollToTopSignal,
   showAnalysisBadge,
+  dataSkewed,
 }: SidePanelProps) {
   const { containerRef: analysisPanelRef, localDataRef } = useAnalysisScroll(
     scrollToTopSignal,
@@ -166,12 +178,22 @@ export function SidePanel({
                   icon={MapPin}
                   defaultOpen={true}
                 >
-                  <button
-                    onClick={onClearSelection}
-                    className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer mb-3"
-                  >
-                    Clear selection
-                  </button>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <button
+                      onClick={onClearSelection}
+                      className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
+                    >
+                      Clear selection
+                    </button>
+                    <DownloadSummaryButton
+                      selectedCell={selectedCell}
+                      scale={filterState.typologyScale}
+                      statisticalSummaries={statisticalSummaries}
+                      species={speciesConfig}
+                      partners={partners}
+                      localSiteContext={localSiteContext}
+                    />
+                  </div>
                   <SelectionPanel
                     selectedCell={selectedCell}
                     typologies={typologies}
@@ -196,6 +218,7 @@ export function SidePanel({
                     localSiteContext={localSiteContext}
                     isLocalContextPending={isLocalContextPending}
                     hasMangrove={selectedCell?.mangroves ?? false}
+                    dataSkewed={dataSkewed}
                   />
                 </CollapsibleSection>
               </div>
@@ -257,6 +280,7 @@ export function SidePanel({
           <div className="p-4">
             <LocalWetlandsAnalysisWidget
               localSites={localSites}
+              localDataUpdated={localDataUpdated}
               selectedCell={selectedCell}
               selectedSiteId={selectedSiteId}
               onSiteSelect={onSiteSelect}

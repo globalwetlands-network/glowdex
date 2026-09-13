@@ -12,17 +12,20 @@ interactive Mapbox map of mangrove **grid cells** colored by ecological **typolo
 the user select a cell to see statistics, species, partners, and an AI-generated insight.
 
 ```
-Dataset (CSV/GeoJSON in src/data) ─┐
-                                   ├─▶ React state (selected cell, scale, filters)
-Backend API (glowdex-api) ─────────┘        │
-                                            ▼
+Canonical data store (CSV/GeoJSON) ─┐
+                                    ├─▶ React state (selected cell, scale, filters)
+Backend API (glowdex-api) ──────────┘        │
+                                             ▼
         Map (react-map-gl layers)  +  Widgets (panels, charts, chat)
 ```
 
 Two data sources feed the UI:
 
-- **Static dataset** — grid geometry, typology clusters, and per-cell attributes loaded and
+- **Static dataset** — grid geometry, typology clusters, and per-cell attributes fetched from
+  the **canonical data store** (a plain HTTP file store) at `VITE_DATA_STORE_URL`, then
   transformed under `src/data/` (loaders → transforms → typed `RichGridCell` / `GridGeoJSON`).
+  The store holds the CSV/GeoJSON files; the repo ships **no** dataset copies. See
+  [The canonical data store](#6-the-canonical-data-store) below.
 - **Backend API** — statistics, species, partners, and AI insight fetched from `glowdex-api`
   through `src/api/`.
 
@@ -116,3 +119,33 @@ component ──▶ useQuery/useMutation hook ──▶ fetchX() in src/api/*.ts
   `VITE_PUBLIC_POSTHOG_ENABLED=true`.
 
 `.env.example` is the authoritative list of every variable.
+
+---
+
+## 6. The canonical data store
+
+The dataset files live in **one canonical HTTP file store** shared by the frontend and
+`glowdex-api` — the repo ships no copies of them. The frontend reads the store through
+`datasetClient` (`src/data/store/datasetClient.ts`); the loaders under `src/data/loaders/`
+call it and never `fetch` a dataset path directly.
+
+```
+loader ──▶ datasetClient.fetchAsset('grid-items.csv') ──▶ VITE_DATA_STORE_URL/<manifest.path>/grid-items.csv
+       └─▶ datasetClient.fetchLocal('local-sites.csv') ──▶ VITE_DATA_STORE_URL/local/local-sites.csv
+```
+
+- **`VITE_DATA_STORE_URL`** is the store's base URL and is **required**. There is no
+  same-origin fallback: if the var is unset/empty or wrong, `datasetClient` throws a
+  `DataStoreError` and the app surfaces a load error rather than silently serving stale data.
+- **Versioned bundle (behind the manifest).** `datasetClient` resolves `manifest.json` once
+  (cached for the session), reads its `path` + `dataset_version`, and loads the immutable
+  bundle assets — `grid-items.csv`, `grid-items-residuals.csv`, `all-clusters.csv`,
+  `grid.geojson`, `indicator-labels.json` — from `${store}/${manifest.path}/`. The resolved
+  `dataset_version` drives the `DatasetVersionBadge` and the backend-skew check.
+- **Local monitoring data (fixed path).** `local-sites.csv`, `local-observations.csv`, and
+  `local-meta.json` are served from a fixed `${store}/local/` path on their own monthly
+  cadence — **not** behind the manifest.
+- **Bundled app assets stay in the repo.** Static assets such as the logo and species images
+  live under `src/assets/` and are imported directly (`import logo from '@/assets/…'`, so Vite
+  fingerprints and bundles them at build). Those are app assets, not dataset files, and never
+  touch the store.

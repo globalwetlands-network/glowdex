@@ -1,21 +1,21 @@
 import katalaImg from '@/assets/species/katala.jpg';
 import estuaryStringRayImg from '@/assets/species/estuary-stingray.jpg';
 import fiddlerCrabImg from '@/assets/species/fiddler-crab-second.jpg';
+import type { ConservationStatus } from '@/api/species';
 
 /**
- * IUCN Red List Conservation Status codes.
- * https://www.iucnredlist.org/about/categories-and-criteria
+ * Species Spotlight — frontend presentation data only.
+ *
+ * All per-species *content* (names, summaries, credits, links, conservation
+ * status, etc.) is owned by the backend registry and served via
+ * GET /api/species/config — see the SpeciesConfigResponse type in
+ * `@/api/species`. This file holds only what is inherently frontend:
+ *
+ *  - CONSERVATION_STATUS_INFO — a static IUCN code → Tailwind styling lookup.
+ *  - SPECIES_IMAGES — the image binaries, mapped by species `id`. Kept as
+ *    Vite-optimized assets rather than hosted URLs.
+ *  - Shared chart/type helpers.
  */
-export type ConservationStatus =
-  | 'EX'
-  | 'EW'
-  | 'CR'
-  | 'EN'
-  | 'VU'
-  | 'NT'
-  | 'LC'
-  | 'DD'
-  | 'NE';
 
 /**
  * Styling and label information for each IUCN conservation status.
@@ -91,89 +91,13 @@ export interface SpeciesPopulationSegment {
   color: string;
 }
 
-export interface SpeciesSpotlightData {
-  id: string;
-  commonName: string;
-  localName?: string;
-  scientificName: string;
-  conservationStatus: ConservationStatus;
-  iucnUrl: string;
-  summaryText: string;
-  dataApplicability: string;
-  dataSource: string;
-  learnMoreUrl: string;
-  mapTipText: string;
-  stub?: boolean;
-  imageUrl?: string;
-  imageCredit?: string;
-  imageCreditUrl?: string;
-  sourceUrl?: string;
-  sourceLabel?: string;
-}
-
-const katalaData: SpeciesSpotlightData = {
-  id: 'katala',
-  commonName: 'Philippine Cockatoo',
-  localName: 'Katala',
-  scientificName: 'Cacatua haematuropygia',
-  conservationStatus: 'CR',
-  iucnUrl: 'https://www.iucnredlist.org/species/22684795/117578604',
-  summaryText:
-    'The Katala is Critically Endangered. Only **430–750** mature individuals remain in the wild, mostly in **Palawan** and the Sulu Archipelago. Mangrove destruction is among the leading drivers of its decline.',
-  dataApplicability: 'National',
-  dataSource: 'IUCN Red List, Katala Foundation',
-  learnMoreUrl: 'https://katalafoundation.org/',
-  mapTipText: 'Show Katala observation locations',
-  imageUrl: katalaImg,
-  imageCredit: '© matthewkwan, CC BY-ND',
-  imageCreditUrl:
-    'https://www.inaturalist.org/taxa/116758-Cacatua-haematuropygia',
-  sourceUrl: 'https://www.iucnredlist.org/species/22684795/117578604',
-  sourceLabel: 'IUCN Red List',
+/**
+ * Species image binaries, keyed by the species `id` from the backend
+ * registry. Kept in the frontend as Vite-optimized assets. When adding a
+ * new species, drop its image into `@/assets/species/` and add one line here.
+ */
+export const SPECIES_IMAGES: Record<string, string> = {
+  katala: katalaImg,
+  'fiddler-crab': fiddlerCrabImg,
+  'estuary-stingray': estuaryStringRayImg,
 };
-
-const fiddlerCrabData: SpeciesSpotlightData = {
-  id: 'fiddler-crab',
-  commonName: 'Fiddler Crab',
-  localName: 'Inverted Fiddler Crab',
-  scientificName: 'Cranuca inversa',
-  conservationStatus: 'LC',
-  iucnUrl: 'https://www.iucnredlist.org',
-  summaryText:
-    '*Cranuca inversa* (Inverted Fiddler Crab) was recorded by the **MBCAM South Africa** team in mangrove habitats along the **KwaZulu-Natal** coast — its first sighting there since the 1880s. Fiddler crabs are widely used as bioindicators of mangrove ecosystem function — their presence signals functional intertidal habitat.',
-  dataApplicability: 'Regional',
-  dataSource: 'GBIF, MBCAM South Africa',
-  learnMoreUrl: 'https://www.fiddlercrab.info/u_inversa.html',
-  mapTipText: 'Show Fiddler Crab observation locations',
-  imageUrl: fiddlerCrabImg,
-  imageCredit: '(c) Nelson Miranda – all rights reserved',
-  imageCreditUrl: 'https://www.inaturalist.org/taxa/739157-Cranuca-inversa',
-  sourceUrl: 'https://www.fiddlercrab.info/u_inversa.html',
-  sourceLabel: 'Fiddler Crab Info',
-};
-
-const estuaryStingrayData: SpeciesSpotlightData = {
-  id: 'estuary-stingray',
-  commonName: 'Estuary Stingray',
-  scientificName: 'Hemitrygon fluviorum',
-  conservationStatus: 'NT',
-  iucnUrl: 'https://www.iucnredlist.org/species/161693/a984951',
-  summaryText:
-    'The Estuary Stingray is Near Threatened and endemic to coastal river systems of eastern **Australia**. It is highly sensitive to estuarine habitat degradation and altered freshwater flows from land use change.',
-  dataApplicability: 'Regional',
-  dataSource: 'GBIF, IUCN Red List',
-  learnMoreUrl: 'https://www.iucnredlist.org',
-  mapTipText: 'Show Estuary Stingray observation locations',
-  imageUrl: estuaryStringRayImg,
-  imageCredit: '© jmfinoz, CC BY-NC',
-  imageCreditUrl:
-    'https://www.inaturalist.org/taxa/623842-Hemitrygon-fluviorum/browse_photos',
-  sourceUrl: 'https://www.iucnredlist.org/species/161693/984951',
-  sourceLabel: 'IUCN Red List',
-};
-
-export const SPECIES_SPOTLIGHT_DATA: SpeciesSpotlightData[] = [
-  katalaData,
-  fiddlerCrabData,
-  estuaryStingrayData,
-];

@@ -4,6 +4,7 @@ import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
 import type { LocalSiteContext } from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
+import { useBackendVersion } from '@/api/hooks/useBackendVersion';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 
 interface AnalysisAssistantWidgetProps {
@@ -20,6 +21,12 @@ interface AnalysisAssistantWidgetProps {
    */
   isLocalContextPending?: boolean;
   hasMangrove?: boolean;
+  /**
+   * True when the frontend and backend dataset versions disagree (see
+   * useDatasetSkew). Suppresses insight calls and shows a "catching up" state
+   * so the assistant never answers from a stale backend context.
+   */
+  dataSkewed?: boolean;
 }
 
 export function AnalysisAssistantWidget({
@@ -27,12 +34,20 @@ export function AnalysisAssistantWidget({
   localSiteContext,
   isLocalContextPending,
   hasMangrove,
+  dataSkewed = false,
 }: AnalysisAssistantWidgetProps) {
   const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
     selectedCellId,
     localSiteContext,
     cellHasMangrove: hasMangrove,
   });
+
+  // Backend dataset version keys the insight cache so it is version-aware:
+  // an insight generated from a pre-skew backend context lives under a
+  // different cache entry than a post-skew one. Without this, a resolved
+  // dataset-skew transition could re-serve a stale initialInsight.
+  const { data: backendMeta } = useBackendVersion();
+  const datasetVersion = backendMeta?.dataset_version ?? null;
 
   const {
     data: initialInsight,
@@ -42,6 +57,7 @@ export function AnalysisAssistantWidget({
     queryKey: [
       'insight',
       {
+        datasetVersion,
         gridCellId: selectedCellId,
         localSiteContext: localSiteContext ? localSiteContext.siteName : null,
       },
@@ -54,7 +70,9 @@ export function AnalysisAssistantWidget({
     // Only blocks the query when a monitoring site is
     // selected and partners data is still loading —
     // plain cell selections (no site) are unaffected.
-    enabled: !!selectedCellId && !isLocalContextPending,
+    // Also suppressed during version skew so we never answer
+    // from a backend context that disagrees with the map.
+    enabled: !!selectedCellId && !isLocalContextPending && !dataSkewed,
   });
 
   useEffect(() => {
@@ -68,6 +86,24 @@ export function AnalysisAssistantWidget({
       captureErrorOccurred('initial_insight');
     }
   }, [initialError, captureErrorOccurred]);
+
+  // Version skew: the map may show data the backend context doesn't yet know
+  // about. Degrade to a non-blocking notice rather than risk a stale answer.
+  // NOTE: copy is placeholder pending product sign-off (GLO-177).
+  if (dataSkewed) {
+    return (
+      <div className="flex flex-col items-center justify-center h-48 px-4 text-center text-gray-500">
+        <CrabIcon size={24} className="text-[#0F6E56] mb-2" />
+        <p className="text-sm font-medium text-gray-700">
+          Catching up — data just updated
+        </p>
+        <p className="text-xs text-gray-400 mt-1">
+          The assistant is briefly unavailable while it syncs to the latest
+          dataset. The map stays fully usable in the meantime.
+        </p>
+      </div>
+    );
+  }
 
   if (isInsightLoading && !initialInsight) {
     return (

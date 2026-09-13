@@ -268,7 +268,7 @@ export function ChatInterface({
                       <span className="ml-1 text-gray-300">
                         ·{' '}
                         {initialInsight.sources
-                          .flatMap((s) => s.sections)
+                          .map((s) => s.section)
                           .join(' · ')}
                       </span>
                     )}
