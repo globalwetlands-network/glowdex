@@ -1,0 +1,54 @@
+{
+  "projectId": "93736273-ab98-4285-86a3-58e9fb1426d7",
+  "pkg": "glowdex",
+  "globalName": "Glowdex",
+  "shape": "package",
+  "srcDir": "src",
+  "tsconfig": "tsconfig.app.json",
+  "cssEntry": "dist/glowdex.css",
+  "libOverrides": {
+    "bundle.mjs": "directory index-imports (isFile check) + .jpg/.jpeg/.gif/.webp asset loaders"
+  },
+  "componentSrcMap": {
+    "CollapsibleSection": "src/app/components/CollapsibleSection.tsx",
+    "DataUnavailable": "src/app/components/DataUnavailable.tsx",
+    "LoadingState": "src/app/components/LoadingState.tsx",
+    "QuantileSlider": "src/app/components/QuantileSlider.tsx",
+    "SelectTilePrompt": "src/app/components/SelectTilePrompt.tsx",
+    "MobileTabNavigation": "src/app/components/MobileTabNavigation.tsx",
+    "MenuDrawer": "src/app/components/MenuDrawer.tsx",
+    "WelcomeModal": "src/app/components/WelcomeModal.tsx",
+    "TileCapsule": "src/components/shared/TileCapsule.tsx",
+    "SelectionPanel": "src/features/widgets/components/SelectionPanel.tsx",
+    "StatisticalDetailToggle": "src/features/widgets/components/StatisticalDetailToggle.tsx",
+    "FilterControls": "src/features/widgets/components/FilterControls.tsx",
+    "DownloadSummaryButton": "src/features/widgets/components/DownloadSummaryButton.tsx",
+    "TypologyLegend": "src/components/TypologyLegend/TypologyLegend.tsx",
+    "MapLayerLegend": "src/features/map/components/MapLayerLegend.tsx",
+    "MapTooltip": "src/features/map/components/MapTooltip.tsx",
+    "CrabIcon": "src/components/icons/CrabIcon.tsx",
+    "MonitoringLocationIcon": "src/components/icons/MapMarkers.tsx",
+    "TileMarkerIcon": "src/components/icons/MapMarkers.tsx",
+    "LocalSiteMarkerIcon": "src/components/map/markers/LocalSiteMarkerIcon.tsx",
+    "MangroveExtentIcon": "src/components/map/markers/MangroveExtentIcon.tsx",
+    "PartnerMarkerIcon": "src/components/map/markers/PartnerMarkerIcon.tsx",
+    "SearchMarkerIcon": "src/components/map/markers/SearchMarkerIcon.tsx",
+    "SpeciesMarkerIcon": "src/components/map/markers/SpeciesMarkerIcon.tsx"
+  },
+  "buildCmd": "npm run build && cp dist/assets/index-*.css dist/glowdex.css && node_modules/.bin/tsc -p .design-sync/tsconfig.dts.json",
+  "overrides": {
+    "MenuDrawer": {
+      "cardMode": "single",
+      "primaryStory": "About"
+    },
+    "WelcomeModal": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "SelectionPanel": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md",
+  "guidelinesGlob": ["docs/design/*.md"]
+}
