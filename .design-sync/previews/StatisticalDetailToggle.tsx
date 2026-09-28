@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { StatisticalDetailToggle } from 'glowdex';
 
 // A summary per indicator group so the expanded panel shows all three
@@ -43,3 +44,19 @@ export const Default = () => (
     <StatisticalDetailToggle statistics={statistics} selectedCellId={1234} />
   </div>
 );
+
+// The component keeps its open state internally and has no prop to start expanded, so this
+// story clicks the toggle once on mount to show the indicator bars.
+export const Expanded = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current
+      ?.querySelector<HTMLButtonElement>('button[aria-expanded="false"]')
+      ?.click();
+  }, []);
+  return (
+    <div ref={ref} style={{ maxWidth: 340 }}>
+      <StatisticalDetailToggle statistics={statistics} selectedCellId={1234} />
+    </div>
+  );
+};

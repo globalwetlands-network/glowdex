@@ -33,14 +33,17 @@ optional-chain it (`posthog?.`), so they render without a provider — no `cfg.p
 
 - `cssEntry` is `dist/glowdex.css` — a stable copy of the content-hashed
   `dist/assets/index-*.css`, made by `cfg.buildCmd`
-  (`npm run build && cp dist/assets/index-*.css dist/glowdex.css && tsc -p .design-sync/tsconfig.dts.json`).
+  (`npm run build && node .design-sync/copy-css.mjs && tsc -p .design-sync/tsconfig.dts.json`;
+  `copy-css.mjs` fails if the build emits anything other than exactly one `index-*.css`).
   Always run the full `buildCmd` before the converter; a bare `npm run build` wipes `dist/`
   (incl. `dist/types` and `dist/glowdex.css`).
-- **Tailwind v4 ignores `tailwind.config.js` unless the CSS says `@config`.** Before the
-  2026-09-23 sync, `src/styles/globals.css` lacked it, so `bg-glowdex-green`/`bg-glowdex-teal`
-  and the whole safelist were never compiled (invisible Retry button in `DataUnavailable`,
-  uncoloured bars in `StatisticalDetailToggle`). Fixed by adding
-  `@config '../../tailwind.config.js';`. If brand classes vanish again, check that line first.
+- **Brand tokens live in the `@theme` block in `src/styles/globals.css`** (Tailwind v4
+  CSS-first config; there is no `tailwind.config.js`). Tailwind v4 never read the old JS
+  config, so until PR #62 `bg-glowdex-green`/`bg-glowdex-teal` were never compiled (invisible
+  Retry button in `DataUnavailable`, uncoloured bars in `StatisticalDetailToggle`). If brand
+  classes vanish from `dist/glowdex.css`, check that block first.
+- Tailwind v4 scans every file that isn't gitignored, so `ds-bundle/` and `.ds-sync/` must stay
+  in `.gitignore`, or the synced CSS picks up classes from the previous sync's output.
 - Only classes the app itself uses exist in the shipped CSS (compiled output, not the full
   Tailwind set). `conventions.md` enumerates the verified vocabulary.
 - `guidelinesGlob` = `docs/design/*.md` (the design-context doc). The default glob picked up
@@ -105,12 +108,16 @@ prop names + literal unions are accurate; exact object shapes live in the bundle
 - Preview fixtures inline domain data (cells, typology colours). If typology colours or
   `EnrichedGridCell` fields change upstream, the fixtures go stale silently — re-check
   `TileCapsule`, `TypologyLegend`, `FilterControls`, `SelectionPanel`, `MapTooltip` previews.
-- The design-context doc in `guidelines/` is hand-maintained; it drifts from the code unless
+- The design-context doc (`docs/design/claude-design-context.md`, shipped to the bundle's
+  `guidelines/`) is hand-maintained; it drifts from the code unless
   someone updates it.
-- `StatisticalDetailToggle` preview only shows the collapsed toggle (no prop to force open) —
-  the coloured indicator bars are never visually verified.
-- Chromium for the render check comes from the repo's `playwright` (pinned build 1234 in
-  `~/Library/Caches/ms-playwright`); a playwright bump needs a matching browser install.
+- `StatisticalDetailToggle` has no prop to start expanded. Its `Expanded` story clicks the toggle
+  on mount to show the indicator bars; if the button's `aria-expanded` markup changes, that story
+  silently falls back to the collapsed view.
+- The render check (`.ds-sync/package-capture.mjs`) imports `playwright` from `.ds-sync/`. It is
+  not an app dependency. On a fresh setup run `npm i playwright` in `.ds-sync/`, then
+  `npx playwright install chromium`, or point `DS_CHROMIUM_PATH` at an existing Chromium. The
+  2026-09-23 sync used Chromium build 1234 from `~/Library/Caches/ms-playwright`.
 
 ## Prop-driven previews to watch in the verify loop
 

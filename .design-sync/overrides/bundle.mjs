@@ -8,22 +8,39 @@ import { build } from 'esbuild';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { IIFE_IMPORT_META_DEFINE } from '../../.ds-sync/lib/common.mjs';
+
+// Copied from design-sync lib/common.mjs so this committed override has no dependency on the
+// gitignored .ds-sync/ staging folder. Re-check it against lib/common.mjs on re-sync.
+// iife can't evaluate import.meta natively; feature-detecting code takes these synthetic values.
+const IIFE_IMPORT_META_DEFINE = {
+  'import.meta.url': '"https://ds-preview.invalid/"',
+  'import.meta.env':
+    '{"MODE":"development","DEV":true,"PROD":false,"SSR":false,"BASE_URL":"/"}',
+};
 
 // Resolve the package's browser entry. Prefer ESM (tree-shakes cleaner).
 // `soft` -> return null on miss instead of exiting (caller synthesizes from src/).
-export function resolveDistEntry({ pkgDir, pkgJson, override, pkgName, soft = false }) {
+export function resolveDistEntry({
+  pkgDir,
+  pkgJson,
+  override,
+  pkgName,
+  soft = false,
+}) {
   if (override) {
     const p = resolve(override);
     if (!existsSync(p)) {
-      console.error(`[NO_DIST] --entry ${override} doesn't exist \u2014 run the DS's build.`);
+      console.error(
+        `[NO_DIST] --entry ${override} doesn't exist \u2014 run the DS's build.`,
+      );
       if (soft) return null;
       process.exit(1);
     }
     return p;
   }
   // exports conditions can nest ({types, default:{types, default}}) - flatten.
-  const str = (v) => (typeof v === 'string' ? v : v?.default ? str(v.default) : null);
+  const str = (v) =>
+    typeof v === 'string' ? v : v?.default ? str(v.default) : null;
   const cand = [
     pkgJson.module,
     str(pkgJson.exports?.['.']?.import),
@@ -48,10 +65,13 @@ export function resolveDistEntry({ pkgDir, pkgJson, override, pkgName, soft = fa
 export const reactShim = {
   name: 'react-global',
   setup(b) {
-    b.onResolve({ filter: /^react(\/(jsx-(dev-)?runtime|compiler-runtime))?$/ }, () => ({
-      path: 'react-shim',
-      namespace: 'shim',
-    }));
+    b.onResolve(
+      { filter: /^react(\/(jsx-(dev-)?runtime|compiler-runtime))?$/ },
+      () => ({
+        path: 'react-shim',
+        namespace: 'shim',
+      }),
+    );
     b.onResolve({ filter: /^react-dom(\/client)?$/ }, () => ({
       path: 'react-dom-shim',
       namespace: 'shim',
@@ -61,10 +81,16 @@ export const reactShim = {
     // for 'react.transitional.element' while react@18 emits 'react.element'),
     // which makes isElement() always false and breaks components that
     // branch on it (count badges, nav indicators, ...).
-    b.onResolve({ filter: /^react-is$/ }, () => ({ path: 'react-is-shim', namespace: 'shim' }));
+    b.onResolve({ filter: /^react-is$/ }, () => ({
+      path: 'react-is-shim',
+      namespace: 'shim',
+    }));
     // scheduler must be the same instance window.React uses internally; a
     // second bundled copy breaks concurrent rendering.
-    b.onResolve({ filter: /^scheduler(\/|$)/ }, () => ({ path: 'scheduler-shim', namespace: 'shim' }));
+    b.onResolve({ filter: /^scheduler(\/|$)/ }, () => ({
+      path: 'scheduler-shim',
+      namespace: 'shim',
+    }));
     b.onLoad({ filter: /^react-shim$/, namespace: 'shim' }, () => ({
       // Automatic-runtime jsx/jsxs -> createElement. Two invariants matter:
       //  · key is the 3rd ARG, never in props - lift it into the createElement
@@ -89,7 +115,8 @@ module.exports.Fragment=R.Fragment;`,
     b.onLoad({ filter: /^react-dom-shim$/, namespace: 'shim' }, () => ({
       // preload/preinit/preconnect/prefetchDNS (React 18.3+/19 resource
       // hints) must exist - some DSes call them at Provider mount.
-      contents: 'var D=window.ReactDOM,n=function(){};' +
+      contents:
+        'var D=window.ReactDOM,n=function(){};' +
         'module.exports=Object.assign({preload:n,preinit:n,preconnect:n,prefetchDNS:n,preloadModule:n,preinitModule:n},D);',
       loader: 'js',
     }));
@@ -131,25 +158,43 @@ export function tsconfigPathsPlugin(tsconfigPath) {
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/(^|[^:])\/\/.*$/gm, '$1');
     ({ paths, baseUrl = '.' } = JSON.parse(raw).compilerOptions ?? {});
-  } catch { return null; }
+  } catch {
+    return null;
+  }
   if (!paths) return null;
   const base = resolve(dirname(tsconfigPath), baseUrl);
   const rules = Object.entries(paths).map(([k, v]) => ({
     prefix: k.replace(/\*$/, ''),
-    targets: (Array.isArray(v) ? v : [v]).map((t) => resolve(base, t.replace(/\*$/, ''))),
+    targets: (Array.isArray(v) ? v : [v]).map((t) =>
+      resolve(base, t.replace(/\*$/, '')),
+    ),
     wild: k.endsWith('*'),
   }));
   // Filter on the alias prefixes so the plugin only fires for @/-style paths,
   // not every node_modules import.
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const filter = new RegExp(`^(?:${rules.map((r) => esc(r.prefix)).join('|')})`);
-  const exts = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '/index.ts', '/index.tsx', '/index.js', '/index.jsx'];
+  const filter = new RegExp(
+    `^(?:${rules.map((r) => esc(r.prefix)).join('|')})`,
+  );
+  const exts = [
+    '',
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+    '.mjs',
+    '/index.ts',
+    '/index.tsx',
+    '/index.js',
+    '/index.jsx',
+  ];
   return {
     name: 'tsconfig-paths',
     setup(b) {
       b.onResolve({ filter }, (args) => {
         for (const r of rules) {
-          if (r.wild ? !args.path.startsWith(r.prefix) : args.path !== r.prefix) continue;
+          if (r.wild ? !args.path.startsWith(r.prefix) : args.path !== r.prefix)
+            continue;
           const tail = r.wild ? args.path.slice(r.prefix.length) : '';
           for (const t of r.targets) {
             const stem = join(t, tail);
@@ -157,7 +202,8 @@ export function tsconfigPathsPlugin(tsconfigPath) {
               // Must be a *file* - bare existsSync matches a directory for ext=''
               // and short-circuits before trying '/index.*' (directory index-imports).
               const cand = stem + ext;
-              if (existsSync(cand) && statSync(cand).isFile()) return { path: cand };
+              if (existsSync(cand) && statSync(cand).isFile())
+                return { path: cand };
             }
           }
         }
@@ -204,7 +250,13 @@ function sharedBuildOptions({ nodePaths, tsconfig }) {
   };
 }
 
-export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig }) {
+export async function bundleToIife({
+  entry,
+  globalName,
+  nodePaths,
+  out,
+  tsconfig,
+}) {
   const bundleJs = join(out, '_ds_bundle.js');
   const bundleCss = join(out, '_ds_bundle.css');
   const shared = sharedBuildOptions({ nodePaths, tsconfig });
@@ -218,7 +270,9 @@ export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig
       // __dsMainNs (set by package-build when extraEntries are present) is
       // the main package's runtime namespace - Object.assign it over the
       // merged IIFE exports so main-package names win over icon collisions.
-      footer: { js: `window.${globalName}=${globalName}.__dsMainNs?Object.assign({},${globalName},${globalName}.__dsMainNs,{__dsMainNs:undefined}):${globalName};` },
+      footer: {
+        js: `window.${globalName}=${globalName}.__dsMainNs?Object.assign({},${globalName},${globalName}.__dsMainNs,{__dsMainNs:undefined}):${globalName};`,
+      },
       outfile: bundleJs,
       logLevel: 'warning',
       // iife can't evaluate import.meta.url natively - define it here only.
@@ -230,7 +284,13 @@ export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig
   } catch (e) {
     // Tag unbuilt workspace siblings - package exists in node_modules but its
     // entry points at a dist/ that hasn't been built.
-    const unresolved = [...new Set((e.errors ?? []).map((er) => er.text.match(/Could not resolve "([^"]+)"/)?.[1]).filter(Boolean))];
+    const unresolved = [
+      ...new Set(
+        (e.errors ?? [])
+          .map((er) => er.text.match(/Could not resolve "([^"]+)"/)?.[1])
+          .filter(Boolean),
+      ),
+    ];
     const siblings = unresolved.filter((p) => {
       const pj = join(nodePaths, p, 'package.json');
       if (!existsSync(pj)) return false;
@@ -238,7 +298,9 @@ export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig
         const j = JSON.parse(readFileSync(pj, 'utf8'));
         const ent = j.module ?? j.main ?? 'index.js';
         return !existsSync(join(nodePaths, p, ent));
-      } catch { return false; }
+      } catch {
+        return false;
+      }
     });
     if (siblings.length) {
       console.error(
@@ -246,7 +308,9 @@ export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig
           `Run their build, or npm install the published versions.`,
       );
     } else if (unresolved.length) {
-      console.error(`[UNRESOLVED_IMPORT] ${unresolved.join(', ')} \u2014 missing from node_modules.`);
+      console.error(
+        `[UNRESOLVED_IMPORT] ${unresolved.join(', ')} \u2014 missing from node_modules.`,
+      );
     }
     throw e;
   }
@@ -254,7 +318,9 @@ export async function bundleToIife({ entry, globalName, nodePaths, out, tsconfig
   const inlinedExternals = [
     ...new Set(
       Object.keys(buildResult?.metafile?.inputs ?? {})
-        .map((p) => p.match(/(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)\//)?.[1])
+        .map(
+          (p) => p.match(/(?:^|\/)node_modules\/((?:@[^/]+\/)?[^/]+)\//)?.[1],
+        )
         .filter((pkg) => pkg && !REACT_PKGS.has(pkg)),
     ),
   ].sort();
@@ -287,7 +353,9 @@ export async function bundleExportEvidence({ entry, nodePaths, tsconfig }) {
       logLevel: 'silent',
     });
     const out = Object.values(r.metafile?.outputs ?? {})[0];
-    const exports = new Set((out?.exports ?? []).filter((n) => n !== '__dsMainNs'));
+    const exports = new Set(
+      (out?.exports ?? []).filter((n) => n !== '__dsMainNs'),
+    );
     // The react-family shims are authored as CJS and appear in every build's
     // inputs under the 'shim:' namespace - they can't hide DS names, so
     // only genuinely-bundled CJS counts toward the unverifiable signal.
@@ -305,7 +373,10 @@ export async function bundleExportEvidence({ entry, nodePaths, tsconfig }) {
 // components feed the consuming agent and the ds_manifest;
 // sourceHashes + inlinedExternals drive the keep-vs-rebuild decision.
 // `*/` inside the JSON is escaped so the comment can't terminate early.
-export function stampHeader(bundleJs, { namespace, components, inlinedExternals }) {
+export function stampHeader(
+  bundleJs,
+  { namespace, components, inlinedExternals },
+) {
   const body = readFileSync(bundleJs, 'utf8');
   const out = dirname(bundleJs);
   // Keyed by per-component output paths - what decideBundleRebuild compares
@@ -317,7 +388,13 @@ export function stampHeader(bundleJs, { namespace, components, inlinedExternals 
       return ['.jsx', '.d.ts', '.prompt.md']
         .map((ext) => base + ext)
         .filter((rel) => existsSync(join(out, rel)))
-        .map((rel) => [rel, createHash('sha256').update(readFileSync(join(out, rel))).digest('hex').slice(0, 12)]);
+        .map((rel) => [
+          rel,
+          createHash('sha256')
+            .update(readFileSync(join(out, rel)))
+            .digest('hex')
+            .slice(0, 12),
+        ]);
     }),
   );
   const meta = {

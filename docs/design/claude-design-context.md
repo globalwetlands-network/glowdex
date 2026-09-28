@@ -36,16 +36,19 @@ There are **only two defined design tokens.** Everything else is a stock Tailwin
 there is no real colour system, and the green used for interactive elements everywhere
 (`#0f6e56`) is **not** the same as the official brand green (`#0a5c47`).
 
-**Defined tokens** — `tailwind.config.js:19–25`:
+**Defined tokens** — the `@theme` block in `src/styles/globals.css` (Tailwind v4 CSS-first config;
+there is no `tailwind.config.js`):
 
-| Token           | Hex       | Where used                                                                                                             |
-| --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `glowdex-green` | `#0a5c47` | Official brand green. Top bar background, menu-drawer header, PDF headers, `theme-color` meta. `tailwind.config.js:22` |
-| `glowdex-teal`  | `#1d9e75` | Brand teal. Partner/mangrove markers, biodiversity-panel accents. `tailwind.config.js:23`                              |
+| Token           | Hex       | Where used                                                                                                                           |
+| --------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `glowdex-green` | `#0a5c47` | Official brand green. Top bar background, menu-drawer header, PDF headers, `theme-color` meta. `globals.css` `--color-glowdex-green` |
+| `glowdex-teal`  | `#1d9e75` | Brand teal. Partner/mangrove markers, biodiversity-panel accents. `globals.css` `--color-glowdex-teal`                               |
 
-**Safelisted dynamic classes** (kept from purge for the statistical bars) — `tailwind.config.js:5–18`:
-`bg-glowdex-green`, `bg-glowdex-teal`, `bg-amber-500` (warning/mid), `bg-red-500` (low/high-stress),
-`bg-gray-50` (section shade).
+**Statistical-bar colours:** `bg-glowdex-green`, `bg-glowdex-teal`, `bg-amber-500` (warning/mid),
+`bg-red-500` (low/high-stress), `bg-gray-50` (section shade). These compile only because each
+class name is written out in full in `StatisticalDetailToggle.tsx`. Tailwind v4 has no safelist:
+a class built at runtime (e.g. `` `bg-${color}` ``) is dropped unless listed with
+`@source inline(...)` in `globals.css`.
 
 **Raw hex literals actually used across the UI** (not tokenised):
 
@@ -118,7 +121,7 @@ Scale of 18 (`hex_18`, `Typology_1…18`): `#FF3030 #CD2626 #EE7600 #EEC900 #EEA
 
 **There is no typography system.** No web fonts are loaded, no font packages in `package.json`,
 no `@font-face`, no Google Fonts link in `index.html`, and `src/styles/globals.css` contains
-only `@import 'tailwindcss';`. Type therefore falls back to the **Tailwind v4 default sans
+only `@import 'tailwindcss';` plus the two colour tokens in `@theme`. Type therefore falls back to the **Tailwind v4 default sans
 stack** (`ui-sans-serif, system-ui, …`) **(inferred)**.
 
 Sizes/weights are ad-hoc Tailwind utilities (no custom scale). Observed patterns:
@@ -134,7 +137,7 @@ Actual pixel sizes are Tailwind defaults **(inferred)**: `text-xs` ≈ 12px, `te
 
 ### 1.4 Spacing, border radius, shadow
 
-**No custom tokens** — `tailwind.config.js` only extends `colors`. All spacing/radius/shadow
+**No custom tokens** — `@theme` in `globals.css` defines only the two brand colours. All spacing/radius/shadow
 are Tailwind defaults **(inferred)**. Observed conventions:
 
 - **Radius:** `rounded-lg` and `rounded-md` dominate; `rounded-full` for pills/toggles;
@@ -792,7 +795,7 @@ cell.
 
 ### Appendix — key file paths
 
-- Colours/tokens: `tailwind.config.js`, `src/constants/map-colours.ts`,
+- Colours/tokens: `src/styles/globals.css` (`@theme`), `src/constants/map-colours.ts`,
   `src/data/constants/localWetlands.constants.ts`, `src/data/constants/speciesPalette.ts`
 - Typologies: `src/data/constants/typology.constants.ts`, `src/data/transforms/deriveTypologies.ts`,
   backend `src/ai/prompt-builders/build-typology-framework.ts`

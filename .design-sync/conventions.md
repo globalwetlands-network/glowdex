@@ -9,7 +9,10 @@ provider or theme wrapper — every component renders standalone once `styles.cs
 `styles.css` → `_ds_bundle.css` is the app's **compiled** Tailwind output. Only classes the app
 itself uses exist — an unused utility (e.g. `text-glowdex-green`, `bg-emerald-600`) silently
 does nothing. Before using a class you haven't seen below, grep `_ds_bundle.css` for it; if it's
-absent, use an inline `style={{…}}` with the hex value instead.
+absent, use the closest class that does exist. Don't fall back to inline `style`: the app is
+Tailwind-only, and inline styles are allowed only for data-driven values such as a typology fill
+colour computed at runtime. When a design is implemented, the app build compiles any fully
+spelled Tailwind class, so a new utility is fine in code even if it doesn't render here.
 
 | Role                                         | Classes that exist                                                                                                                |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -44,7 +47,8 @@ Cards are `rounded-xl border border-gray-100 bg-white p-5 shadow-sm`. Primary bu
 
 - `_ds_bundle.css` — the full class vocabulary. Grep it.
 - `components/<group>/<Name>/<Name>.prompt.md` + `<Name>.d.ts` — props and working examples.
-- `guidelines/` — the MBCAM design-context doc: palette roles, typology colours, verbatim copy,
+- `guidelines/docs/design/claude-design-context.md` — the MBCAM design-context doc (synced from
+  `docs/design/` in the app repo): palette roles, typology colours, verbatim copy,
   layout (side panel, mobile tabs) and user flows.
 
 ## Example

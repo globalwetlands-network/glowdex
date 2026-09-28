@@ -35,7 +35,7 @@
     "SearchMarkerIcon": "src/components/map/markers/SearchMarkerIcon.tsx",
     "SpeciesMarkerIcon": "src/components/map/markers/SpeciesMarkerIcon.tsx"
   },
-  "buildCmd": "npm run build && cp dist/assets/index-*.css dist/glowdex.css && node_modules/.bin/tsc -p .design-sync/tsconfig.dts.json",
+  "buildCmd": "npm run build && node .design-sync/copy-css.mjs && node_modules/.bin/tsc -p .design-sync/tsconfig.dts.json",
   "overrides": {
     "MenuDrawer": {
       "cardMode": "single",
