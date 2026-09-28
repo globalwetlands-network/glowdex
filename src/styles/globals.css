@@ -1,1 +1,7 @@
 @import 'tailwindcss';
+
+/* Brand colour tokens. Tailwind v4 generates bg-/text-/border-/ring-glowdex-* from these. */
+@theme {
+  --color-glowdex-green: #0a5c47;
+  --color-glowdex-teal: #1d9e75;
+}

@@ -30,3 +30,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# design-sync (claude.ai/design) generated output
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
