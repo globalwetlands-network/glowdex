@@ -44,9 +44,12 @@ some legacy widgets still in use. Prefer `features/` for new feature work.
   modules, styled-components, or inline `style` objects — except for genuinely dynamic values
   that can't be expressed as utilities (e.g. a typology fill color computed at runtime).
   Global CSS lives in `src/styles/`. Brand colors are the custom tokens `glowdex-green`
-  (`#0a5c47`) and `glowdex-teal` (`#1d9e75`), defined in `tailwind.config.js`. **Gotcha:** any
-  class name built dynamically (e.g. `` `bg-${color}` ``) is purged at build unless added to
-  the `safelist` in `tailwind.config.js` — prefer static, fully-spelled class names.
+  (`#0a5c47`) and `glowdex-teal` (`#1d9e75`), defined in the `@theme` block in
+  `src/styles/globals.css` (Tailwind v4 CSS-first config; there is no `tailwind.config.js`).
+  **Gotcha:** Tailwind only compiles class names it finds spelled out in full in source, so a
+  class built dynamically (e.g. `` `bg-${color}` ``) is dropped at build. Prefer static,
+  fully-spelled class names; if you truly can't, list them with `@source inline("…")` in
+  `globals.css`.
 - **API calls — never `fetch` directly.** Call `apiClient<T>(endpoint, options)` from
   `@/api/client` inside a per-resource function in `src/api/*.ts` (e.g. `fetchPartners`,
   `fetchInsight`). `apiClient` injects the `x-api-key` header and base URL, applies a timeout,
