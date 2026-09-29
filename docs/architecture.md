@@ -29,6 +29,23 @@ Two data sources feed the UI:
 - **Backend API** — statistics, species, partners, and AI insight fetched from `glowdex-api`
   through `src/api/`.
 
+## Routing
+
+`src/main.tsx` mounts a `BrowserRouter` with two routes: `/` renders the public landing
+`Hero` (`src/features/landing/`) and `/map` renders the map app (`App.tsx`); anything else
+redirects to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
+in dev and under `/glowdex/` on GitHub Pages.
+
+GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
+workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages serves that for any unknown
+path, the SPA boots, and the router renders the matching route. (Deep links therefore return
+HTTP 404 with the correct page, which browsers ignore; a crawler would see the status.)
+
+The hero media (static photo vs crab video) is selected by `resolveHeroMediaVariant`
+(`src/features/landing/config/heroMedia.ts`): the `?hero=photo|video` query param wins, then
+`VITE_PUBLIC_HERO_MEDIA`, then `photo`. The video falls back to its poster for
+`prefers-reduced-motion`, Data Saver / slow connections, and playback errors.
+
 ## Layout & composition
 
 `src/app/` is the composition root. `AppProviders.tsx` wraps the tree (React Query client,
