@@ -46,7 +46,7 @@ createRoot(document.getElementById('root')!).render(
       {isPostHogConfigured ? (
         <PostHogProvider client={posthog}>{routes}</PostHogProvider>
       ) : (
-        { routes }
+        routes
       )}
     </BrowserRouter>
   </StrictMode>,
