@@ -33,7 +33,7 @@ Two data sources feed the UI:
 
 `src/main.tsx` mounts a `BrowserRouter` with two routes: `/` renders the public landing
 `Hero` (`src/features/landing/`) and `/map` renders the map app (`App.tsx`); anything else
-redirects to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
+redirects to `/`. The map's TopBar menu has a **Home** item that navigates back to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
 in dev and under `/glowdex/` on GitHub Pages.
 
 GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
