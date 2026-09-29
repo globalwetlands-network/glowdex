@@ -136,7 +136,9 @@ export const EXAMPLE_QUOTE = {
 const GLOBAL_SUMMARY =
   'This urban mangrove system in South Africa shows ' +
   `${EXAMPLE_HIGHLIGHT}, while invertebrate density is near median and ` +
-  'species threat is moderately low.';
+  // The SCORE is low, which means MORE threatened species (higher score =
+  // fewer threatened species) — never shorten this to "threat is low".
+  'the species threat score is moderately low.';
 
 /**
  * Illustrative assistant summaries for the worked example — one per mode.

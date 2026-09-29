@@ -58,13 +58,23 @@ describe('worked example fixture', () => {
     // "invertebrate density is near median"
     expect(percentile.mang_invert_dens).toBeGreaterThanOrEqual(35);
     expect(percentile.mang_invert_dens).toBeLessThanOrEqual(65);
-    // "the species threat score is moderately low"
+    // "the species threat score is moderately low" — a low score means MORE
+    // threatened species (see the indicator's direction below)
     expect(percentile.mang_spec_score).toBeLessThan(50);
+    const specScore = Object.values(EXAMPLE_DISTRIBUTIONS)
+      .flat()
+      .find((d) => d.indicator.key === 'mang_spec_score')!.indicator;
+    expect(specScore.direction).toBe(1);
+    expect(specScore.description).toMatch(/higher score = fewer threatened/);
     // "exceptionally low fish density … near median … moderately low"
     for (const insight of Object.values(EXAMPLE_INSIGHTS)) {
       expect(insight.text).toContain('exceptionally low fish density');
       expect(insight.text).toContain('invertebrate density is near median');
-      expect(insight.text).toContain('species threat is moderately low');
+      expect(insight.text).toContain(
+        'the species threat score is moderately low',
+      );
+      // Saying the THREAT (not the score) is low would invert the meaning.
+      expect(insight.text).not.toMatch(/species threat is/);
     }
     // "covers 64 hectares"
     expect(Math.round(EXAMPLE_MANGROVE_AREA_HA)).toBe(64);

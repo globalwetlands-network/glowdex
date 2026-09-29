@@ -1,4 +1,5 @@
 import {
+  Component,
   Suspense,
   lazy,
   useEffect,
@@ -19,6 +20,38 @@ const SeeItInAction = lazy(() =>
 /** Reserves the section's space until its chunk has loaded. */
 function SectionPlaceholder() {
   return <div aria-hidden="true" className="min-h-[900px] bg-[#f7f8f6]" />;
+}
+
+interface SectionErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface SectionErrorBoundaryState {
+  hasError: boolean;
+}
+
+/**
+ * Contains a failure in an optional below-the-fold section (e.g. its lazy
+ * chunk failing to load after a redeploy) so it can't take the hero — and the
+ * way into the map — down with it. The section is simply omitted.
+ */
+class SectionErrorBoundary extends Component<
+  SectionErrorBoundaryProps,
+  SectionErrorBoundaryState
+> {
+  state: SectionErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): SectionErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error('Landing page section failed to load:', error);
+  }
+
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
 }
 
 /** Mounts `children` once the placeholder scrolls within ~one viewport. */
@@ -54,11 +87,13 @@ export function LandingPage() {
   return (
     <>
       <Hero />
-      <WhenNearViewport>
-        <Suspense fallback={<SectionPlaceholder />}>
-          <SeeItInAction />
-        </Suspense>
-      </WhenNearViewport>
+      <SectionErrorBoundary>
+        <WhenNearViewport>
+          <Suspense fallback={<SectionPlaceholder />}>
+            <SeeItInAction />
+          </Suspense>
+        </WhenNearViewport>
+      </SectionErrorBoundary>
     </>
   );
 }
