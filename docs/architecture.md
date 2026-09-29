@@ -36,6 +36,14 @@ Two data sources feed the UI:
 redirects to `/`. The map's TopBar menu has a **Home** item that navigates back to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
 in dev and under `/glowdex/` on GitHub Pages.
 
+The map app is **lazy-loaded** (`React.lazy` + `Suspense` with `LoadingState`), so `/` doesn't
+download mapbox-gl, plotly, etc. Once the Hero has painted and the browser is idle (skipped on
+Data Saver / slow connections), and on hover/focus/touch of any `/map` link, `preloadMapApp()`
+(`src/features/landing/preloadMapApp.ts`) fetches that chunk and starts the dataset loads.
+The data hooks read through shared caches in `src/data/preload.ts` (`createCachedLoader`), so
+`/map` picks up the preloaded data and skips `LoadingState`, and remounts (Home → map) reuse
+it. Each hook's `reload()` clears its cache entry, so the retry flow still refetches.
+
 GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
 workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages serves that for any unknown
 path, the SPA boots, and the router renders the matching route. (Deep links therefore return

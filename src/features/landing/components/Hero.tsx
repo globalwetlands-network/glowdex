@@ -1,8 +1,18 @@
+import { useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '@/assets/globalwetlands.png';
 import { resolveHeroMediaVariant } from '../config/heroMedia';
+import { useSlowConnection } from '../hooks/useSlowConnection';
+import { preloadMapApp } from '../preloadMapApp';
 import { HeroMedia } from './HeroMedia';
+
+/** Start loading the map as soon as the visitor shows intent to open it. */
+const PRELOAD_ON_INTENT = {
+  onPointerEnter: preloadMapApp,
+  onFocus: preloadMapApp,
+  onTouchStart: preloadMapApp,
+};
 
 /**
  * Public landing page: full-bleed hero with a transparent header overlaid on
@@ -12,6 +22,20 @@ import { HeroMedia } from './HeroMedia';
 export function Hero() {
   const { search } = useLocation();
   const variant = resolveHeroMediaVariant(search);
+  const isSlowConnection = useSlowConnection();
+
+  // Preload the map app and its data once the hero has painted and the browser
+  // is idle, so /map opens without a loading screen. Skipped on Data Saver /
+  // slow connections, where only link intent (hover/focus/touch) triggers it.
+  useEffect(() => {
+    if (isSlowConnection) return;
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(preloadMapApp, { timeout: 5000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(preloadMapApp, 1500);
+    return () => window.clearTimeout(id);
+  }, [isSlowConnection]);
 
   return (
     <div className="relative h-screen min-h-[560px] w-full overflow-hidden bg-[#08120e]">
@@ -39,6 +63,7 @@ export function Hero() {
         </nav>
         <Link
           to="/map"
+          {...PRELOAD_ON_INTENT}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-white hover:underline"
         >
           Open the map
@@ -63,6 +88,7 @@ export function Hero() {
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
               <Link
                 to="/map"
+                {...PRELOAD_ON_INTENT}
                 className="w-full rounded-md bg-white px-3.5 py-2 text-center text-[13px] font-bold text-glowdex-green hover:bg-[#f2f1ec]"
               >
                 Local animal data
@@ -82,6 +108,7 @@ export function Hero() {
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
               <Link
                 to="/map"
+                {...PRELOAD_ON_INTENT}
                 className="w-full rounded-md bg-white px-3.5 py-2 text-center text-[13px] font-bold text-glowdex-green hover:bg-[#f2f1ec]"
               >
                 Global assessment

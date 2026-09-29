@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { loadIndicators } from '../loaders/loadIndicators';
+import { indicatorsCache } from '../preload';
 import type {
   Indicator,
   IndicatorDimension,
@@ -30,13 +30,19 @@ function groupByDimension(indicators: Indicator[]): IndicatorDimension[] {
  * Returns flat list of indicators and grouped by dimension
  */
 export function useIndicators() {
-  const [indicators, setIndicators] = useState<Indicator[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Seeded from the shared cache when the landing page already loaded it.
+  const [indicators, setIndicators] = useState<Indicator[]>(
+    () => indicatorsCache.peek() ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(
+    () => indicatorsCache.peek() === undefined,
+  );
   const [error, setError] = useState<Error | null>(null);
   const [reloadIndex, setReloadIndex] = useState(0);
 
   /** Re-attempts the load (used by the retry flow after resetting the manifest). */
   const reload = useCallback(() => {
+    indicatorsCache.clear();
     setIsLoading(true);
     setError(null);
     setReloadIndex((index) => index + 1);
@@ -53,7 +59,7 @@ export function useIndicators() {
      */
     async function load() {
       try {
-        const data = await loadIndicators();
+        const data = await indicatorsCache.get();
         if (cancelled) return;
         setIndicators(data);
         setIsLoading(false);

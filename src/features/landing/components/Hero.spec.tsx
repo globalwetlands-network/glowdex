@@ -1,7 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { preloadMapApp } from '../preloadMapApp';
 import { Hero } from './Hero';
+
+// Keep the real map chunk and dataset loads out of jsdom.
+vi.mock('../preloadMapApp', () => ({ preloadMapApp: vi.fn() }));
 
 function mockReducedMotion(matches: boolean) {
   vi.stubGlobal(
@@ -26,6 +30,7 @@ function renderHero(url = '/') {
 describe('Hero', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.mocked(preloadMapApp).mockClear();
   });
 
   it('renders the headline, subhead, and both choices with their bylines visible', () => {
@@ -92,5 +97,15 @@ describe('Hero', () => {
     expect(
       screen.getByAltText(/crab walking among mangrove roots/i),
     ).toBeInTheDocument();
+  });
+
+  it('preloads the map app when the visitor shows intent to open it', () => {
+    renderHero();
+
+    const openMap = screen.getByRole('link', { name: /open the map/i });
+    fireEvent.pointerEnter(openMap);
+    fireEvent.focus(screen.getByRole('link', { name: 'Global assessment' }));
+
+    expect(preloadMapApp).toHaveBeenCalledTimes(2);
   });
 });
