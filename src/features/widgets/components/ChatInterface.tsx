@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Children, useState, useEffect, type ReactNode } from 'react';
 import {
   Send,
   User,
@@ -28,11 +28,43 @@ import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
 import { StatisticalDetailToggle } from './StatisticalDetailToggle';
 
+/** Wraps each occurrence of `phrases` in the given text children in a <mark>. */
+function highlightPhrases(children: ReactNode, phrases: string[]): ReactNode {
+  const escaped = phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(${escaped.join('|')})`, 'g');
+  return Children.map(children, (child) =>
+    typeof child === 'string'
+      ? child.split(pattern).map((part, i) =>
+          i % 2 === 1 ? (
+            <mark
+              key={i}
+              className="rounded bg-orange-200/70 px-0.5 text-gray-900"
+            >
+              {part}
+            </mark>
+          ) : (
+            part
+          ),
+        )
+      : child,
+  );
+}
+
 interface ChatInterfaceProps {
   selectedCellId?: number | null;
   initialInsight?: InsightResponse;
   initialError?: Error | null;
   localSiteContext?: LocalSiteContext | null;
+  /**
+   * Static showcase mode: suggestions and the follow-up input render but are
+   * disabled, and `readOnlyHint` is shown under the input instead.
+   */
+  readOnly?: boolean;
+  readOnlyHint?: ReactNode;
+  /** Overrides the VITE_PUBLIC_FEATURE_AI_SUGGESTIONS flag when set. */
+  showSuggestions?: boolean;
+  /** Phrases to highlight in assistant messages (e.g. a showcase's key finding). */
+  highlights?: string[];
 }
 
 export function ChatInterface({
@@ -40,6 +72,10 @@ export function ChatInterface({
   initialInsight,
   initialError,
   localSiteContext,
+  readOnly = false,
+  readOnlyHint,
+  showSuggestions = AI_SUGGESTIONS_ENABLED,
+  highlights,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
   // Tracks which cell ID the user dismissed suggestions for.
@@ -108,6 +144,7 @@ export function ChatInterface({
     if (
       !inputValue.trim() ||
       !selectedCellId ||
+      readOnly ||
       isLoading ||
       inputValue.length > 500
     ) {
@@ -139,7 +176,12 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-[400px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+    <div
+      className={`flex flex-col border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm ${
+        // A static showcase has no growing conversation: size to content.
+        readOnly ? '' : 'h-[400px]'
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center space-x-2 bg-gray-50 p-3 border-b border-gray-200 shrink-0">
         <div className="bg-blue-100 p-1.5 rounded-md">
@@ -157,7 +199,9 @@ export function ChatInterface({
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50"
+        className={`p-4 space-y-4 bg-gray-50/50 ${
+          readOnly ? '' : 'flex-1 overflow-y-auto'
+        }`}
       >
         {initialError && (
           <div className="flex items-start space-x-2 text-red-600 bg-red-50 p-3 rounded-md text-sm border border-red-100">
@@ -212,6 +256,16 @@ export function ChatInterface({
                           />
                         );
                       },
+                      ...(highlights?.length && {
+                        p: ({ node, children, ...props }) => {
+                          void node; // non-DOM remark AST prop, excluded from spread
+                          return (
+                            <p {...props}>
+                              {highlightPhrases(children, highlights)}
+                            </p>
+                          );
+                        },
+                      }),
                     }}
                   >
                     {msg.content}
@@ -288,7 +342,7 @@ export function ChatInterface({
       {/* Prompt suggestions — shown before first follow-up when feature flag is on.
           The local field data suggestion is only included when localSiteContext
           is present — showing it without data would be misleading. */}
-      {AI_SUGGESTIONS_ENABLED &&
+      {showSuggestions &&
         messages.length === 0 &&
         !!initialInsight &&
         suggestionsVisible && (
@@ -298,16 +352,18 @@ export function ChatInterface({
                 <Sparkles className="w-3 h-3" />
                 Suggested questions
               </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setSuggestionsDismissedForCell(selectedCellId ?? null)
-                }
-                className="p-0.5 rounded text-gray-300 hover:text-gray-500 transition-colors cursor-pointer"
-                aria-label="Dismiss suggested questions"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSuggestionsDismissedForCell(selectedCellId ?? null)
+                  }
+                  className="p-0.5 rounded text-gray-300 hover:text-gray-500 transition-colors cursor-pointer"
+                  aria-label="Dismiss suggested questions"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {[
@@ -317,7 +373,7 @@ export function ChatInterface({
                 <button
                   key={suggestion}
                   type="button"
-                  disabled={isLoading}
+                  disabled={isLoading || readOnly}
                   onClick={() => handleAsk(suggestion)}
                   className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -336,19 +392,22 @@ export function ChatInterface({
             value={inputValue}
             maxLength={500}
             onChange={(e) => setInputValue(e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || readOnly}
             placeholder="Ask a follow-up question..."
             className="w-full pl-4 pr-12 py-2.5 bg-gray-50 border rounded-lg text-sm"
           />
 
           <button
             type="submit"
-            disabled={!inputValue.trim() || isLoading}
+            disabled={!inputValue.trim() || isLoading || readOnly}
             className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 cursor-pointer disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
           </button>
         </form>
+        {readOnly && readOnlyHint && (
+          <div className="text-xs text-center pt-2">{readOnlyHint}</div>
+        )}
         <p className="text-[10px] text-gray-400 text-center px-3 pb-2 leading-relaxed">
           AI-generated interpretation · Always verify with an expert ·{' '}
           <a

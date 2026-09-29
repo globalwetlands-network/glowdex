@@ -3,7 +3,7 @@ import { datasetClient } from '@/data/store/datasetClient';
 import type { Indicator } from '@/features/widgets/types/indicator.types';
 
 // Types for raw JSON structure
-interface IndicatorRaw {
+export interface IndicatorRaw {
   indicator: string;
   label: string;
   units?: string;
@@ -31,7 +31,7 @@ const HABITAT_PREFIX_MAP: Record<string, string> = {
  * Transforms raw indicator data into typed Indicator objects
  * Adds habitat prefixes to labels (e.g., "Fish density" -> "Mangrove Fish density")
  */
-function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
+export function transformIndicators(raw: IndicatorRaw[]): Indicator[] {
   return raw.map((i) => {
     const habitatKey = i.habitat;
     const habitatLabel = HABITAT_MAP[habitatKey] || 'all';
