@@ -1,9 +1,15 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import './styles/globals.css';
-import App from './app/App';
+import { LoadingState } from '@/app/components/LoadingState';
+import { Hero } from '@/features/landing/components/Hero';
+
+// Lazy so the landing page doesn't download the map app (mapbox-gl, plotly, …)
+// up front. The Hero preloads this same chunk in the background.
+const App = lazy(() => import('@/app/App'));
 
 const POSTHOG_ENABLED = import.meta.env.VITE_PUBLIC_POSTHOG_ENABLED === 'true';
 const POSTHOG_KEY = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
@@ -17,7 +23,8 @@ const isPostHogConfigured = Boolean(
 if (isPostHogConfigured) {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
-    capture_pageview: true,
+    // Client-side routing (/ → /map) needs history-based pageview capture.
+    capture_pageview: 'history_change',
     autocapture: true,
     session_recording: {
       maskAllInputs: true,
@@ -29,14 +36,29 @@ if (isPostHogConfigured) {
   }
 }
 
+const routes = (
+  <Routes>
+    <Route path="/" element={<Hero />} />
+    <Route
+      path="/map"
+      element={
+        <Suspense fallback={<LoadingState />}>
+          <App />
+        </Suspense>
+      }
+    />
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
+);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isPostHogConfigured ? (
-      <PostHogProvider client={posthog}>
-        <App />
-      </PostHogProvider>
-    ) : (
-      <App />
-    )}
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      {isPostHogConfigured ? (
+        <PostHogProvider client={posthog}>{routes}</PostHogProvider>
+      ) : (
+        routes
+      )}
+    </BrowserRouter>
   </StrictMode>,
 );

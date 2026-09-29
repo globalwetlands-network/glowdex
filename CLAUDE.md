@@ -27,6 +27,7 @@ architecture doc when you need detail.
 | Path                                                                                      | Responsibility                                                                                                               |
 | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/`                                                                                | Composition root: `App.tsx`, `AppProviders.tsx`, top-level layout, panels, and app-level hooks                               |
+| `src/features/landing/`                                                                   | Public landing page at `/` (`Hero.tsx`, hero media toggle, reduced-motion/slow-connection hooks)                             |
 | `src/features/map/`                                                                       | Map shell (`Map.tsx`), layers (`GridLayer.tsx`), map hooks (interaction, view state)                                         |
 | `src/features/widgets/`                                                                   | Analysis widgets (selection panel, filters, violin plot, chat/AI insights) + their hooks/types/config                        |
 | `src/features/analytics/`                                                                 | PostHog wiring                                                                                                               |
@@ -37,6 +38,11 @@ architecture doc when you need detail.
 
 Newer code lives under `src/features/` and `src/app/`; `src/components/` holds shared and
 some legacy widgets still in use. Prefer `features/` for new feature work.
+
+**Routing:** `react-router-dom` in `src/main.tsx` — `/` → landing `Hero`, `/map` → the map
+app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL` (`/glowdex/` in prod);
+the Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
+`/glowdex/map` work on GitHub Pages.
 
 ## Conventions & patterns
 
