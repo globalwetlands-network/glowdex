@@ -10,19 +10,19 @@ interface WhoItsForProps {
 
 /**
  * Persona blocks, each with the question that audience brings and how MBCAM
- * answers it. The grid auto-fits its columns, so three or four personas lay
- * out without a code change.
+ * answers it as short bullet points. The grid auto-fits its columns, so three
+ * or four personas lay out without a code change.
  */
 export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
   return (
     <section
       aria-labelledby="who-its-for-heading"
-      className="bg-[#f7f8f6] px-6 py-20 md:px-16"
+      className="bg-glowdex-green px-6 py-20 md:px-16"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <h2
           id="who-its-for-heading"
-          className="m-0 text-3xl font-bold text-gray-900 md:text-5xl"
+          className="m-0 text-3xl font-bold text-white md:text-5xl"
         >
           {WHO_ITS_FOR_HEADING}
         </h2>
@@ -38,9 +38,11 @@ export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
               <p className="m-0 text-xl leading-snug font-bold text-gray-900">
                 {persona.question}
               </p>
-              <p className="m-0 text-base leading-relaxed text-gray-600">
-                {persona.description}
-              </p>
+              <ul className="m-0 list-disc space-y-2 pl-5 text-base leading-relaxed text-gray-600 marker:text-glowdex-green">
+                {persona.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>

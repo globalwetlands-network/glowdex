@@ -55,6 +55,20 @@ describe('LandingPage', () => {
       within(main).getByRole('region', { name: /how it works/i }),
     ).toBeInTheDocument();
 
+    // The lower sections follow in order.
+    const lower = [
+      'Why it matters',
+      'Built with research partners worldwide',
+      'Frequently asked questions',
+      'Ready to explore?',
+    ].map((name) => within(main).getByRole('region', { name }));
+    for (let i = 1; i < lower.length; i++) {
+      expect(
+        lower[i - 1].compareDocumentPosition(lower[i]) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+
     consoleError.mockRestore();
   });
 });

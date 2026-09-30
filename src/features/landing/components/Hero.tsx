@@ -6,14 +6,9 @@ import { MONITORING_SITES_COUNT } from '../config/factSheet';
 import { resolveHeroMediaVariant } from '../config/heroMedia';
 import { useSlowConnection } from '../hooks/useSlowConnection';
 import { preloadMapApp } from '../preloadMapApp';
+import { PRELOAD_ON_INTENT } from '../preloadOnIntent';
 import { HeroMedia } from './HeroMedia';
-
-/** Start loading the map as soon as the visitor shows intent to open it. */
-const PRELOAD_ON_INTENT = {
-  onPointerEnter: preloadMapApp,
-  onFocus: preloadMapApp,
-  onTouchStart: preloadMapApp,
-};
+import { MapCtaLink } from './MapCtaLink';
 
 /**
  * Public landing page: full-bleed hero with a transparent header overlaid on
@@ -89,13 +84,7 @@ export function Hero() {
           </h2>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-5">
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
-              <Link
-                to="/map"
-                {...PRELOAD_ON_INTENT}
-                className="w-full rounded-md bg-white px-3.5 py-2 text-center text-[13px] font-bold text-glowdex-green hover:bg-[#f2f1ec]"
-              >
-                Local animal data
-              </Link>
+              <MapCtaLink className="w-full">Local animal data</MapCtaLink>
               <p className="m-0 text-[11px] leading-[1.35] text-white">
                 Wildlife recorded by partners at monitoring sites.{' '}
                 {/* TODO: link to the covered-locations list once it exists */}
@@ -109,13 +98,7 @@ export function Hero() {
               </p>
             </div>
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
-              <Link
-                to="/map"
-                {...PRELOAD_ON_INTENT}
-                className="w-full rounded-md bg-white px-3.5 py-2 text-center text-[13px] font-bold text-glowdex-green hover:bg-[#f2f1ec]"
-              >
-                Global assessment
-              </Link>
+              <MapCtaLink className="w-full">Global assessment</MapCtaLink>
               <p className="m-0 text-[11px] leading-[1.35] text-white">
                 Overall ecosystem condition for any mangrove area.
               </p>

@@ -35,16 +35,18 @@ export function HowItWorks({ steps = HOW_IT_WORKS_STEPS }: HowItWorksProps) {
         >
           {steps.map((step, index) => (
             <li key={step.title} className="flex flex-col gap-3">
-              {/* Decorative: the <ol> already announces each step's number. */}
-              <span
-                aria-hidden="true"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-glowdex-green text-base font-bold text-white"
-              >
-                {index + 1}
-              </span>
-              <h3 className="m-0 text-xl font-bold text-gray-900">
-                {step.title}
-              </h3>
+              <div className="flex items-center gap-3">
+                {/* Decorative: the <ol> already announces each step's number. */}
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-glowdex-green text-sm font-bold text-white"
+                >
+                  {index + 1}
+                </span>
+                <h3 className="m-0 text-xl font-bold text-gray-900">
+                  {step.title}
+                </h3>
+              </div>
               <p className="m-0 text-base leading-relaxed text-gray-600">
                 {step.description}
               </p>

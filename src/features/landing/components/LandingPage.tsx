@@ -7,10 +7,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { ClosingCta } from './ClosingCta';
 import { FactSheet } from './FactSheet';
+import { Faqs } from './Faqs';
 import { Hero } from './Hero';
 import { HowItWorks } from './HowItWorks';
+import { Partners } from './Partners';
 import { WhoItsFor } from './WhoItsFor';
+import { WhyItMatters } from './WhyItMatters';
 
 // Lazy: the worked example reuses the app's widgets (plotly, react-markdown,
 // …), which must not weigh down the hero's first paint.
@@ -20,9 +24,18 @@ const SeeItInAction = lazy(() =>
   })),
 );
 
-/** Reserves the section's space until its chunk has loaded. */
+/**
+ * Reserves the section's space until its chunk has loaded, sized to the
+ * measured section (carousel plus assistant explainer) so the sections below
+ * don't jump when it mounts. White, like the section it stands in for.
+ */
 function SectionPlaceholder() {
-  return <div aria-hidden="true" className="min-h-[900px] bg-[#f7f8f6]" />;
+  return (
+    <div
+      aria-hidden="true"
+      className="min-h-[2300px] bg-white lg:min-h-[1760px]"
+    />
+  );
 }
 
 interface SectionErrorBoundaryProps {
@@ -87,7 +100,8 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
 
 /**
  * Public landing page at `/`: the hero, the fact sheet, the worked example,
- * who it's for, then how it works.
+ * who it's for, how it works, why it matters, partners, FAQs, then the
+ * closing call to action.
  */
 export function LandingPage() {
   return (
@@ -103,6 +117,10 @@ export function LandingPage() {
       </SectionErrorBoundary>
       <WhoItsFor />
       <HowItWorks />
+      <WhyItMatters />
+      <Partners />
+      <Faqs />
+      <ClosingCta />
     </main>
   );
 }
