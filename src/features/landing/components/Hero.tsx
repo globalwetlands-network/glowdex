@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '@/assets/globalwetlands.png';
+import { MONITORING_SITES_COUNT } from '../config/factSheet';
 import { resolveHeroMediaVariant } from '../config/heroMedia';
 import { useSlowConnection } from '../hooks/useSlowConnection';
 import { preloadMapApp } from '../preloadMapApp';
@@ -18,6 +19,8 @@ const PRELOAD_ON_INTENT = {
  * Public landing page: full-bleed hero with a transparent header overlaid on
  * the media. Both choices route to the map app at /map. Both bylines are always
  * visible, with no hover or disclosure needed (a hard design requirement).
+ * The page-level `<main>` belongs to `LandingPage`, which wraps this hero and
+ * the sections below it.
  */
 export function Hero() {
   const { search } = useLocation();
@@ -71,7 +74,7 @@ export function Hero() {
         </Link>
       </header>
 
-      <main className="relative z-[1] flex h-full max-w-[620px] flex-col justify-center gap-3 px-6 md:px-16">
+      <div className="relative z-[1] flex h-full max-w-[620px] flex-col justify-center gap-3 px-6 md:px-16">
         <h1 className="m-0 text-4xl leading-[1.05] font-bold text-white md:text-[54px]">
           Explore the world&apos;s mangroves
         </h1>
@@ -102,7 +105,7 @@ export function Hero() {
                 .
               </p>
               <p className="m-0 text-[10px] text-[#d8e3da]">
-                14 sites, and growing
+                {MONITORING_SITES_COUNT} sites, and growing
               </p>
             </div>
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
@@ -127,7 +130,7 @@ export function Hero() {
             .
           </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

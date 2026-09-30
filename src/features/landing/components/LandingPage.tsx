@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { FactSheet } from './FactSheet';
 import { Hero } from './Hero';
 import { WhoItsFor } from './WhoItsFor';
 
@@ -83,11 +84,12 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
-/** Public landing page at `/`: the hero, the worked example, then who it's for. */
+/** Public landing page at `/`: the hero, the fact sheet, the worked example, then who it's for. */
 export function LandingPage() {
   return (
-    <>
+    <main>
       <Hero />
+      <FactSheet />
       <SectionErrorBoundary>
         <WhenNearViewport>
           <Suspense fallback={<SectionPlaceholder />}>
@@ -96,6 +98,6 @@ export function LandingPage() {
         </WhenNearViewport>
       </SectionErrorBoundary>
       <WhoItsFor />
-    </>
+    </main>
   );
 }
