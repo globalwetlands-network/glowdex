@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Hero } from './Hero';
+import { HowItWorks } from './HowItWorks';
 import { WhoItsFor } from './WhoItsFor';
 
 // Lazy: the worked example reuses the app's widgets (plotly, react-markdown,
@@ -83,7 +84,10 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
-/** Public landing page at `/`: the hero, the worked example, then who it's for. */
+/**
+ * Public landing page at `/`: the hero, the worked example, who it's for, then
+ * how it works.
+ */
 export function LandingPage() {
   return (
     <>
@@ -96,6 +100,7 @@ export function LandingPage() {
         </WhenNearViewport>
       </SectionErrorBoundary>
       <WhoItsFor />
+      <HowItWorks />
     </>
   );
 }
