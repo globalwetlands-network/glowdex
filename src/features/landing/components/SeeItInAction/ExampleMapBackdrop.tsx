@@ -49,7 +49,8 @@ export function ExampleMapBackdrop({
     : null;
 
   return (
-    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-[#e8ece9] sm:aspect-video">
+    // Fills the carousel stage, so map steps share the panel steps' frame.
+    <div className="relative h-full w-full overflow-hidden rounded-lg bg-[#e8ece9]">
       {src && (
         <img
           src={src}

@@ -24,9 +24,18 @@ const SeeItInAction = lazy(() =>
   })),
 );
 
-/** Reserves the section's space until its chunk has loaded. */
+/**
+ * Reserves the section's space until its chunk has loaded, sized to the
+ * measured section (carousel plus assistant explainer) so the sections below
+ * don't jump when it mounts. White, like the section it stands in for.
+ */
 function SectionPlaceholder() {
-  return <div aria-hidden="true" className="min-h-[900px] bg-[#f7f8f6]" />;
+  return (
+    <div
+      aria-hidden="true"
+      className="min-h-[2200px] bg-white lg:min-h-[1600px]"
+    />
+  );
 }
 
 interface SectionErrorBoundaryProps {

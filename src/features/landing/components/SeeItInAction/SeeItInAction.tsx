@@ -32,11 +32,24 @@ import {
   type ExampleTarget,
 } from './content';
 import { ExampleMapBackdrop } from './ExampleMapBackdrop';
+import { FitToStage } from './FitToStage';
 import { LandingQueryProvider } from './LandingQueryProvider';
 
 const noop = () => {};
 
 const MODES: ExampleMode[] = ['local', 'global'];
+
+/**
+ * One width for every panel-style step (the app's side-panel width), so the
+ * panels don't change size between steps; FitToStage scales them to fit.
+ */
+const PANEL_CLASS = 'w-[448px]';
+
+/** Steps shown on a map, which fills the stage rather than being scaled. */
+const MAP_TARGETS: ReadonlySet<ExampleTarget> = new Set([
+  'site-tooltip',
+  'tile-tooltip',
+]);
 
 /**
  * The real app component for each part of the worked example, fed the same
@@ -64,7 +77,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
       );
     case 'local-chart':
       return (
-        <div className="mx-auto w-full max-w-md rounded-xl bg-white p-3 shadow-sm">
+        <div className={`${PANEL_CLASS} rounded-xl bg-white p-3 shadow-sm`}>
           <LocalWetlandsAnalysisWidget
             localSites={EXAMPLE_LOCAL_SITES}
             localDataUpdated={EXAMPLE_LOCAL_UPDATED}
@@ -91,7 +104,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
     }
     case 'typology-panel':
       return (
-        <div className="mx-auto w-full max-w-md">
+        <div className={PANEL_CLASS}>
           <SelectionPanel
             selectedCell={EXAMPLE_CELL}
             typologies={EXAMPLE_TYPOLOGIES}
@@ -101,7 +114,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
       );
     case 'global-chart':
       return (
-        <div className="mx-auto w-full max-w-xl rounded-xl bg-white p-3 shadow-sm">
+        <div className={`${PANEL_CLASS} rounded-xl bg-white p-3 shadow-sm`}>
           <GroupedViolinPlot
             distributions={EXAMPLE_DISTRIBUTIONS}
             selectedCellId={EXAMPLE_CELL.id}
@@ -110,7 +123,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
       );
     case 'assistant':
       return (
-        <div className="mx-auto w-full max-w-2xl">
+        <div className={PANEL_CLASS}>
           <AnalysisAssistantWidget
             // Global mode has no local context, so the local-data chip and
             // local findings drop out, just as in the app.
@@ -163,38 +176,25 @@ export function SeeItInAction() {
     <LandingQueryProvider>
       <section className="bg-white px-6 py-20 md:px-16">
         <div className="mx-auto flex max-w-6xl flex-col gap-16">
-          <div className="flex flex-col gap-10">
-            <header className="max-w-3xl">
-              <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-5xl">
-                {SECTION_HEADING}
-              </h2>
-              <p className="m-0 mt-4 text-base text-gray-600 md:text-lg">
-                {SECTION_SUBHEAD}
-              </p>
-            </header>
+          {/* Two columns from lg: title and controls beside the example, so
+              both are on screen together. Below lg the controls sit above the
+              stage, where a tall example can't push them out of view. */}
+          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
+            <div className="flex flex-col gap-6">
+              <header>
+                <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-5xl">
+                  {SECTION_HEADING}
+                </h2>
+                <p className="m-0 mt-4 text-base text-gray-600 md:text-lg">
+                  {SECTION_SUBHEAD}
+                </p>
+              </header>
 
-            <div
-              role="region"
-              aria-roledescription="carousel"
-              aria-label={SECTION_HEADING}
-              className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-gray-200"
-            >
-              <div className="flex flex-col gap-5 bg-[#f6f6f3] p-5 md:p-7">
-                <div className="text-sm text-gray-600">
-                  {MODES.map((m) => (
-                    <p key={m} className="m-0">
-                      <span className="font-semibold text-gray-900">
-                        {MODE_LABELS[m]}
-                      </span>
-                      : {MODE_EXPLAINERS[m].toLowerCase()}
-                    </p>
-                  ))}
-                </div>
-
+              <div className="flex flex-col gap-2">
                 <div
                   role="group"
                   aria-label="Example mode"
-                  className="flex justify-center gap-2"
+                  className="flex flex-wrap gap-2"
                 >
                   {MODES.map((m) => (
                     <button
@@ -212,19 +212,63 @@ export function SeeItInAction() {
                     </button>
                   ))}
                 </div>
-
-                <div
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
-                  data-example-target={step.target}
-                  className="flex min-h-[240px] items-center justify-center md:min-h-[420px]"
-                >
-                  {renderExample(step.target, mode)}
-                </div>
+                <p className="m-0 text-sm text-gray-600">
+                  {MODE_EXPLAINERS[mode]}
+                </p>
               </div>
 
-              <div className="flex items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-4">
+              {/* Full step list from lg; the compact row below stands in for
+                  it on smaller screens. */}
+              <ol
+                aria-label="Steps"
+                className="m-0 hidden list-none flex-col gap-1 p-0 lg:flex"
+              >
+                {steps.map((s, i) => (
+                  <li key={`${mode}-${s.target}`}>
+                    <button
+                      type="button"
+                      aria-current={i === stepIndex ? 'step' : undefined}
+                      onClick={() => goTo(i)}
+                      className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base transition-colors ${
+                        i === stepIndex
+                          ? 'bg-glowdex-green/10 text-gray-900'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                          i === stepIndex
+                            ? 'bg-glowdex-green text-white'
+                            : 'border border-gray-300 text-gray-500'
+                        }`}
+                      >
+                        {i + 1}
+                      </span>
+                      {/* An invisible bold copy reserves the bold width, so a
+                          label wraps the same whether or not it's active and
+                          the list doesn't shift when the step changes. */}
+                      <span className="grid">
+                        <span
+                          aria-hidden="true"
+                          className="invisible col-start-1 row-start-1 font-semibold"
+                        >
+                          {s.label}
+                        </span>
+                        <span
+                          className={`col-start-1 row-start-1 ${
+                            i === stepIndex ? 'font-semibold' : ''
+                          }`}
+                        >
+                          {s.label}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex items-center justify-between gap-4 lg:justify-start">
                 <button
                   type="button"
                   aria-label="Previous step"
@@ -234,13 +278,13 @@ export function SeeItInAction() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <p
-                  aria-live="polite"
-                  className="m-0 flex items-center gap-2 text-center text-sm text-gray-900 md:text-base"
+                  aria-hidden="true"
+                  className="m-0 flex-1 text-center text-sm text-gray-900 lg:hidden"
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-glowdex-green text-xs font-bold text-white">
-                    {stepIndex + 1}
-                  </span>
-                  {step.label}
+                  <span className="font-semibold">
+                    {stepIndex + 1} of {steps.length}
+                  </span>{' '}
+                  · {step.label}
                 </p>
                 <button
                   type="button"
@@ -251,26 +295,30 @@ export function SeeItInAction() {
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
+              <p aria-live="polite" className="sr-only">
+                Step {stepIndex + 1} of {steps.length}: {step.label}
+              </p>
+            </div>
 
-              <div className="flex justify-center border-t border-gray-200 bg-white py-3">
-                {steps.map((s, i) => (
-                  // 24×24 hit target around the 8px dot (WCAG 2.5.8).
-                  <button
-                    key={`${mode}-${s.target}`}
-                    type="button"
-                    aria-label={`Go to step ${i + 1}: ${s.label}`}
-                    aria-current={i === stepIndex ? 'step' : undefined}
-                    onClick={() => goTo(i)}
-                    className="flex h-6 w-6 cursor-pointer items-center justify-center"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`h-2 w-2 rounded-full ${
-                        i === stepIndex ? 'bg-glowdex-green' : 'bg-gray-300'
-                      }`}
-                    />
-                  </button>
-                ))}
+            <div
+              role="region"
+              aria-roledescription="carousel"
+              aria-label={SECTION_HEADING}
+              className="h-[480px] w-full rounded-2xl border border-gray-200 bg-[#f6f6f3] p-4 md:h-[540px] md:p-6"
+            >
+              <div
+                key={`${mode}-${step.target}`}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
+                data-example-target={step.target}
+                className="h-full w-full"
+              >
+                {MAP_TARGETS.has(step.target) ? (
+                  renderExample(step.target, mode)
+                ) : (
+                  <FitToStage>{renderExample(step.target, mode)}</FitToStage>
+                )}
               </div>
             </div>
           </div>

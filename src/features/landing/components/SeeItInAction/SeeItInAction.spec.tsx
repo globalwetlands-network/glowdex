@@ -33,6 +33,14 @@ function slide() {
 const next = () =>
   fireEvent.click(screen.getByRole('button', { name: 'Next step' }));
 
+/** Jumps to a step by clicking it in the step list. */
+const goToStep = (label: string) =>
+  fireEvent.click(
+    within(screen.getByRole('list', { name: 'Steps' })).getByRole('button', {
+      name: label,
+    }),
+  );
+
 describe('SeeItInAction carousel', () => {
   it('starts on the local site tooltip for Bayhead', () => {
     renderSection();
@@ -43,7 +51,10 @@ describe('SeeItInAction carousel', () => {
     expect(slide().target).toBe('site-tooltip');
     expect(slide().getByText('Bayhead')).toBeInTheDocument();
     expect(
-      screen.getByText(EXAMPLE_STEPS.local[0].label, { selector: 'p' }),
+      screen.getByRole('button', { name: EXAMPLE_STEPS.local[0].label }),
+    ).toHaveAttribute('aria-current', 'step');
+    expect(
+      screen.getByText(`Step 1 of 3: ${EXAMPLE_STEPS.local[0].label}`),
     ).toBeInTheDocument();
   });
 
@@ -68,15 +79,21 @@ describe('SeeItInAction carousel', () => {
     expect(slide().target).toBe('assistant');
   });
 
-  it('jumps to a step from its dot', () => {
+  it('jumps to a step from the step list', () => {
     renderSection();
+    const label = EXAMPLE_STEPS.local[1].label;
 
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 2/ }));
+    goToStep(label);
 
     expect(slide().target).toBe('local-chart');
+    expect(screen.getByRole('button', { name: label })).toHaveAttribute(
+      'aria-current',
+      'step',
+    );
     expect(
-      screen.getByRole('button', { name: /Go to step 2/ }),
-    ).toHaveAttribute('aria-current', 'step');
+      screen.getByRole('button', { name: EXAMPLE_STEPS.local[0].label }),
+    ).not.toHaveAttribute('aria-current');
+    expect(screen.getByText(`Step 2 of 3: ${label}`)).toBeInTheDocument();
   });
 
   it('switches to the global steps, restarting at step 1', () => {
@@ -87,9 +104,11 @@ describe('SeeItInAction carousel', () => {
     expect(
       screen.getByRole('button', { name: 'Global assessment' }),
     ).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getAllByRole('button', { name: /Go to step/ })).toHaveLength(
-      EXAMPLE_STEPS.global.length,
-    );
+    expect(
+      within(screen.getByRole('list', { name: 'Steps' })).getAllByRole(
+        'button',
+      ),
+    ).toHaveLength(EXAMPLE_STEPS.global.length);
 
     expect(slide().target).toBe('tile-tooltip');
     expect(slide().getByText('Tile ID: 21812')).toBeInTheDocument();
@@ -108,7 +127,7 @@ describe('SeeItInAction carousel', () => {
 
   it('shows the assistant read-only, linking to the map', () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 3/ }));
+    goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
       slide().getByPlaceholderText('Ask a follow-up question...'),
@@ -122,7 +141,7 @@ describe('SeeItInAction carousel', () => {
 describe('showcase analytics', () => {
   it('shows the local widget without live controls', () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 2/ }));
+    goToStep(EXAMPLE_STEPS.local[1].label);
 
     expect(slide().queryByRole('switch')).not.toBeInTheDocument();
     expect(slide().getByRole('combobox', { name: 'Country' })).toBeDisabled();
@@ -133,7 +152,7 @@ describe('showcase analytics', () => {
 
   it('captures no events when the source link is clicked', () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 3/ }));
+    goToStep(EXAMPLE_STEPS.local[2].label);
     fireEvent.click(slide().getByRole('link', { name: /Sievers et al/ }));
 
     expect(capture).not.toHaveBeenCalled();
@@ -146,7 +165,7 @@ describe('carousel assistant', () => {
 
   it('shows the local summary, highlighted, with the local-data chip', () => {
     renderSection();
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 3/ }));
+    goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
       slide().getByText(highlight, { selector: 'mark' }),
@@ -164,7 +183,7 @@ describe('carousel assistant', () => {
   it('shows a global-only summary, highlighted, without the local-data chip', () => {
     renderSection();
     fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
-    fireEvent.click(screen.getByRole('button', { name: /Go to step 4/ }));
+    goToStep(EXAMPLE_STEPS.global[3].label);
 
     expect(
       slide().getByText(highlight, { selector: 'mark' }),
