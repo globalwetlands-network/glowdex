@@ -61,6 +61,13 @@ export function HeroMedia({ variant }: HeroMediaProps) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(8,18,14,.82)_0%,rgba(8,18,14,.62)_40%,rgba(8,18,14,.18)_68%,rgba(8,18,14,0)_100%)]"
       />
+      {/* Top scrim: the side gradient has faded out by the header's nav and
+          "Open the map", which sit over bright sky; this keeps them at AA
+          contrast. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(8,18,14,.7)_0%,rgba(8,18,14,.45)_45%,rgba(8,18,14,0)_100%)]"
+      />
       <p className="absolute right-4 bottom-3 z-[1] m-0 text-[10px] text-white/70">
         {HERO_MEDIA[variant].credit}
       </p>

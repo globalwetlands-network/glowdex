@@ -22,9 +22,15 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
   const headingId = useId();
 
   return (
-    <section aria-labelledby={headingId} className="bg-white px-6 py-16">
+    <section
+      aria-labelledby={headingId}
+      className="bg-white px-6 py-16 md:px-16"
+    >
       <div className="mx-auto max-w-6xl">
-        <h2 id={headingId} className="m-0 text-2xl font-bold text-gray-900">
+        <h2
+          id={headingId}
+          className="m-0 text-2xl font-bold text-gray-900 md:text-4xl"
+        >
           {PARTNERS_HEADING}
         </h2>
         <p className="m-0 mt-2 text-sm text-gray-500">{PARTNERS_SUBHEAD}</p>

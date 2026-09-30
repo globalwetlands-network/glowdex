@@ -10,7 +10,10 @@ export function ClosingCta() {
       aria-labelledby={headingId}
       className="bg-glowdex-green px-6 py-20 text-center"
     >
-      <h2 id={headingId} className="m-0 text-3xl font-bold text-white">
+      <h2
+        id={headingId}
+        className="m-0 text-2xl font-bold text-white md:text-4xl"
+      >
         Ready to explore?
       </h2>
       <div className="mt-7 flex flex-wrap justify-center gap-4">

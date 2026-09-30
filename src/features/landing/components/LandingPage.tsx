@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { ClosingCta } from './ClosingCta';
 import { FactSheet } from './FactSheet';
@@ -13,6 +14,8 @@ import { Faqs } from './Faqs';
 import { Hero } from './Hero';
 import { HowItWorks } from './HowItWorks';
 import { Partners } from './Partners';
+import { SiteFooter } from './SiteFooter';
+import { SiteHeader } from './SiteHeader';
 import { WhoItsFor } from './WhoItsFor';
 import { WhyItMatters } from './WhyItMatters';
 
@@ -99,28 +102,62 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
 }
 
 /**
- * Public landing page at `/`: the hero, the fact sheet, the worked example,
- * who it's for, how it works, why it matters, partners, FAQs, then the
- * closing call to action.
+ * True while any of the element is still under the 72px fixed header, i.e.
+ * the header is over the hero and should stay transparent. Without
+ * IntersectionObserver (e.g. jsdom) it stays true.
+ */
+function useIsUnderHeader(ref: RefObject<HTMLElement | null>) {
+  const [isUnder, setIsUnder] = useState(true);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsUnder(entry.isIntersecting),
+      // Shrink the viewport's top by the header height: the hero stops
+      // "intersecting" once its bottom edge scrolls up past the header.
+      { rootMargin: '-72px 0px 0px 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return isUnder;
+}
+
+/**
+ * Public landing page at `/`: the shared header (transparent over the hero,
+ * solid below it), then the hero, the fact sheet, the worked example, who it's
+ * for, how it works, why it matters, partners, FAQs, the closing call to
+ * action, and the footer.
  */
 export function LandingPage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const overHero = useIsUnderHeader(heroRef);
+
   return (
-    <main>
-      <Hero />
-      <FactSheet />
-      <SectionErrorBoundary>
-        <WhenNearViewport>
-          <Suspense fallback={<SectionPlaceholder />}>
-            <SeeItInAction />
-          </Suspense>
-        </WhenNearViewport>
-      </SectionErrorBoundary>
-      <WhoItsFor />
-      <HowItWorks />
-      <WhyItMatters />
-      <Partners />
-      <Faqs />
-      <ClosingCta />
-    </main>
+    <>
+      <SiteHeader transparent={overHero} />
+      <main>
+        <div ref={heroRef}>
+          <Hero />
+        </div>
+        <FactSheet />
+        <SectionErrorBoundary>
+          <WhenNearViewport>
+            <Suspense fallback={<SectionPlaceholder />}>
+              <SeeItInAction />
+            </Suspense>
+          </WhenNearViewport>
+        </SectionErrorBoundary>
+        <WhoItsFor />
+        <HowItWorks />
+        <WhyItMatters />
+        <Partners />
+        <Faqs />
+        <ClosingCta />
+      </main>
+      <SiteFooter />
+    </>
   );
 }

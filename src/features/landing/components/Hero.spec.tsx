@@ -58,14 +58,10 @@ describe('Hero', () => {
     expect(screen.getByText(/free and open to everyone/i)).toBeVisible();
   });
 
-  it('routes both choices and the header CTA to /map', () => {
+  it('routes both choices to /map', () => {
     renderHero();
 
-    for (const name of [
-      'Local animal data',
-      'Global assessment',
-      /open the map/i,
-    ]) {
+    for (const name of ['Local animal data', 'Global assessment']) {
       expect(screen.getByRole('link', { name })).toHaveAttribute(
         'href',
         '/map',
@@ -102,8 +98,9 @@ describe('Hero', () => {
   it('preloads the map app when the visitor shows intent to open it', () => {
     renderHero();
 
-    const openMap = screen.getByRole('link', { name: /open the map/i });
-    fireEvent.pointerEnter(openMap);
+    fireEvent.pointerEnter(
+      screen.getByRole('link', { name: 'Local animal data' }),
+    );
     fireEvent.focus(screen.getByRole('link', { name: 'Global assessment' }));
 
     expect(preloadMapApp).toHaveBeenCalledTimes(2);

@@ -69,6 +69,13 @@ describe('LandingPage', () => {
       ).toBeTruthy();
     }
 
+    // One h1 (the hero); the shared header and the footer sit outside main.
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    const header = screen.getByRole('banner');
+    const footer = screen.getByRole('contentinfo');
+    expect(main).not.toContainElement(header);
+    expect(main).not.toContainElement(footer);
+
     consoleError.mockRestore();
   });
 });

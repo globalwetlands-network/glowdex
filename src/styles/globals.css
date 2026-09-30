@@ -5,3 +5,11 @@
   --color-glowdex-green: #0a5c47;
   --color-glowdex-teal: #1d9e75;
 }
+
+/* Smooth in-page jumps (e.g. the landing page's #faq links), unless the user
+   prefers reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

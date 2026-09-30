@@ -28,11 +28,16 @@ export function Faqs({
   const visibleFaqs = showAll ? faqs : faqs.slice(0, initiallyVisible);
 
   return (
-    <section aria-labelledby={headingId} className="bg-white px-6 py-16">
+    <section
+      id="faq"
+      aria-labelledby={headingId}
+      // Clears the 72px fixed header when reached via a #faq link.
+      className="scroll-mt-[72px] bg-white px-6 pt-16 pb-20 md:px-16"
+    >
       <div className="mx-auto max-w-3xl">
         <h2
           id={headingId}
-          className="m-0 mb-6 text-2xl font-bold text-gray-900"
+          className="m-0 mb-6 text-2xl font-bold text-gray-900 md:text-4xl"
         >
           {FAQS_HEADING}
         </h2>
