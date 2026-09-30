@@ -42,9 +42,11 @@ const MODES: ExampleMode[] = ['local', 'global'];
 
 /**
  * One width for every panel-style step (the app's side-panel width), so the
- * panels don't change size between steps; FitToStage scales them to fit.
+ * panels don't change size between steps; from `md` FitToStage scales them to
+ * fit. Below `md` they shrink to the stage width instead, keeping text at its
+ * real size.
  */
-const PANEL_CLASS = 'w-[448px]';
+const PANEL_CLASS = 'mx-auto w-full max-w-[448px] md:w-[448px]';
 
 /** Steps shown on a map, which fills the stage rather than being scaled. */
 const MAP_TARGETS: ReadonlySet<ExampleTarget> = new Set([

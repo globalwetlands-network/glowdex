@@ -60,4 +60,30 @@ describe('FitToStage', () => {
     act(() => notify());
     expect(content.dataset.fitScale).toBe('1');
   });
+
+  it('never scales below md, where the stage scrolls instead', () => {
+    let notify = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          notify = callback;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: false,
+      media: query,
+    }));
+    const { content, stage } = renderFitted();
+
+    // Content that would need 0.8 on desktop stays full size on a phone.
+    setSize(stage, 400, 520);
+    setSize(content, 448, 650);
+    act(() => notify());
+    expect(content.dataset.fitScale).toBe('1');
+    expect(stage).toHaveClass('overflow-y-auto');
+  });
 });
