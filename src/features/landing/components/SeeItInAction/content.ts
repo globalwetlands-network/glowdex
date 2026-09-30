@@ -66,8 +66,7 @@ export const EXAMPLE_STEPS: Record<ExampleMode, ExampleStep[]> = {
     },
     {
       target: 'typology-panel',
-      label:
-        'See its typology and confidence, from satellite-derived estimates',
+      label: 'See its typology, from satellite-derived estimates',
       placeholderLabel: true,
     },
     {

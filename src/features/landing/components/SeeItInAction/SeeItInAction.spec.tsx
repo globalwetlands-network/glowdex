@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EXAMPLE_STEPS } from './content';
 import { SeeItInAction } from './SeeItInAction';
 
@@ -8,9 +8,12 @@ import { SeeItInAction } from './SeeItInAction';
 vi.mock('react-plotly.js', () => ({
   default: () => <div data-testid="plot" />,
 }));
+const capture = vi.hoisted(() => vi.fn());
 vi.mock('posthog-js/react', () => ({
-  usePostHog: () => ({ capture: vi.fn() }),
+  usePostHog: () => ({ capture }),
 }));
+
+beforeEach(() => capture.mockClear());
 
 function renderSection() {
   return render(
@@ -113,6 +116,27 @@ describe('SeeItInAction carousel', () => {
     expect(
       slide().getByRole('link', { name: /try it in the map/i }),
     ).toHaveAttribute('href', '/map');
+  });
+});
+
+describe('showcase analytics', () => {
+  it('shows the local widget without live controls', () => {
+    renderSection();
+    fireEvent.click(screen.getByRole('button', { name: /Go to step 2/ }));
+
+    expect(slide().queryByRole('switch')).not.toBeInTheDocument();
+    expect(slide().getByRole('combobox', { name: 'Country' })).toBeDisabled();
+    expect(
+      slide().getByRole('combobox', { name: 'Monitoring location' }),
+    ).toBeDisabled();
+  });
+
+  it('captures no events when the source link is clicked', () => {
+    renderSection();
+    fireEvent.click(screen.getByRole('button', { name: /Go to step 3/ }));
+    fireEvent.click(slide().getByRole('link', { name: /Sievers et al/ }));
+
+    expect(capture).not.toHaveBeenCalled();
   });
 });
 

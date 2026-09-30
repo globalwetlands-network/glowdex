@@ -57,7 +57,8 @@ interface ChatInterfaceProps {
   localSiteContext?: LocalSiteContext | null;
   /**
    * Static showcase mode: suggestions and the follow-up input render but are
-   * disabled, and `readOnlyHint` is shown under the input instead.
+   * disabled, `readOnlyHint` is shown under the input instead, and link
+   * clicks are not captured as analytics.
    */
   readOnly?: boolean;
   readOnlyHint?: ReactNode;
@@ -306,12 +307,14 @@ export function ChatInterface({
                         target="_blank"
                         rel="noopener noreferrer"
                         className="underline hover:text-gray-600 transition-colors"
-                        onClick={(e) =>
+                        onClick={(e) => {
+                          // A read-only showcase isn't real assistant usage.
+                          if (readOnly) return;
                           captureOutboundLinkClicked(
                             e.currentTarget.href,
                             'doi_citation',
-                          )
-                        }
+                          );
+                        }}
                       >
                         {label}
                       </a>

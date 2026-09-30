@@ -73,6 +73,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
             onSiteSelect={noop}
             localSiteLayerEnabled={false}
             onLocalSiteLayerToggle={noop}
+            readOnly
           />
         </div>
       );
@@ -251,18 +252,24 @@ export function SeeItInAction() {
                 </button>
               </div>
 
-              <div className="flex justify-center gap-2 border-t border-gray-200 bg-white py-4">
+              <div className="flex justify-center border-t border-gray-200 bg-white py-3">
                 {steps.map((s, i) => (
+                  // 24×24 hit target around the 8px dot (WCAG 2.5.8).
                   <button
                     key={`${mode}-${s.target}`}
                     type="button"
                     aria-label={`Go to step ${i + 1}: ${s.label}`}
                     aria-current={i === stepIndex ? 'step' : undefined}
                     onClick={() => goTo(i)}
-                    className={`h-2 w-2 cursor-pointer rounded-full ${
-                      i === stepIndex ? 'bg-glowdex-green' : 'bg-gray-300'
-                    }`}
-                  />
+                    className="flex h-6 w-6 cursor-pointer items-center justify-center"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 rounded-full ${
+                        i === stepIndex ? 'bg-glowdex-green' : 'bg-gray-300'
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

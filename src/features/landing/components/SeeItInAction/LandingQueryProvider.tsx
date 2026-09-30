@@ -9,7 +9,14 @@ import { EXAMPLE_PARTNERS } from '../../fixtures/workedExample';
  */
 const landingQueryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: Infinity, retry: false, refetchOnWindowFocus: false },
+    queries: {
+      staleTime: Infinity,
+      // Nothing observes the seeded data until its slide mounts; without this
+      // it would be garbage-collected after 5 minutes and refetched live.
+      gcTime: Infinity,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
   },
 });
 landingQueryClient.setQueryData(['partners'], EXAMPLE_PARTNERS);
