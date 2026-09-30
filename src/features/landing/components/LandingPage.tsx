@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { FactSheet } from './FactSheet';
 import { Hero } from './Hero';
+import { WhoItsFor } from './WhoItsFor';
 
 // Lazy: the worked example reuses the app's widgets (plotly, react-markdown,
 // …), which must not weigh down the hero's first paint.
@@ -83,7 +84,7 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
-/** Public landing page at `/`: the hero, the fact sheet, then the worked example. */
+/** Public landing page at `/`: the hero, the fact sheet, the worked example, then who it's for. */
 export function LandingPage() {
   return (
     <main>
@@ -96,6 +97,7 @@ export function LandingPage() {
           </Suspense>
         </WhenNearViewport>
       </SectionErrorBoundary>
+      <WhoItsFor />
     </main>
   );
 }

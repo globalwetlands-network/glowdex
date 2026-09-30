@@ -48,6 +48,9 @@ describe('LandingPage', () => {
     expect(
       within(main).getByRole('region', { name: /at a glance/i }),
     ).toBeInTheDocument();
+    expect(
+      within(main).getByRole('region', { name: /who it's for/i }),
+    ).toBeInTheDocument();
 
     consoleError.mockRestore();
   });
