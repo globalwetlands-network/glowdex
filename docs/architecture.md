@@ -44,6 +44,15 @@ The data hooks read through shared caches in `src/data/preload.ts` (`createCache
 `/map` picks up the preloaded data and skips `LoadingState`, and remounts (Home → map) reuse
 it. Each hook's `reload()` clears its cache entry, so the retry flow still refetches.
 
+Below the hero, the lazily loaded **"See it in action"** carousel
+(`src/features/landing/components/SeeItInAction/`) renders the app's **real** widgets
+(`LocalSiteTooltip`, `LocalWetlandsAnalysisWidget`, `MapTooltip`, `SelectionPanel`,
+`GroupedViolinPlot`, `AnalysisAssistantWidget`) for one worked example: tile 21812, Bayhead,
+South Africa. Their data is `src/features/landing/fixtures/workedExample.json`, a raw
+data-store snapshot made by `node scripts/snapshot-landing-example.mjs` and run through the
+app's own transforms. A dedicated pre-seeded `QueryClient` means the showcase makes no API
+calls, and the assistant runs in its `staticInsight` + `readOnly` mode.
+
 GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
 workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages serves that for any unknown
 path, the SPA boots, and the router renders the matching route. (Deep links therefore return

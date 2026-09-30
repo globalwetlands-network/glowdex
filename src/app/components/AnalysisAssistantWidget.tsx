@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
-import type { LocalSiteContext } from '@/api/types';
+import type { InsightResponse, LocalSiteContext } from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
 import { useBackendVersion } from '@/api/hooks/useBackendVersion';
 import { CrabIcon } from '@/components/icons/CrabIcon';
@@ -27,6 +27,21 @@ interface AnalysisAssistantWidgetProps {
    * so the assistant never answers from a stale backend context.
    */
   dataSkewed?: boolean;
+  /**
+   * Renders this insight instead of fetching one — no backend calls at all.
+   * For static showcases (e.g. the landing page's worked example).
+   */
+  staticInsight?: InsightResponse;
+  /**
+   * Shows suggestions and the follow-up input but disables them, with
+   * `readOnlyHint` underneath. Pairs with `staticInsight`.
+   */
+  readOnly?: boolean;
+  readOnlyHint?: ReactNode;
+  /** Forces suggested questions on regardless of the feature flag. */
+  showSuggestions?: boolean;
+  /** Phrases to highlight in the assistant's messages. */
+  highlights?: string[];
 }
 
 export function AnalysisAssistantWidget({
@@ -35,7 +50,14 @@ export function AnalysisAssistantWidget({
   isLocalContextPending,
   hasMangrove,
   dataSkewed = false,
+  staticInsight,
+  readOnly,
+  readOnlyHint,
+  showSuggestions,
+  highlights,
 }: AnalysisAssistantWidgetProps) {
+  const isStatic = staticInsight !== undefined;
+
   const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
     selectedCellId,
     localSiteContext,
@@ -46,7 +68,7 @@ export function AnalysisAssistantWidget({
   // an insight generated from a pre-skew backend context lives under a
   // different cache entry than a post-skew one. Without this, a resolved
   // dataset-skew transition could re-serve a stale initialInsight.
-  const { data: backendMeta } = useBackendVersion();
+  const { data: backendMeta } = useBackendVersion({ enabled: !isStatic });
   const datasetVersion = backendMeta?.dataset_version ?? null;
 
   const {
@@ -72,7 +94,8 @@ export function AnalysisAssistantWidget({
     // plain cell selections (no site) are unaffected.
     // Also suppressed during version skew so we never answer
     // from a backend context that disagrees with the map.
-    enabled: !!selectedCellId && !isLocalContextPending && !dataSkewed,
+    enabled:
+      !isStatic && !!selectedCellId && !isLocalContextPending && !dataSkewed,
   });
 
   useEffect(() => {
@@ -133,9 +156,13 @@ export function AnalysisAssistantWidget({
     <ChatInterface
       key={`${selectedCellId ?? 'empty'}-${localSiteContext?.siteName ?? 'no-site'}`}
       selectedCellId={selectedCellId}
-      initialInsight={initialInsight}
-      initialError={initialError}
+      initialInsight={staticInsight ?? initialInsight}
+      initialError={isStatic ? null : initialError}
       localSiteContext={localSiteContext}
+      readOnly={readOnly}
+      readOnlyHint={readOnlyHint}
+      showSuggestions={showSuggestions}
+      highlights={highlights}
     />
   );
 }

@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import './styles/globals.css';
 import { LoadingState } from '@/app/components/LoadingState';
-import { Hero } from '@/features/landing/components/Hero';
+import { LandingPage } from '@/features/landing/components/LandingPage';
 
 // Lazy so the landing page doesn't download the map app (mapbox-gl, plotly, …)
 // up front. The Hero preloads this same chunk in the background.
@@ -38,7 +38,7 @@ if (isPostHogConfigured) {
 
 const routes = (
   <Routes>
-    <Route path="/" element={<Hero />} />
+    <Route path="/" element={<LandingPage />} />
     <Route
       path="/map"
       element={
