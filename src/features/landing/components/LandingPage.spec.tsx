@@ -37,6 +37,9 @@ describe('LandingPage', () => {
       'href',
       '/map',
     );
+    expect(
+      screen.getByRole('region', { name: /at a glance/i }),
+    ).toBeInTheDocument();
 
     consoleError.mockRestore();
   });
