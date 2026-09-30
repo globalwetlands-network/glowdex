@@ -4,16 +4,16 @@ import { FAQS } from '../config/faqs';
 import { Faqs } from './Faqs';
 
 describe('Faqs', () => {
-  it('shows the first 8 questions, then the rest on request', () => {
+  it('shows the first 5 questions, then the rest on request', () => {
     const { container } = render(<Faqs />);
 
     expect(
       screen.getByRole('region', { name: 'Frequently asked questions' }),
     ).toBeInTheDocument();
-    expect(container.querySelectorAll('details')).toHaveLength(8);
+    expect(container.querySelectorAll('details')).toHaveLength(5);
 
     const toggle = screen.getByRole('button', {
-      name: 'Show 5 more questions',
+      name: 'Show 8 more questions',
     });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(toggle);
@@ -22,7 +22,7 @@ describe('Faqs', () => {
     expect(toggle).toHaveAccessibleName('Show fewer questions');
 
     fireEvent.click(toggle);
-    expect(container.querySelectorAll('details')).toHaveLength(8);
+    expect(container.querySelectorAll('details')).toHaveLength(5);
   });
 
   it('renders every question with its answer, and a placeholder for the three pending ones', () => {

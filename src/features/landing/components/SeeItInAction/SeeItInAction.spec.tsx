@@ -125,6 +125,25 @@ describe('SeeItInAction carousel', () => {
     expect(slide().getAllByTestId('plot').length).toBeGreaterThan(0);
   });
 
+  it('keeps the other mode reserved but hidden, so toggling never shifts the layout', () => {
+    const { container } = renderSection();
+    fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
+
+    // Only the active mode's list is exposed…
+    expect(screen.getAllByRole('list', { name: 'Steps' })).toHaveLength(1);
+    // …but both stay in the DOM to hold the taller one's height.
+    const lists = container.querySelectorAll('ol[aria-label="Steps"]');
+    expect(lists).toHaveLength(2);
+    const localList = Array.from(lists).find(
+      (list) =>
+        list.querySelectorAll('li').length === EXAMPLE_STEPS.local.length,
+    )!;
+    const wrapper = localList.parentElement!;
+    expect(wrapper).toHaveAttribute('aria-hidden', 'true');
+    expect(wrapper).toHaveAttribute('inert');
+    expect(wrapper).toHaveClass('invisible');
+  });
+
   it('shows the assistant read-only, linking to the map', () => {
     renderSection();
     goToStep(EXAMPLE_STEPS.local[2].label);

@@ -29,6 +29,7 @@ import {
   SECTION_HEADING,
   SECTION_SUBHEAD,
   type ExampleMode,
+  type ExampleStep,
   type ExampleTarget,
 } from './content';
 import { ExampleMapBackdrop } from './ExampleMapBackdrop';
@@ -155,6 +156,73 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
 const ARROW_BUTTON_CLASS =
   'flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900';
 
+interface StepListProps {
+  steps: readonly ExampleStep[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}
+
+/** Numbered, clickable steps; the active one is highlighted. */
+function StepList({ steps, activeIndex, onSelect }: StepListProps) {
+  return (
+    <ol aria-label="Steps" className="m-0 flex list-none flex-col gap-1 p-0">
+      {steps.map((s, i) => (
+        <li key={s.target}>
+          <button
+            type="button"
+            aria-current={i === activeIndex ? 'step' : undefined}
+            onClick={() => onSelect(i)}
+            className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base transition-colors ${
+              i === activeIndex
+                ? 'bg-glowdex-green/10 text-gray-900'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                i === activeIndex
+                  ? 'bg-glowdex-green text-white'
+                  : 'border border-gray-300 text-gray-500'
+              }`}
+            >
+              {i + 1}
+            </span>
+            {/* An invisible bold copy reserves the bold width, so a label
+                wraps the same whether or not it's active. Every label is at
+                least two lines tall and centred, so all rows share one height
+                and the list doesn't shift when the step changes. */}
+            <span className="grid min-h-[2lh] items-center">
+              <span
+                aria-hidden="true"
+                className="invisible col-start-1 row-start-1 font-semibold"
+              >
+                {s.label}
+              </span>
+              <span
+                className={`col-start-1 row-start-1 ${
+                  i === activeIndex ? 'font-semibold' : ''
+                }`}
+              >
+                {s.label}
+              </span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
+ * Stacked copies of a mode-dependent block share one grid cell (only the
+ * active one visible), so the cell is always as tall as the tallest variant
+ * and switching modes or steps never shifts the layout.
+ */
+const STACKED = 'col-start-1 row-start-1';
+const hiddenVariant = (isActive: boolean) =>
+  isActive ? {} : ({ 'aria-hidden': true, inert: true } as const);
+
 /**
  * "See it in action": a carousel walking through the app in use — the real map
  * tooltips, panels, charts, and assistant — for one place, in either mode.
@@ -179,7 +247,7 @@ export function SeeItInAction() {
           {/* Two columns from lg: title and controls beside the example, so
               both are on screen together. Below lg the controls sit above the
               stage, where a tall example can't push them out of view. */}
-          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
             <div className="flex flex-col gap-6">
               <header>
                 <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-5xl">
@@ -212,61 +280,39 @@ export function SeeItInAction() {
                     </button>
                   ))}
                 </div>
-                <p className="m-0 text-sm text-gray-600">
-                  {MODE_EXPLAINERS[mode]}
-                </p>
+                <div className="grid">
+                  {MODES.map((m) => (
+                    <p
+                      key={m}
+                      {...hiddenVariant(m === mode)}
+                      className={`m-0 text-sm text-gray-600 ${STACKED} ${
+                        m === mode ? '' : 'invisible'
+                      }`}
+                    >
+                      {MODE_EXPLAINERS[m]}
+                    </p>
+                  ))}
+                </div>
               </div>
 
               {/* Full step list from lg; the compact row below stands in for
-                  it on smaller screens. */}
-              <ol
-                aria-label="Steps"
-                className="m-0 hidden list-none flex-col gap-1 p-0 lg:flex"
-              >
-                {steps.map((s, i) => (
-                  <li key={`${mode}-${s.target}`}>
-                    <button
-                      type="button"
-                      aria-current={i === stepIndex ? 'step' : undefined}
-                      onClick={() => goTo(i)}
-                      className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base transition-colors ${
-                        i === stepIndex
-                          ? 'bg-glowdex-green/10 text-gray-900'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                          i === stepIndex
-                            ? 'bg-glowdex-green text-white'
-                            : 'border border-gray-300 text-gray-500'
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      {/* An invisible bold copy reserves the bold width, so a
-                          label wraps the same whether or not it's active and
-                          the list doesn't shift when the step changes. */}
-                      <span className="grid">
-                        <span
-                          aria-hidden="true"
-                          className="invisible col-start-1 row-start-1 font-semibold"
-                        >
-                          {s.label}
-                        </span>
-                        <span
-                          className={`col-start-1 row-start-1 ${
-                            i === stepIndex ? 'font-semibold' : ''
-                          }`}
-                        >
-                          {s.label}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
+                  it on smaller screens. Both modes' lists are stacked so the
+                  column keeps the height of the longer one. */}
+              <div className="hidden lg:grid">
+                {MODES.map((m) => (
+                  <div
+                    key={m}
+                    {...hiddenVariant(m === mode)}
+                    className={`${STACKED} ${m === mode ? '' : 'invisible'}`}
+                  >
+                    <StepList
+                      steps={EXAMPLE_STEPS[m]}
+                      activeIndex={m === mode ? stepIndex : -1}
+                      onSelect={goTo}
+                    />
+                  </div>
                 ))}
-              </ol>
+              </div>
 
               <div className="flex items-center justify-between gap-4 lg:justify-start">
                 <button
@@ -277,15 +323,25 @@ export function SeeItInAction() {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <p
-                  aria-hidden="true"
-                  className="m-0 flex-1 text-center text-sm text-gray-900 lg:hidden"
-                >
-                  <span className="font-semibold">
-                    {stepIndex + 1} of {steps.length}
-                  </span>{' '}
-                  · {step.label}
-                </p>
+                {/* Every mode×step caption is stacked so the row keeps the
+                    height of the longest one. */}
+                <div aria-hidden="true" className="grid flex-1 lg:hidden">
+                  {MODES.flatMap((m) =>
+                    EXAMPLE_STEPS[m].map((s, i) => (
+                      <p
+                        key={`${m}-${s.target}`}
+                        className={`m-0 self-center text-center text-sm text-gray-900 ${STACKED} ${
+                          m === mode && i === stepIndex ? '' : 'invisible'
+                        }`}
+                      >
+                        <span className="font-semibold">
+                          {i + 1} of {EXAMPLE_STEPS[m].length}
+                        </span>{' '}
+                        · {s.label}
+                      </p>
+                    )),
+                  )}
+                </div>
                 <button
                   type="button"
                   aria-label="Next step"

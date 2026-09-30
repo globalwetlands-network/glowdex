@@ -20,7 +20,7 @@ export interface Faq {
 export const FAQS_HEADING = 'Frequently asked questions';
 
 /** Questions shown before "Show more"; the rest are revealed on request. */
-export const FAQS_INITIALLY_VISIBLE = 8;
+export const FAQS_INITIALLY_VISIBLE = 5;
 
 export const FAQS: readonly Faq[] = [
   {
