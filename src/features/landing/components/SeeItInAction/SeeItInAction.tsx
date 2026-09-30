@@ -161,7 +161,7 @@ export function SeeItInAction() {
   return (
     <LandingQueryProvider>
       <section className="bg-white px-6 py-20 md:px-16">
-        <div className="mx-auto flex max-w-6xl flex-col gap-20">
+        <div className="mx-auto flex max-w-6xl flex-col gap-16">
           <div className="flex flex-col gap-10">
             <header className="max-w-3xl">
               <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-5xl">

@@ -138,15 +138,17 @@ export function AskTheAssistantExplainer() {
         {ASSISTANT_EXPLAINER_STEPS.map(([title, body], i) => (
           <li
             key={title}
-            className="grid gap-4 pb-10 md:grid-cols-[1fr_minmax(0,22rem)] md:gap-12 md:pb-0"
+            className="grid gap-4 pb-8 md:grid-cols-2 md:gap-12 md:pb-0"
           >
-            <div className="md:pb-10">
-              <p className="m-0 text-lg font-bold text-gray-900">
+            <div className="md:pb-8">
+              <p className="m-0 text-lg font-bold text-gray-900 md:text-xl">
                 {i + 1}. {title}
               </p>
-              <p className="m-0 mt-2 text-base text-gray-600">{body}</p>
+              <p className="m-0 mt-2 text-base text-gray-600 md:text-lg">
+                {body}
+              </p>
             </div>
-            <div className="md:border-l md:border-gray-200 md:pb-10 md:pl-6">
+            <div className="md:border-l md:border-gray-200 md:pb-8 md:pl-6">
               {STEP_CARDS[i]}
             </div>
           </li>
