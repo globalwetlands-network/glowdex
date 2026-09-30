@@ -33,7 +33,7 @@ function SectionPlaceholder() {
   return (
     <div
       aria-hidden="true"
-      className="min-h-[2200px] bg-white lg:min-h-[1600px]"
+      className="min-h-[2300px] bg-white lg:min-h-[1760px]"
     />
   );
 }

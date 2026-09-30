@@ -115,7 +115,9 @@ const STEP_CARDS = [
  */
 export function AskTheAssistantExplainer() {
   return (
-    <div className="flex flex-col gap-10">
+    // A tinted rounded block sets the explainer apart from the carousel above,
+    // and lets its white cards stand out.
+    <div className="flex flex-col gap-10 rounded-3xl bg-[#f6f6f3] px-6 py-10 md:px-12 md:py-14">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-4xl">
