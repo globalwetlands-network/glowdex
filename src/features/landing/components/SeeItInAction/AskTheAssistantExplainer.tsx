@@ -133,14 +133,16 @@ export function AskTheAssistantExplainer() {
       </header>
 
       {/* Each step is paired with the card that illustrates it, so on mobile
-          the cards sit under their step instead of piling up at the end. */}
+          the cards sit under their step instead of piling up at the end. On
+          desktop the step text is centred against its card: the cards differ
+          in height, so top-aligned text left uneven gaps between steps. */}
       <ol className="m-0 list-none p-0">
         {ASSISTANT_EXPLAINER_STEPS.map(([title, body], i) => (
           <li
             key={title}
             className="grid gap-4 pb-8 md:grid-cols-2 md:gap-12 md:pb-0"
           >
-            <div className="md:pb-8">
+            <div className="md:self-center md:pb-8">
               <p className="m-0 text-lg font-bold text-gray-900 md:text-xl">
                 {i + 1}. {title}
               </p>
