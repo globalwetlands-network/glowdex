@@ -26,13 +26,13 @@ export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
         >
           {WHO_ITS_FOR_HEADING}
         </h2>
-        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-6 p-0">
+        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(16rem,100%),1fr))] gap-6 p-0">
           {personas.map((persona) => (
             <li
               key={persona.audience}
               className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6"
             >
-              <h3 className="m-0 text-sm font-semibold tracking-wide text-glowdex-teal uppercase">
+              <h3 className="m-0 text-sm font-semibold tracking-wide text-glowdex-green uppercase">
                 {persona.audience}
               </h3>
               <p className="m-0 text-xl leading-snug font-bold text-gray-900">

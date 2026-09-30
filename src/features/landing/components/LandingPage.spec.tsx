@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { LandingPage } from './LandingPage';
@@ -37,11 +37,22 @@ describe('LandingPage', () => {
       'href',
       '/map',
     );
+    // Every section sits inside the one page-level main landmark.
+    const main = screen.getByRole('main');
+    expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(
-      screen.getByRole('region', { name: /who it's for/i }),
+      within(main).getByRole('heading', {
+        name: /explore the world's mangroves/i,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('region', { name: /how it works/i }),
+      within(main).getByRole('region', { name: /at a glance/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(main).getByRole('region', { name: /who it's for/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(main).getByRole('region', { name: /how it works/i }),
     ).toBeInTheDocument();
 
     consoleError.mockRestore();
