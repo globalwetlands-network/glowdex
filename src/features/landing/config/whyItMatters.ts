@@ -1,13 +1,15 @@
 /**
  * "Why it matters" copy (GLO-204), verbatim from the landing-page content
- * review. The two paragraphs are locked; the Local/Global pair was added
- * later to bring restoration tracking forward.
+ * review, except the second paragraph's opening, reworded (from "But a
+ * mangrove in Kenya and one in Australia face very different conditions.") so
+ * it follows on from the first. The Local/Global pair was added later to bring
+ * restoration tracking forward.
  */
 export const WHY_IT_MATTERS_HEADING = 'Why it matters';
 
 export const WHY_IT_MATTERS_PARAGRAPHS: readonly string[] = [
   'Mangroves protect coastlines, store carbon, shelter young fish and support the livelihoods of coastal communities.',
-  "But a mangrove in Kenya and one in Australia face very different conditions. Comparing each place with similar ones shows what's typical and what stands out, which helps focus conservation where it's needed.",
+  "No two mangroves face the same conditions: one in Kenya and one in Australia are shaped by very different pressures. Comparing each place with similar ones shows what's typical and what stands out, which helps focus conservation where it's needed.",
 ];
 
 export interface WhyItMattersScale {
