@@ -24,7 +24,9 @@ export function WhyItMatters() {
         <h2 id={headingId} className="m-0 mb-6 text-3xl font-bold text-white">
           {WHY_IT_MATTERS_HEADING}
         </h2>
-        <div className="space-y-4">
+        {/* gap, not space-y: space-y's zero-specificity margin loses to the
+            paragraphs' m-0 in Tailwind v4, which ran them together. */}
+        <div className="flex flex-col gap-4">
           {WHY_IT_MATTERS_PARAGRAPHS.map((paragraph) => (
             <p
               key={paragraph}
