@@ -32,7 +32,7 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
           {partners.map((partner) => (
             <li
               key={partner.name}
-              className="flex min-h-[84px] min-w-[150px] flex-1 items-center justify-center rounded-lg border border-gray-100 p-4"
+              className="flex min-h-[84px] min-w-[150px] flex-1 items-center justify-center rounded-lg border border-gray-100 bg-[#f6f6f3] p-4"
             >
               {partner.listingConfirmed && partner.logoUrl ? (
                 <img
