@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { FactSheet } from './FactSheet';
 import { Hero } from './Hero';
 
 // Lazy: the worked example reuses the app's widgets (plotly, react-markdown,
@@ -82,11 +83,12 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
-/** Public landing page at `/`: the hero, then the worked example. */
+/** Public landing page at `/`: the hero, the fact sheet, then the worked example. */
 export function LandingPage() {
   return (
-    <>
+    <main>
       <Hero />
+      <FactSheet />
       <SectionErrorBoundary>
         <WhenNearViewport>
           <Suspense fallback={<SectionPlaceholder />}>
@@ -94,6 +96,6 @@ export function LandingPage() {
           </Suspense>
         </WhenNearViewport>
       </SectionErrorBoundary>
-    </>
+    </main>
   );
 }
