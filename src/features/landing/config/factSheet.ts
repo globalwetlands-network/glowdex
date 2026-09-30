@@ -10,6 +10,9 @@ export interface FactSheetFigure {
   provisional: boolean;
 }
 
+/** Shared with the hero's "… sites, and growing" byline so the two can't drift. */
+export const MONITORING_SITES_COUNT = 14;
+
 export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
   {
     value: '1,600+',
@@ -22,7 +25,7 @@ export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
     provisional: false,
   },
   {
-    value: '14',
+    value: String(MONITORING_SITES_COUNT),
     label: 'monitoring sites in 8 countries and territories',
     provisional: false,
   },

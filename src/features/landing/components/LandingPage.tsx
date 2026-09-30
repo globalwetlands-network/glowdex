@@ -86,7 +86,7 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
 /** Public landing page at `/`: the hero, the fact sheet, then the worked example. */
 export function LandingPage() {
   return (
-    <>
+    <main>
       <Hero />
       <FactSheet />
       <SectionErrorBoundary>
@@ -96,6 +96,6 @@ export function LandingPage() {
           </Suspense>
         </WhenNearViewport>
       </SectionErrorBoundary>
-    </>
+    </main>
   );
 }
