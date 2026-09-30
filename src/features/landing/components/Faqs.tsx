@@ -31,8 +31,7 @@ export function Faqs({
     <section
       id="faq"
       aria-labelledby={headingId}
-      // Clears the 72px fixed header when reached via a #faq link.
-      className="scroll-mt-[72px] bg-white px-6 pt-16 pb-20 md:px-16"
+      className="bg-white px-6 pt-16 pb-20 md:px-16"
     >
       <div className="mx-auto max-w-3xl">
         <h2

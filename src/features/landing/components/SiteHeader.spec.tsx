@@ -54,6 +54,19 @@ describe('SiteHeader', () => {
     expect(screen.getByText('MBCAM')).toHaveClass('text-glowdex-green');
   });
 
+  it('shows its contrast scrim only while transparent', () => {
+    const { container, rerender } = renderHeader(true);
+    const scrim = container.querySelector('header > [aria-hidden="true"]');
+    expect(scrim).toHaveClass('opacity-100');
+
+    rerender(
+      <MemoryRouter>
+        <SiteHeader />
+      </MemoryRouter>,
+    );
+    expect(scrim).toHaveClass('opacity-0');
+  });
+
   it('preloads the map app when the visitor shows intent to open it', () => {
     renderHeader(true);
 

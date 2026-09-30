@@ -1,6 +1,13 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LandingPage } from './LandingPage';
 
 // Keep the real map chunk and dataset loads out of jsdom.
@@ -77,5 +84,66 @@ describe('LandingPage', () => {
     expect(main).not.toContainElement(footer);
 
     consoleError.mockRestore();
+  });
+});
+
+describe('LandingPage header treatment', () => {
+  // jsdom has no IntersectionObserver, so these exercise the geometry seed
+  // and the scroll fallback. The hero is the first child of <main>.
+  let heroBottom = 0;
+
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        const isHero =
+          this.parentElement?.tagName === 'MAIN' &&
+          this.parentElement.firstElementChild === this;
+        return { bottom: isHero ? heroBottom : 0 } as DOMRect;
+      },
+    );
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const renderPage = () =>
+    render(
+      <MemoryRouter>
+        <LandingPage />
+      </MemoryRouter>,
+    );
+
+  it('starts transparent over the hero', () => {
+    heroBottom = 800;
+    renderPage();
+
+    expect(screen.getByRole('banner')).toHaveClass('bg-transparent');
+  });
+
+  it('starts solid when the page loads scrolled below the hero', () => {
+    heroBottom = -400;
+    renderPage();
+
+    expect(screen.getByRole('banner')).not.toHaveClass('bg-transparent');
+  });
+
+  it('switches to solid on scroll without IntersectionObserver', () => {
+    heroBottom = 800;
+    renderPage();
+    expect(screen.getByRole('banner')).toHaveClass('bg-transparent');
+
+    heroBottom = 40;
+    act(() => {
+      fireEvent.scroll(window);
+    });
+    expect(screen.getByRole('banner')).not.toHaveClass('bg-transparent');
+  });
+
+  it('scopes its scroll behaviour to the page while mounted', () => {
+    heroBottom = 800;
+    const { unmount } = renderPage();
+    expect(document.documentElement).toHaveClass('landing-page');
+
+    unmount();
+    expect(document.documentElement).not.toHaveClass('landing-page');
   });
 });

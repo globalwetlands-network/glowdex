@@ -6,10 +6,16 @@
   --color-glowdex-teal: #1d9e75;
 }
 
-/* Smooth in-page jumps (e.g. the landing page's #faq links), unless the user
-   prefers reduced motion. */
+/* Landing page only (LandingPage adds the class to <html> while mounted).
+   scroll-padding-top matches SiteHeader's 72px height, so anchor jumps and
+   keyboard focus never land under the fixed header. Smooth jumps unless the
+   user prefers reduced motion. */
+.landing-page {
+  scroll-padding-top: 72px;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  html {
+  .landing-page {
     scroll-behavior: smooth;
   }
 }

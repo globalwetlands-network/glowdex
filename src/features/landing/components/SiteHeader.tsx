@@ -16,8 +16,8 @@ interface SiteHeaderProps {
 }
 
 /**
- * The landing page's fixed, 72px header: logo, nav and "Open the map" (the FAQ
- * section's scroll margin matches the height). One markup for both
+ * The landing page's fixed, 72px header: logo, nav and "Open the map" (the
+ * page's `scroll-padding-top` matches the height). One markup for both
  * treatments: `transparent` over the hero, the solid bar everywhere else. The
  * in-app TopBar is separate and unaffected.
  */
@@ -30,7 +30,16 @@ export function SiteHeader({ transparent = false }: SiteHeaderProps) {
           : 'border-b border-gray-100 bg-white/95 backdrop-blur'
       }`}
     >
-      <div className="flex items-center gap-2.5">
+      {/* Scrim that travels with the header while it's transparent, so its
+          white text stays at AA contrast over bright parts of the hero media
+          at any scroll position (a scrim on the media itself scrolls away). */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(8,18,14,.7)_0%,rgba(8,18,14,.45)_45%,rgba(8,18,14,0)_100%)] transition-opacity duration-200 ${
+          transparent ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+      <div className="relative flex items-center gap-2.5">
         {/* Decorative: the wordmark beside it names the site. */}
         <img src={logo} alt="" className="h-7 w-7" />
         <span
@@ -43,7 +52,7 @@ export function SiteHeader({ transparent = false }: SiteHeaderProps) {
       </div>
       <nav
         aria-label="Main"
-        className={`hidden gap-8 text-sm md:flex ${
+        className={`relative hidden gap-8 text-sm md:flex ${
           transparent ? 'text-white' : 'text-gray-700'
         }`}
       >
@@ -56,7 +65,7 @@ export function SiteHeader({ transparent = false }: SiteHeaderProps) {
       <Link
         to="/map"
         {...PRELOAD_ON_INTENT}
-        className={`inline-flex items-center gap-1.5 text-sm font-semibold hover:underline ${
+        className={`relative inline-flex items-center gap-1.5 text-sm font-semibold hover:underline ${
           transparent ? 'text-white' : 'text-glowdex-green'
         }`}
       >

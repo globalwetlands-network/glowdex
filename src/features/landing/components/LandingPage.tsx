@@ -3,6 +3,7 @@ import {
   Suspense,
   lazy,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -101,28 +102,59 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
+/** Height of the fixed `SiteHeader` (its `h-[72px]`), in px. */
+const HEADER_HEIGHT = 72;
+
 /**
- * True while any of the element is still under the 72px fixed header, i.e.
- * the header is over the hero and should stay transparent. Without
- * IntersectionObserver (e.g. jsdom) it stays true.
+ * True while any of the element is still under the fixed header, i.e. the
+ * header is over the hero and should stay transparent. Seeded from the
+ * element's position before first paint (so a restored scroll position or a
+ * deep link below the hero starts solid), then kept current by an
+ * IntersectionObserver, or by scroll/resize listeners where that's missing.
  */
 function useIsUnderHeader(ref: RefObject<HTMLElement | null>) {
   const [isUnder, setIsUnder] = useState(true);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
+    if (!el) return;
+    const measure = () =>
+      setIsUnder(el.getBoundingClientRect().bottom > HEADER_HEIGHT);
+    measure();
+
+    if (typeof IntersectionObserver === 'undefined') {
+      window.addEventListener('scroll', measure, { passive: true });
+      window.addEventListener('resize', measure);
+      return () => {
+        window.removeEventListener('scroll', measure);
+        window.removeEventListener('resize', measure);
+      };
+    }
+
     const observer = new IntersectionObserver(
-      ([entry]) => setIsUnder(entry.isIntersecting),
-      // Shrink the viewport's top by the header height: the hero stops
+      // The latest entry wins when several arrive in one batch (fast scrolls).
+      (entries) => setIsUnder(entries[entries.length - 1].isIntersecting),
+      // Shrink the viewport's top by the header height: the element stops
       // "intersecting" once its bottom edge scrolls up past the header.
-      { rootMargin: '-72px 0px 0px 0px' },
+      { rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, [ref]);
 
   return isUnder;
+}
+
+/**
+ * Scopes the landing page's scroll behaviour to the document while it's
+ * mounted (see `.landing-page` in globals.css), so it doesn't leak into /map.
+ */
+function useLandingScrollBehaviour() {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add('landing-page');
+    return () => root.classList.remove('landing-page');
+  }, []);
 }
 
 /**
@@ -134,6 +166,7 @@ function useIsUnderHeader(ref: RefObject<HTMLElement | null>) {
 export function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const overHero = useIsUnderHeader(heroRef);
+  useLandingScrollBehaviour();
 
   return (
     <>
