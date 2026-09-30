@@ -13,6 +13,14 @@ export interface FactSheetFigure {
 /** Shared with the hero's "… sites, and growing" byline so the two can't drift. */
 export const MONITORING_SITES_COUNT = 14;
 
+/**
+ * Single source of truth for the partner figures, shared with the Partners
+ * section and the "Who is behind MBCAM?" FAQ. The 17-vs-19 question is open:
+ * change it here, not in each section.
+ */
+export const RESEARCH_PARTNERS_COUNT = 19;
+export const PARTNER_COUNTRIES_COUNT = 17;
+
 export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
   {
     value: '1,600+',
@@ -30,8 +38,8 @@ export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
     provisional: false,
   },
   {
-    value: '19',
-    label: 'research partners in 17 countries',
+    value: String(RESEARCH_PARTNERS_COUNT),
+    label: `research partners in ${PARTNER_COUNTRIES_COUNT} countries`,
     provisional: false,
   },
 ];
