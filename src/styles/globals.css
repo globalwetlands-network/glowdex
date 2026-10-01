@@ -5,3 +5,17 @@
   --color-glowdex-green: #0a5c47;
   --color-glowdex-teal: #1d9e75;
 }
+
+/* Landing page only (LandingPage adds the class to <html> while mounted).
+   scroll-padding-top matches SiteHeader's 72px height, so anchor jumps and
+   keyboard focus never land under the fixed header. Smooth jumps unless the
+   user prefers reduced motion. */
+.landing-page {
+  scroll-padding-top: 72px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-page {
+    scroll-behavior: smooth;
+  }
+}

@@ -3,9 +3,11 @@ import {
   Suspense,
   lazy,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { ClosingCta } from './ClosingCta';
 import { FactSheet } from './FactSheet';
@@ -13,6 +15,8 @@ import { Faqs } from './Faqs';
 import { Hero } from './Hero';
 import { HowItWorks } from './HowItWorks';
 import { Partners } from './Partners';
+import { SiteFooter } from './SiteFooter';
+import { SiteHeader } from './SiteHeader';
 import { WhoItsFor } from './WhoItsFor';
 import { WhyItMatters } from './WhyItMatters';
 
@@ -98,29 +102,95 @@ function WhenNearViewport({ children }: { children: ReactNode }) {
   );
 }
 
+/** Height of the fixed `SiteHeader` (its `h-[72px]`), in px. */
+const HEADER_HEIGHT = 72;
+
 /**
- * Public landing page at `/`: the hero, the fact sheet, the worked example,
- * who it's for, how it works, why it matters, partners, FAQs, then the
- * closing call to action.
+ * True while any of the element is still under the fixed header, i.e. the
+ * header is over the hero and should stay transparent. Seeded from the
+ * element's position before first paint (so a restored scroll position or a
+ * deep link below the hero starts solid), then kept current by an
+ * IntersectionObserver, or by scroll/resize listeners where that's missing.
+ */
+function useIsUnderHeader(ref: RefObject<HTMLElement | null>) {
+  const [isUnder, setIsUnder] = useState(true);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () =>
+      setIsUnder(el.getBoundingClientRect().bottom > HEADER_HEIGHT);
+    measure();
+
+    if (typeof IntersectionObserver === 'undefined') {
+      window.addEventListener('scroll', measure, { passive: true });
+      window.addEventListener('resize', measure);
+      return () => {
+        window.removeEventListener('scroll', measure);
+        window.removeEventListener('resize', measure);
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      // The latest entry wins when several arrive in one batch (fast scrolls).
+      (entries) => setIsUnder(entries[entries.length - 1].isIntersecting),
+      // Shrink the viewport's top by the header height: the element stops
+      // "intersecting" once its bottom edge scrolls up past the header.
+      { rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return isUnder;
+}
+
+/**
+ * Scopes the landing page's scroll behaviour to the document while it's
+ * mounted (see `.landing-page` in globals.css), so it doesn't leak into /map.
+ */
+function useLandingScrollBehaviour() {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add('landing-page');
+    return () => root.classList.remove('landing-page');
+  }, []);
+}
+
+/**
+ * Public landing page at `/`: the shared header (transparent over the hero,
+ * solid below it), then the hero, the fact sheet, the worked example, who it's
+ * for, how it works, why it matters, partners, FAQs, the closing call to
+ * action, and the footer.
  */
 export function LandingPage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const overHero = useIsUnderHeader(heroRef);
+  useLandingScrollBehaviour();
+
   return (
-    <main>
-      <Hero />
-      <FactSheet />
-      <SectionErrorBoundary>
-        <WhenNearViewport>
-          <Suspense fallback={<SectionPlaceholder />}>
-            <SeeItInAction />
-          </Suspense>
-        </WhenNearViewport>
-      </SectionErrorBoundary>
-      <WhoItsFor />
-      <HowItWorks />
-      <WhyItMatters />
-      <Partners />
-      <Faqs />
-      <ClosingCta />
-    </main>
+    <>
+      <SiteHeader transparent={overHero} />
+      <main>
+        <div ref={heroRef}>
+          <Hero />
+        </div>
+        <FactSheet />
+        <SectionErrorBoundary>
+          <WhenNearViewport>
+            <Suspense fallback={<SectionPlaceholder />}>
+              <SeeItInAction />
+            </Suspense>
+          </WhenNearViewport>
+        </SectionErrorBoundary>
+        <WhoItsFor />
+        <HowItWorks />
+        <WhyItMatters />
+        <Partners />
+        <Faqs />
+        <ClosingCta />
+      </main>
+      <SiteFooter />
+    </>
   );
 }

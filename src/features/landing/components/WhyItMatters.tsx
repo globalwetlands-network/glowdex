@@ -16,12 +16,15 @@ export function WhyItMatters() {
   return (
     <section
       aria-labelledby={headingId}
-      className="bg-white px-6 py-8 md:px-16 md:py-12"
+      className="bg-white px-6 pt-8 pb-12 md:px-16 md:pt-12 md:pb-16"
     >
       {/* A rounded green card, rather than another full-width band, sets
           this section apart from the white "How it works" above it. */}
       <div className="mx-auto max-w-4xl rounded-3xl bg-glowdex-green px-6 py-10 md:px-14 md:py-14">
-        <h2 id={headingId} className="m-0 mb-6 text-3xl font-bold text-white">
+        <h2
+          id={headingId}
+          className="m-0 mb-6 text-2xl font-bold text-white md:text-4xl"
+        >
           {WHY_IT_MATTERS_HEADING}
         </h2>
         {/* gap, not space-y: space-y's zero-specificity margin loses to the
