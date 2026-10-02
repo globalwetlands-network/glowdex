@@ -1,9 +1,10 @@
 /**
  * Footer content (GLO-205), verbatim from the landing-page content review.
  *
- * `ACKNOWLEDGEMENT` and `DATASET_VERSION` have no owner yet. While `null` they
- * render as visibly flagged placeholders (amber, dashed); setting a string
- * swaps in plain copy, so the placeholder styling can't outlive the gap.
+ * `ACKNOWLEDGEMENT` has no owner yet. While `null` it renders as a visibly
+ * flagged placeholder (amber, dashed); setting a string swaps in plain copy, so
+ * the placeholder styling can't outlive the gap. The dataset version isn't
+ * configured here: the footer reads it live from the store manifest.
  */
 export interface FooterLink {
   label: string;
@@ -25,6 +26,3 @@ export const FOOTER_CREDIT =
 
 /** Acknowledgement of support; wording still to be agreed. */
 export const ACKNOWLEDGEMENT: string | null = null;
-
-/** Dataset version, e.g. "v1.2"; not yet supplied. */
-export const DATASET_VERSION: string | null = null;

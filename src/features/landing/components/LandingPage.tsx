@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ClosingCta } from './ClosingCta';
 import { FactSheet } from './FactSheet';
 import { Faqs } from './Faqs';
@@ -27,6 +28,17 @@ const SeeItInAction = lazy(() =>
     default: m.SeeItInAction,
   })),
 );
+
+/**
+ * Query client for the landing page's own live reads (the footer's dataset
+ * version). The page sits outside AppProviders. The manifest itself is cached
+ * by `datasetClient`, so opening the map afterwards doesn't fetch it again.
+ */
+const landingPageQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, refetchOnWindowFocus: false },
+  },
+});
 
 /**
  * Reserves the section's space until its chunk has loaded, sized to the
@@ -169,7 +181,7 @@ export function LandingPage() {
   useLandingScrollBehaviour();
 
   return (
-    <>
+    <QueryClientProvider client={landingPageQueryClient}>
       <SiteHeader transparent={overHero} />
       <main>
         <div ref={heroRef}>
@@ -191,6 +203,6 @@ export function LandingPage() {
         <ClosingCta />
       </main>
       <SiteFooter />
-    </>
+    </QueryClientProvider>
   );
 }
