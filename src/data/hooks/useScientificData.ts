@@ -3,12 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { GridGeoJSON } from '../types/geo.types';
 import type { RichGridCell } from '../types/grid.types';
 import type { TypologyMap } from '../types/cluster.types';
-import { loadAllClusters } from '../loaders/loadAllClusters';
-import { loadGridGeoJson } from '../loaders/loadGridGeojson';
-import { loadGridItems } from '../loaders/loadGridItems';
-import { loadResiduals } from '../loaders/loadResiduals';
-import { deriveTypologies } from '../transforms/deriveTypologies';
-import { joinGridData } from '../transforms/joinGridWithClusters';
+import { scientificDataCache } from '../preload';
 
 /**
  * Complete scientific dataset for the application
@@ -32,43 +27,6 @@ interface ScientificData {
 type ScientificDataState = Omit<ScientificData, 'reload'>;
 
 /**
- * Loads and processes all scientific data for the application
- *
- * Orchestrates the complete data loading pipeline:
- * 1. Fetches raw data from static assets (CSV/GeoJSON)
- * 2. Derives typology cluster definitions
- * 3. Joins grid items with clusters and residuals
- *
- * @returns Promise resolving to complete scientific dataset
- *
- * @remarks Fetches data in parallel to minimize load time.
- *
- * @throws Error if any data loading or transformation fails
- *
- */
-async function loadAllData(): Promise<
-  Omit<ScientificData, 'isLoading' | 'error' | 'reload'>
-> {
-  // Load all raw data sources in parallel
-  const [gridItems, residuals, rawClusters, geojson] = await Promise.all([
-    loadGridItems(),
-    loadResiduals(),
-    loadAllClusters(),
-    loadGridGeoJson(),
-  ]);
-
-  // Transform and join data into usable structures
-  const typologies = deriveTypologies(rawClusters);
-  const gridCells = joinGridData(gridItems, residuals, rawClusters);
-
-  return {
-    gridCells,
-    typologies,
-    geojson,
-  };
-}
-
-/**
  * React hook to load and manage all scientific data for the application
  *
  * Loads the complete dataset on component mount:
@@ -90,15 +48,23 @@ async function loadAllData(): Promise<
  */
 export function useScientificData(): ScientificData {
   const [reloadIndex, setReloadIndex] = useState(0);
-  const [data, setData] = useState<ScientificDataState>({
-    isLoading: true,
-    gridCells: [],
-    typologies: null,
-    geojson: null,
-    error: null,
+  // Start from the shared cache when the landing page (or an earlier mount)
+  // already loaded the dataset, so the map skips LoadingState entirely.
+  const [data, setData] = useState<ScientificDataState>(() => {
+    const cached = scientificDataCache.peek();
+    return cached
+      ? { isLoading: false, error: null, ...cached }
+      : {
+          isLoading: true,
+          gridCells: [],
+          typologies: null,
+          geojson: null,
+          error: null,
+        };
   });
 
   const reload = useCallback(() => {
+    scientificDataCache.clear();
     setData((prev) => ({ ...prev, isLoading: true, error: null }));
     setReloadIndex((index) => index + 1);
   }, []);
@@ -115,7 +81,7 @@ export function useScientificData(): ScientificData {
         const timerLabel = `DataLoad-${Date.now()}`;
         console.time(timerLabel);
 
-        const loadedData = await loadAllData();
+        const loadedData = await scientificDataCache.get();
 
         console.timeEnd(timerLabel);
         console.log(`Loaded ${loadedData.gridCells.length} grid cells`);

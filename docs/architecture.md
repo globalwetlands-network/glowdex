@@ -29,6 +29,40 @@ Two data sources feed the UI:
 - **Backend API** — statistics, species, partners, and AI insight fetched from `glowdex-api`
   through `src/api/`.
 
+## Routing
+
+`src/main.tsx` mounts a `BrowserRouter` with two routes: `/` renders the public
+`LandingPage` (`Hero`, `FactSheet`, See it in action; `src/features/landing/`) and `/map` renders the map app (`App.tsx`); anything else
+redirects to `/`. The map's TopBar menu has a **Home** item that navigates back to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
+in dev and under `/glowdex/` on GitHub Pages.
+
+The map app is **lazy-loaded** (`React.lazy` + `Suspense` with `LoadingState`), so `/` doesn't
+download mapbox-gl, plotly, etc. Once the Hero has painted and the browser is idle (skipped on
+Data Saver / slow connections), and on hover/focus/touch of any `/map` link, `preloadMapApp()`
+(`src/features/landing/preloadMapApp.ts`) fetches that chunk and starts the dataset loads.
+The data hooks read through shared caches in `src/data/preload.ts` (`createCachedLoader`), so
+`/map` picks up the preloaded data and skips `LoadingState`, and remounts (Home → map) reuse
+it. Each hook's `reload()` clears its cache entry, so the retry flow still refetches.
+
+Below the hero, the lazily loaded **"See it in action"** carousel
+(`src/features/landing/components/SeeItInAction/`) renders the app's **real** widgets
+(`LocalSiteTooltip`, `LocalWetlandsAnalysisWidget`, `MapTooltip`, `SelectionPanel`,
+`GroupedViolinPlot`, `AnalysisAssistantWidget`) for one worked example: tile 21812, Bayhead,
+South Africa. Their data is `src/features/landing/fixtures/workedExample.json`, a raw
+data-store snapshot made by `node scripts/snapshot-landing-example.mjs` and run through the
+app's own transforms. A dedicated pre-seeded `QueryClient` means the showcase makes no API
+calls, and the assistant runs in its `staticInsight` + `readOnly` mode.
+
+GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
+workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages serves that for any unknown
+path, the SPA boots, and the router renders the matching route. (Deep links therefore return
+HTTP 404 with the correct page, which browsers ignore; a crawler would see the status.)
+
+The hero media (static photo vs crab video) is selected by `resolveHeroMediaVariant`
+(`src/features/landing/config/heroMedia.ts`): the `?hero=photo|video` query param wins, then
+`VITE_PUBLIC_HERO_MEDIA`, then `photo`. The video falls back to its poster for
+`prefers-reduced-motion`, Data Saver / slow connections, and playback errors.
+
 ## Layout & composition
 
 `src/app/` is the composition root. `AppProviders.tsx` wraps the tree (React Query client,
