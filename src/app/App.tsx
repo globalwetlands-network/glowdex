@@ -26,12 +26,6 @@ import { useGlobalStatistics } from '@/data/hooks/useGlobalStatistics';
 import { useDatasetSkew } from '@/data/hooks/useDatasetSkew';
 import { usePartners } from '@/api/hooks/usePartners';
 import { useSpeciesConfig } from '@/api/hooks/useSpeciesConfig';
-import {
-  calculateDistance,
-  findCellContainingPoint,
-  getFeatureCenterCoords,
-} from '@/utils/geo';
-import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 
 // App Components
 import { AppLayout } from './components/AppLayout';
@@ -43,6 +37,7 @@ import { TopBar } from './components/TopBar';
 
 // App Hooks, Constants & Types
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
+import { useEntryMode } from './hooks/useEntryMode';
 import { useSelectedCell } from './hooks/useSelectedCell';
 import { useTypologyScale } from './hooks/useTypologyScale';
 import type { MobileTab } from './types/app.types';
@@ -69,13 +64,24 @@ function AppShell() {
   } = useData();
   const { skewActive } = useDatasetSkew();
   const { filterState, setFilterState } = useFilter();
-  const { selectedCellId, setSelectedCellId } = useSelection();
 
-  // Local UI state (layout only)
-  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('map');
+  // Workflow mode from `?mode=local|global` (GLO-207). Global is the default
+  // and matches the app's behaviour before the split.
+  const { entryMode, siteParam, enterLocalSite, replaceSiteParam } =
+    useEntryMode();
+  const isLocalMode = entryMode === 'local';
+
+  // Local mode never has a selected grid cell: the stored selection is masked
+  // here (the only reader of the selection context), so no global cell data
+  // can reach the local view. Returning to Global restores the stored cell.
+  const { selectedCellId: storedCellId, setSelectedCellId } = useSelection();
+  const selectedCellId = isLocalMode ? null : storedCellId;
+
+  // Local UI state (layout only). Both entry points open on the Analysis tab.
+  const [mobileActiveTab, setMobileActiveTab] = useState<MobileTab>('analysis');
   const [panelActiveTab, setPanelActiveTab] = useState<
     'analysis' | 'biodiversity'
-  >('biodiversity');
+  >('analysis');
   const [scrollToLocalDataSignal, setScrollToLocalDataSignal] = useState(0);
   const [scrollToPartnerSignal, setScrollToPartnerSignal] = useState(0);
   const [scrollToTopSignal, setScrollToTopSignal] = useState(0);
@@ -163,16 +169,24 @@ function AppShell() {
     [posthog],
   );
 
-  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(true);
+  // Monitoring-location pins: on by default in Local mode, off in Global
+  // (where they're an opt-in overlay). Local mode forces them on regardless.
+  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(
+    () => entryMode === 'local',
+  );
+  const effectiveLocalSiteLayerEnabled = isLocalMode || localSiteLayerEnabled;
 
   const handleLocalSiteLayerToggle = useCallback((enabled: boolean) => {
     setLocalSiteLayerEnabled(enabled);
   }, []);
 
-  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
-  const [proximityAssociatedSiteId, setProximityAssociatedSiteId] = useState<
-    string | null
-  >(null);
+  // The selected monitoring site is the `?site=` param, in Local mode only.
+  // Global mode never has a selected site — pins cross-link into Local.
+  // Unknown ids resolve to no selection.
+  const selectedSiteId =
+    isLocalMode && siteParam && localSites.some((s) => s.id === siteParam)
+      ? siteParam
+      : null;
 
   const [siteFlyTarget, setSiteFlyTarget] = useState<{
     lng: number;
@@ -183,6 +197,17 @@ function AppShell() {
     lat: number;
   } | null>(null);
   const [resetViewSignal, setResetViewSignal] = useState(0);
+
+  // Fly to the selected site whenever it changes, including on initial load
+  // and after a cross-link (render-phase update, no effect needed).
+  const [flownToSiteId, setFlownToSiteId] = useState<string | null>(null);
+  if (selectedSiteId !== flownToSiteId) {
+    setFlownToSiteId(selectedSiteId);
+    const site = localSites.find((s) => s.id === selectedSiteId);
+    if (site) {
+      setSiteFlyTarget({ lng: site.coordinates[0], lat: site.coordinates[1] });
+    }
+  }
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
@@ -221,9 +246,15 @@ function AppShell() {
     [posthog, selectedCellId, partnersData],
   );
 
+  /**
+   * Selects a monitoring site in Local mode: flies to it, opens the Analysis
+   * tab and keeps `?site=` in step. Deliberately never selects the grid cell
+   * containing the site — that side effect used to pull global cell data into
+   * the local view (GLO-207).
+   */
   const handleSiteSelect = useCallback(
     (siteId: string) => {
-      setSelectedSiteId(siteId);
+      replaceSiteParam(siteId);
       setPanelActiveTab('analysis');
       setScrollToLocalDataSignal(Date.now());
       if (window.innerWidth < MOBILE_BREAKPOINT) {
@@ -247,39 +278,32 @@ function AppShell() {
         lng: site.coordinates[0],
         lat: site.coordinates[1],
       });
+    },
+    [localSites, posthog, selectedCellId, replaceSiteParam],
+  );
 
-      // geojson is stable after initial load — set once
-      // in useScientificData setState and never updated.
-      // Safe to include in the dependency array without
-      // risk of unnecessary re-creation.
-      if (geojson) {
-        // Use point-in-polygon against GeoJSON features
-        // to find the containing cell — more reliable
-        // than distance-based lookup since RichGridCell
-        // has no centerCoords populated at App level.
-        const cellId = findCellContainingPoint(
-          site.coordinates[1], // latitude
-          site.coordinates[0], // longitude
-          geojson,
-        );
-
-        if (cellId !== null) {
-          setSelectedCellId(cellId);
-        } else {
-          // Site coordinates don't fall within any grid
-          // cell (e.g. coastal edge case). Local data
-          // widget still shows correctly without a cell.
-          console.warn(
-            `handleSiteSelect: no grid cell found ` +
-              `containing site "${siteId}" at ` +
-              `[${site.coordinates[1]}, ` +
-              `${site.coordinates[0]}]`,
-          );
-        }
+  /**
+   * Opens a site from Global mode by cross-linking to
+   * `?mode=local&site=<id>`. The URL change alone selects the site (see
+   * selectedSiteId) and masks the grid cell, so the transition never
+   * carries global cell data into the local view.
+   */
+  const handleEnterLocalSite = useCallback(
+    (siteId: string) => {
+      enterLocalSite(siteId);
+      setPanelActiveTab('analysis');
+      setScrollToLocalDataSignal(Date.now());
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        setMobileActiveTab('analysis');
       }
     },
-    [localSites, geojson, setSelectedCellId, posthog, selectedCellId],
+    [enterLocalSite],
   );
+
+  // Pin clicks and the Partner widget's "View local data" cross-link in
+  // Global mode (the local widget no longer exists there), and select the
+  // site directly in Local mode.
+  const openSite = isLocalMode ? handleSiteSelect : handleEnterLocalSite;
 
   const handleSiteClickFromMap = useCallback(
     (siteId: string) => {
@@ -292,13 +316,14 @@ function AppShell() {
           partner_id: site?.partnerId ?? null,
           trigger_source: 'map_pin',
           had_cell_selected: selectedCellId !== null,
+          mode: entryMode,
         });
       } catch (error) {
         console.error('Failed to capture local_site_selected event:', error);
       }
-      handleSiteSelect(siteId);
+      openSite(siteId);
     },
-    [localSites, posthog, selectedCellId, handleSiteSelect],
+    [localSites, posthog, selectedCellId, openSite, entryMode],
   );
 
   // Custom hooks for derived Logic (Thin Provider pattern)
@@ -308,59 +333,21 @@ function AppShell() {
   const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
 
   /**
-   * Derives the local site context for the AI assistant
-   * when a monitoring site is selected or proximity-associated.
-   * Uses the most recent available year. Returns null when no
-   * site is selected, no data is available, the site is
-   * geographically distant from the selected cell, or all
-   * conditions have zero samples (no field data collected).
+   * Derives the local site context for the AI assistant from the selected
+   * monitoring site. Local mode only — Global mode never sends local data,
+   * so the two are never blended (GLO-207). Uses the most recent available
+   * year. Returns null when no site is selected, no data is available, or
+   * all conditions have zero samples (no field data collected).
    *
    * Partner institution name is resolved from the partners
    * API — the AI receives the full name rather than the
    * partner ID slug.
    */
   const localSiteContext = useMemo((): LocalSiteContext | null => {
-    const effectiveSiteId = selectedSiteId ?? proximityAssociatedSiteId;
-    if (!effectiveSiteId || !localSites.length) return null;
+    if (!isLocalMode || !selectedSiteId || !localSites.length) return null;
 
-    const site = localSites.find((s) => s.id === effectiveSiteId);
+    const site = localSites.find((s) => s.id === selectedSiteId);
     if (!site || !site.observations.length) return null;
-
-    // Guard: only send local context when the site is
-    // geographically relevant to the selected cell.
-    // Use selectedCell.centerCoords when available,
-    // fall back to the GeoJSON feature bbox center.
-    // If neither is available, skip the guard — this
-    // is a known limitation when geojson is not yet
-    // loaded.
-    let cellLat: number | null = null;
-    let cellLng: number | null = null;
-
-    if (selectedCell?.centerCoords) {
-      cellLat = selectedCell.centerCoords.latitude;
-      cellLng = selectedCell.centerCoords.longitude;
-    } else if (geojson && selectedCellId) {
-      const feature = geojson.features.find(
-        (f) => f.properties.ID === selectedCellId,
-      );
-      if (feature) {
-        const center = getFeatureCenterCoords(feature);
-        cellLat = center.latitude;
-        cellLng = center.longitude;
-      }
-    }
-
-    if (cellLat !== null && cellLng !== null) {
-      const distanceKm = calculateDistance(
-        cellLat,
-        cellLng,
-        site.coordinates[1], // latitude
-        site.coordinates[0], // longitude
-      );
-      if (distanceKm > MAX_SITE_ASSOCIATION_DISTANCE_KM) {
-        return null;
-      }
-    }
 
     // availableYears is sorted ascending in
     // deriveLocalWetlands — .at(-1) safely returns
@@ -397,27 +384,17 @@ function AppShell() {
       year,
       conditions,
     };
-  }, [
-    selectedSiteId,
-    proximityAssociatedSiteId,
-    localSites,
-    partnersData,
-    selectedCell,
-    selectedCellId,
-    geojson,
-  ]);
+  }, [isLocalMode, selectedSiteId, localSites, partnersData]);
 
   /**
-   * True only when the effective site has a partnerId that
+   * True only when the selected site has a partnerId that
    * requires partner data to resolve — sites with no partner
    * mapping are already complete without it.
-   * False for plain cell selections with no associated site
-   * so those queries are not delayed.
    */
-  const pendingSiteId = selectedSiteId ?? proximityAssociatedSiteId;
-  const pendingSite = pendingSiteId
-    ? localSites.find((s) => s.id === pendingSiteId)
-    : null;
+  const pendingSite =
+    isLocalMode && selectedSiteId
+      ? localSites.find((s) => s.id === selectedSiteId)
+      : null;
   const isLocalContextPending = !!pendingSite?.partnerId && isPartnersLoading;
 
   // Analytics hooks
@@ -450,8 +427,6 @@ function AppShell() {
     (id: number | null) => {
       setSelectedCellId(id);
       setClickedPartnerId(null);
-      setSelectedSiteId(null);
-      setProximityAssociatedSiteId(null);
       if (id !== null) {
         cellCountInSession.current += 1;
         setAnalysisTabVisited(false);
@@ -525,8 +500,6 @@ function AppShell() {
     cellCountInSession.current = 0;
     setSelectedCellId(null);
     setClickedPartnerId(null);
-    setSelectedSiteId(null);
-    setProximityAssociatedSiteId(null);
   }, [
     setSelectedCellId,
     posthog,
@@ -551,10 +524,9 @@ function AppShell() {
     cellCountInSession.current = 0;
     setSelectedCellId(null);
     setClickedPartnerId(null);
-    setSelectedSiteId(null);
-    setProximityAssociatedSiteId(null);
+    if (isLocalMode) replaceSiteParam(null);
     setMobileActiveTab('map');
-    setPanelActiveTab('biodiversity');
+    setPanelActiveTab('analysis');
     setSpeciesLayerState({ speciesId: '', observations: [], enabled: false });
     setSpeciesFlyTarget(null);
     setSiteFlyTarget(null);
@@ -565,6 +537,8 @@ function AppShell() {
     selectedCell,
     panelActiveTab,
     setSelectedCellId,
+    isLocalMode,
+    replaceSiteParam,
   ]);
 
   const handleLocationSearched = useCallback(
@@ -591,6 +565,7 @@ function AppShell() {
   const mapArea = useMemo(
     () => (
       <Map
+        mode={entryMode}
         allGridCells={gridCells || []}
         filteredGridCells={filteredGridCells}
         geojson={geojson!}
@@ -609,7 +584,7 @@ function AppShell() {
         onSpeciesFlyComplete={() => setSpeciesFlyTarget(null)}
         onPartnerClick={handlePartnerClick}
         localSites={localSites}
-        localSiteLayerEnabled={localSiteLayerEnabled}
+        localSiteLayerEnabled={effectiveLocalSiteLayerEnabled}
         selectedSiteId={selectedSiteId}
         onSiteClick={handleSiteClickFromMap}
         siteFlyTarget={siteFlyTarget}
@@ -622,6 +597,7 @@ function AppShell() {
       />
     ),
     [
+      entryMode,
       gridCells,
       filteredGridCells,
       geojson,
@@ -637,7 +613,7 @@ function AppShell() {
       speciesFlyTarget,
       handlePartnerClick,
       localSites,
-      localSiteLayerEnabled,
+      effectiveLocalSiteLayerEnabled,
       selectedSiteId,
       handleSiteClickFromMap,
       siteFlyTarget,
@@ -654,6 +630,7 @@ function AppShell() {
   const sidePanel = useMemo(
     () => (
       <SidePanel
+        mode={entryMode}
         filterState={filterState}
         onFilterChange={setFilterState}
         selectedCell={selectedCell}
@@ -676,17 +653,15 @@ function AppShell() {
         localDataUpdated={localDataUpdated}
         selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
-        localSiteLayerEnabled={localSiteLayerEnabled}
+        localSiteLayerEnabled={effectiveLocalSiteLayerEnabled}
         onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
-        // Intentionally aliases onSiteSelect — both trigger the same site
-        // selection and tab switch. If these use cases ever diverge (e.g.
-        // onViewLocalData should not fly-to the site), split the callback.
-        onViewLocalData={handleSiteSelect}
+        // Global: cross-links to Local mode for the site (the local widget
+        // isn't shown in Global). Local: selects the site and opens Analysis.
+        onViewLocalData={openSite}
         localSiteContext={localSiteContext}
         isLocalContextPending={isLocalContextPending}
         speciesConfig={speciesConfigData?.species ?? []}
         partners={partnersData?.partners ?? []}
-        onSiteAssociated={setProximityAssociatedSiteId}
         scrollToLocalDataSignal={scrollToLocalDataSignal}
         scrollToPartnerSignal={scrollToPartnerSignal}
         scrollToTopSignal={scrollToTopSignal}
@@ -695,6 +670,7 @@ function AppShell() {
       />
     ),
     [
+      entryMode,
       filterState,
       setFilterState,
       selectedCell,
@@ -717,7 +693,8 @@ function AppShell() {
       localDataUpdated,
       selectedSiteId,
       handleSiteSelect,
-      localSiteLayerEnabled,
+      openSite,
+      effectiveLocalSiteLayerEnabled,
       handleLocalSiteLayerToggle,
       localSiteContext,
       isLocalContextPending,
@@ -742,7 +719,7 @@ function AppShell() {
 
   return (
     <>
-      <WelcomeModal />
+      <WelcomeModal mode={entryMode} />
       <AppLayout
         topBar={<TopBar onLogoClick={handleReset} />}
         mapArea={mapArea}

@@ -7,10 +7,16 @@ import {
   PartnerMarkerIcon,
   MonitoringLocationIcon,
 } from '@/components/icons/MapMarkers';
+import type { EntryMode } from '../hooks/useEntryMode';
 
 const STORAGE_KEY = 'glowdex_welcome_dismissed';
 
-export function WelcomeModal() {
+interface WelcomeModalProps {
+  /** Workflow mode (GLO-207). Local mode has no tiles, so the first step differs. */
+  mode?: EntryMode;
+}
+
+export function WelcomeModal({ mode = 'global' }: WelcomeModalProps) {
   const posthog = usePostHog();
   const [visible, setVisible] = useState(
     () => !localStorage.getItem(STORAGE_KEY),
@@ -97,9 +103,15 @@ export function WelcomeModal() {
         {/* How to get started */}
         <div className="space-y-2">
           <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">
-            <TileMarkerIcon size={12} />
+            {mode === 'local' ? (
+              <MonitoringLocationIcon size={12} />
+            ) : (
+              <TileMarkerIcon size={12} />
+            )}
             <p className="text-xs text-gray-700">
-              Select a colored tile on the map to get started
+              {mode === 'local'
+                ? 'Select a monitoring location on the map to get started'
+                : 'Select a colored tile on the map to get started'}
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2.5">

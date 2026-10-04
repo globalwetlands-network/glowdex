@@ -10,6 +10,7 @@ import type { GridGeoJSON } from '@/data/types/geo.types';
 import type { RichGridCell } from '@/data/types/grid.types';
 import type { ObservationPoint } from '@/api/species';
 import type { EnrichedGridCell } from '@/app/types/app.types';
+import type { EntryMode } from '@/app/hooks/useEntryMode';
 
 import { useMapInteraction } from '../hooks/useMapInteraction';
 import { useMapViewState } from '../hooks/useMapViewState';
@@ -27,6 +28,11 @@ import { SearchMarkerIcon } from '@/components/map/markers';
 import { MapLayerLegend } from './MapLayerLegend';
 
 interface MapProps {
+  /**
+   * Workflow mode (GLO-207). Local mode renders no grid and ignores every
+   * grid interaction (hover, click, long-press, empty-click deselect).
+   */
+  mode: EntryMode;
   allGridCells: RichGridCell[];
   filteredGridCells: RichGridCell[];
   geojson: GridGeoJSON;
@@ -171,7 +177,7 @@ function enrichGeoJsonFeatures(
  * map center as a `proximity` option, updated on every map move.
  *
  * ─── Layer rendering order ──────────────────────────────────────
- * 1. GridLayer — base typology grid (always rendered)
+ * 1. GridLayer — base typology grid (Global mode only)
  * 2. MangroveExtentLayer — habitat raster (conditional)
  * 3. SpeciesDistributionLayer — GBIF observations (conditional)
  * 4. PartnerLayer — partner markers (conditional)
@@ -181,6 +187,7 @@ function enrichGeoJsonFeatures(
  * 8. MapLayerLegend — bottom-left overlay (conditional)
  */
 export function GridMap({
+  mode,
   allGridCells,
   filteredGridCells,
   geojson,
@@ -211,6 +218,7 @@ export function GridMap({
   resetViewSignal = 0,
 }: MapProps) {
   const posthog = usePostHog();
+  const isGlobal = mode === 'global';
   const { initialViewState, persistViewState } =
     useMapViewState(INITIAL_VIEW_STATE);
   const mapRef = useRef<MapRef>(null);
@@ -348,9 +356,16 @@ export function GridMap({
         onPartnerClick(partnerFeature.properties.id);
         return;
       }
-      onClick(evt);
+      // Empty/grid clicks select or clear a cell — Global mode only.
+      if (isGlobal) onClick(evt);
     },
-    [onClick, onPartnerClick, onSiteClick, captureFirstMapInteraction],
+    [
+      onClick,
+      onPartnerClick,
+      onSiteClick,
+      captureFirstMapInteraction,
+      isGlobal,
+    ],
   );
 
   const handleTouchStart = useCallback(
@@ -380,10 +395,12 @@ export function GridMap({
           layers: ['partner-locations', 'partner-locations-inner'],
         }) ?? [];
 
-      const gridFeatures =
-        mapRef.current?.queryRenderedFeatures(evt.point, {
-          layers: ['grid-fill'],
-        }) ?? [];
+      // The grid layer only exists in Global mode.
+      const gridFeatures = isGlobal
+        ? (mapRef.current?.queryRenderedFeatures(evt.point, {
+            layers: ['grid-fill'],
+          }) ?? [])
+        : [];
 
       const sp = siteFeatures[0]?.properties;
       if (sp?.id) {
@@ -423,7 +440,7 @@ export function GridMap({
       touchedSite.current = null;
       touchedCell.current = null;
     },
-    [allGridCells],
+    [allGridCells, isGlobal],
   );
 
   const handleTouchEnd = useCallback(
@@ -615,14 +632,13 @@ export function GridMap({
       duration: 1000,
     });
     setSearchMarker(null);
-    onCellSelect(null);
+    if (isGlobal) onCellSelect(null);
     onLocationSearchCleared?.();
-  }, [onCellSelect, onLocationSearchCleared]);
+  }, [onCellSelect, onLocationSearchCleared, isGlobal]);
 
   const interactiveLayerIds = useMemo(
     () => [
-      'grid-fill',
-      'grid-highlight',
+      ...(isGlobal ? ['grid-fill', 'grid-highlight'] : []),
       ...(localSiteLayerEnabled ? ['local-sites', 'local-site-points'] : []),
       'partner-locations',
       'partner-locations-inner',
@@ -630,7 +646,7 @@ export function GridMap({
         ? [`species-${activeSpeciesId}-pins`]
         : []),
     ],
-    [localSiteLayerEnabled, speciesLayerEnabled, activeSpeciesId],
+    [isGlobal, localSiteLayerEnabled, speciesLayerEnabled, activeSpeciesId],
   );
 
   if (!MAPBOX_TOKEN) {
@@ -703,13 +719,16 @@ export function GridMap({
             setSiteHoverInfo(null);
           }
 
-          onHover({
-            ...evt,
-            features: evt.features?.filter(
-              (f) =>
-                f.layer?.id === 'grid-fill' || f.layer?.id === 'grid-highlight',
-            ),
-          } as MapMouseEvent);
+          if (isGlobal) {
+            onHover({
+              ...evt,
+              features: evt.features?.filter(
+                (f) =>
+                  f.layer?.id === 'grid-fill' ||
+                  f.layer?.id === 'grid-highlight',
+              ),
+            } as MapMouseEvent);
+          }
 
           const siteFeature = evt.features?.find(
             (f) =>
@@ -779,15 +798,22 @@ export function GridMap({
       >
         <NavigationControl position="top-right" />
 
-        <GridLayer
-          geojson={filteredGeoJson}
-          typologies={typologies}
-          hoveredCellId={hoveredCellId}
-          selectedCellId={selectedCellId}
-          typologyScale={typologyScale}
-        />
+        {isGlobal && (
+          <GridLayer
+            geojson={filteredGeoJson}
+            typologies={typologies}
+            hoveredCellId={hoveredCellId}
+            selectedCellId={selectedCellId}
+            typologyScale={typologyScale}
+          />
+        )}
 
-        <MangroveExtentLayer enabled={mangroveLayerEnabled} />
+        <MangroveExtentLayer
+          enabled={mangroveLayerEnabled}
+          // The grid (its usual anchor) only exists in Global mode; Local
+          // anchors to the same base label layer the grid sits under.
+          beforeId={isGlobal ? 'grid-fill' : 'waterway-label'}
+        />
 
         {speciesLayerEnabled &&
           activeSpeciesId &&
@@ -853,14 +879,17 @@ export function GridMap({
           </div>
         )}
 
-        {longPressTileInfo && !partnerHoverInfo && !siteHoverInfo && (
-          <MapTooltip
-            x={longPressTileInfo.x}
-            y={longPressTileInfo.y}
-            cell={longPressTileInfo.cell}
-            typologyScale={typologyScale}
-          />
-        )}
+        {isGlobal &&
+          longPressTileInfo &&
+          !partnerHoverInfo &&
+          !siteHoverInfo && (
+            <MapTooltip
+              x={longPressTileInfo.x}
+              y={longPressTileInfo.y}
+              cell={longPressTileInfo.cell}
+              typologyScale={typologyScale}
+            />
+          )}
 
         {speciesHoverInfo && (
           <div
@@ -893,14 +922,18 @@ export function GridMap({
           </div>
         )}
 
-        {hoverInfo && hoveredCell && !partnerHoverInfo && !siteHoverInfo && (
-          <MapTooltip
-            x={hoverInfo.x}
-            y={hoverInfo.y}
-            cell={hoveredCell}
-            typologyScale={typologyScale}
-          />
-        )}
+        {isGlobal &&
+          hoverInfo &&
+          hoveredCell &&
+          !partnerHoverInfo &&
+          !siteHoverInfo && (
+            <MapTooltip
+              x={hoverInfo.x}
+              y={hoverInfo.y}
+              cell={hoveredCell}
+              typologyScale={typologyScale}
+            />
+          )}
       </MapGL>
     </div>
   );

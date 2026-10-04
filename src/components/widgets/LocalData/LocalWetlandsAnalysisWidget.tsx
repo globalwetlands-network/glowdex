@@ -74,7 +74,11 @@ interface LocalWetlandsAnalysisWidgetProps {
   localSites: LocalSite[];
   /** ISO date local data was last refreshed, or null if unavailable. */
   localDataUpdated: string | null;
-  selectedCell: EnrichedGridCell | null;
+  /**
+   * Selected grid cell, used for proximity association. Local mode
+   * (GLO-207) passes null so a site is only ever chosen explicitly.
+   */
+  selectedCell?: EnrichedGridCell | null;
   /**
    * Active site ID — single source of truth owned by
    * App.tsx. Set by map pin clicks and dropdown
@@ -95,6 +99,11 @@ interface LocalWetlandsAnalysisWidgetProps {
    * Called with null when no site is in proximity range.
    */
   onSiteAssociated?: (siteId: string | null) => void;
+  /**
+   * Hides the map-layer switch. Local mode (GLO-207) forces the
+   * monitoring-location pins on, so there is nothing to toggle.
+   */
+  hideLayerToggle?: boolean;
 }
 
 /**
@@ -107,12 +116,14 @@ interface SectionHeaderProps {
   onToggle: () => void;
   /** "Mon YYYY" caption, or null to hide the last-refreshed line. */
   updatedLabel: string | null;
+  hideLayerToggle?: boolean;
 }
 
 function SectionHeader({
   localSiteLayerEnabled,
   onToggle,
   updatedLabel,
+  hideLayerToggle = false,
 }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between">
@@ -124,30 +135,32 @@ function SectionHeader({
           <p className="text-[10px] text-gray-400">Updated {updatedLabel}</p>
         )}
       </div>
-      <button
-        role="switch"
-        aria-checked={localSiteLayerEnabled}
-        onClick={onToggle}
-        className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-          localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
-        }`}
-        aria-label={
-          localSiteLayerEnabled
-            ? 'Hide monitoring locations on map'
-            : 'Show monitoring locations on map'
-        }
-        title={
-          localSiteLayerEnabled
-            ? 'Hide monitoring locations on map'
-            : 'Show monitoring locations on map'
-        }
-      >
-        <span
-          className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
-            localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
+      {!hideLayerToggle && (
+        <button
+          role="switch"
+          aria-checked={localSiteLayerEnabled}
+          onClick={onToggle}
+          className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            localSiteLayerEnabled ? 'bg-[#0f6e56]' : 'bg-gray-200'
           }`}
-        />
-      </button>
+          aria-label={
+            localSiteLayerEnabled
+              ? 'Hide monitoring locations on map'
+              : 'Show monitoring locations on map'
+          }
+          title={
+            localSiteLayerEnabled
+              ? 'Hide monitoring locations on map'
+              : 'Show monitoring locations on map'
+          }
+        >
+          <span
+            className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition duration-200 ease-in-out ${
+              localSiteLayerEnabled ? 'translate-x-3' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      )}
     </div>
   );
 }
@@ -209,12 +222,13 @@ function LocationSelectors({
 export function LocalWetlandsAnalysisWidget({
   localSites,
   localDataUpdated,
-  selectedCell,
+  selectedCell = null,
   selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
   onSiteAssociated,
+  hideLayerToggle = false,
 }: LocalWetlandsAnalysisWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData } = usePartners();
@@ -394,6 +408,7 @@ export function LocalWetlandsAnalysisWidget({
           localSiteLayerEnabled={localSiteLayerEnabled}
           onToggle={handleLayerToggle}
           updatedLabel={updatedLabel}
+          hideLayerToggle={hideLayerToggle}
         />
         <p className="text-xs text-gray-500">
           Select a monitoring location to view local field data.
@@ -447,6 +462,7 @@ export function LocalWetlandsAnalysisWidget({
           localSiteLayerEnabled={localSiteLayerEnabled}
           onToggle={handleLayerToggle}
           updatedLabel={updatedLabel}
+          hideLayerToggle={hideLayerToggle}
         />
 
         {/* Site selectors — kept visible for no-data sites so the
@@ -497,6 +513,7 @@ export function LocalWetlandsAnalysisWidget({
         localSiteLayerEnabled={localSiteLayerEnabled}
         onToggle={handleLayerToggle}
         updatedLabel={updatedLabel}
+        hideLayerToggle={hideLayerToggle}
       />
 
       {/* Site selectors — changing country auto-selects

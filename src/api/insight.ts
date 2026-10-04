@@ -23,10 +23,15 @@ function getPostHogIdentity(): { distinctId?: string; sessionId?: string } {
 }
 
 /**
- * Fetch insights from the AI backend for a specific grid cell.
- * Supports both single-turn (question) and multi-turn (messages[]) modes.
+ * Fetch insights from the AI backend for a grid cell (global mode) or a
+ * monitoring site (local mode). Supports both single-turn (question) and
+ * multi-turn (messages[]) requests.
+ *
+ * Each mode sends only its own subject so the backend can never blend them:
+ * global omits localSiteContext, local omits gridCellId.
  */
 export async function fetchInsight({
+  mode,
   gridCellId,
   question,
   messages,
@@ -34,10 +39,11 @@ export async function fetchInsight({
   localSiteContext,
 }: InsightRequest): Promise<InsightResponse> {
   const body: Record<string, unknown> = {
-    gridCellId,
+    mode,
+    ...(mode === 'global' ? { gridCellId } : {}),
     question,
     messages,
-    ...(localSiteContext ? { localSiteContext } : {}),
+    ...(mode === 'local' && localSiteContext ? { localSiteContext } : {}),
     // Forwarded to the backend AnalyticsInterceptor for AI event attribution.
     ...getPostHogIdentity(),
   };

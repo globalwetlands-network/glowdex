@@ -11,7 +11,11 @@ import {
 import { CrabIcon } from '@/components/icons/CrabIcon';
 import ReactMarkdown from 'react-markdown';
 
-import type { InsightResponse, LocalSiteContext } from '@/api/types';
+import type {
+  InsightMode,
+  InsightResponse,
+  LocalSiteContext,
+} from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
 
 const AI_SUGGESTIONS_ENABLED =
@@ -22,34 +26,63 @@ const BASE_SUGGESTIONS = [
   'How does this compare to similar systems?',
 ] as const;
 
-const LOCAL_DATA_SUGGESTION = 'What does the local field data show?';
+// Local mode (GLO-207) answers only from the site's field data, so its
+// suggestions are site-scoped rather than typology comparisons.
+const LOCAL_SUGGESTIONS = [
+  'What does the local field data show?',
+  'How do the site conditions compare?',
+] as const;
+
+const SIEVERS_2021_DOI = 'https://doi.org/10.1016/j.ecolind.2021.108141';
+const SIEVERS_2021_LABEL =
+  'Sievers et al. (2021) Ecological Indicators 131:108141';
 import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
 import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
 import { StatisticalDetailToggle } from './StatisticalDetailToggle';
 
 interface ChatInterfaceProps {
+  /** Workflow mode (GLO-207). Defaults to global. */
+  mode?: InsightMode;
   selectedCellId?: number | null;
+  /** Selected monitoring site — the conversation subject in local mode. */
+  selectedSiteId?: string | null;
   initialInsight?: InsightResponse;
   initialError?: Error | null;
   localSiteContext?: LocalSiteContext | null;
 }
 
 export function ChatInterface({
+  mode = 'global',
   selectedCellId,
+  selectedSiteId,
   initialInsight,
   initialError,
   localSiteContext,
 }: ChatInterfaceProps) {
+  const isLocal = mode === 'local';
+  // The conversation subject: the cell in global mode, the site in local
+  // mode. Null when the current mode has nothing selected.
+  const subjectKey = isLocal
+    ? localSiteContext
+      ? `site-${selectedSiteId ?? localSiteContext.siteName}`
+      : null
+    : selectedCellId
+      ? `cell-${selectedCellId}`
+      : null;
+
   const [inputValue, setInputValue] = useState('');
-  // Tracks which cell ID the user dismissed suggestions for.
-  // Derived: suggestions are visible whenever the current cell differs.
-  const [suggestionsDismissedForCell, setSuggestionsDismissedForCell] =
-    useState<number | null>(null);
-  const suggestionsVisible = selectedCellId !== suggestionsDismissedForCell;
+  // Tracks which subject the user dismissed suggestions for.
+  // Derived: suggestions are visible whenever the current subject differs.
+  const [suggestionsDismissedFor, setSuggestionsDismissedFor] = useState<
+    string | null
+  >(null);
+  const suggestionsVisible = subjectKey !== suggestionsDismissedFor;
 
   const { captureOutboundLinkClicked } = useAIAnalytics({
+    mode,
     selectedCellId,
+    selectedSiteId,
     localSiteContext,
   });
 
@@ -60,9 +93,9 @@ export function ChatInterface({
    * Not stored in state to avoid async synchronization issues.
    */
   const initialMessage =
-    selectedCellId && initialInsight?.text
+    subjectKey && initialInsight?.text
       ? {
-          id: `initial-${selectedCellId}`,
+          id: `initial-${subjectKey}`,
           role: 'assistant' as const,
           content: initialInsight.text,
         }
@@ -76,7 +109,9 @@ export function ChatInterface({
     : messages;
 
   const { askMutation, handleAsk } = useAskMutation({
+    mode,
     selectedCellId,
+    selectedSiteId,
     conversationMessages: conversation,
     setMessages,
     localSiteContext,
@@ -84,11 +119,11 @@ export function ChatInterface({
 
   const { ref: scrollRef, scrollToTop, scrollToBottom } = useAutoScroll();
 
-  // Reset scroll position when the selected cell changes.
+  // Reset scroll position when the selected cell or site changes.
   useEffect(() => {
-    if (!selectedCellId) return;
+    if (!subjectKey) return;
     scrollToTop();
-  }, [selectedCellId, scrollToTop]);
+  }, [subjectKey, scrollToTop]);
 
   // Scroll to top when the initial insight loads so the user reads from the start.
   useEffect(() => {
@@ -107,7 +142,7 @@ export function ChatInterface({
 
     if (
       !inputValue.trim() ||
-      !selectedCellId ||
+      !subjectKey ||
       isLoading ||
       inputValue.length > 500
     ) {
@@ -120,7 +155,7 @@ export function ChatInterface({
     handleAsk(question);
   };
 
-  if (!selectedCellId) {
+  if (!subjectKey) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50 rounded-lg border border-gray-100 p-6 text-center shadow-inner">
         <div className="bg-gray-100 p-3 rounded-full mb-3">
@@ -132,7 +167,9 @@ export function ChatInterface({
         </p>
 
         <p className="text-xs mt-2 opacity-80 max-w-[200px]">
-          Click a grid cell to view contextual analysis.
+          {isLocal
+            ? 'Select a monitoring location to view contextual analysis.'
+            : 'Click a grid cell to view contextual analysis.'}
         </p>
       </div>
     );
@@ -150,7 +187,11 @@ export function ChatInterface({
           <h3 className="text-sm font-bold text-gray-900">
             Mangrove Analysis Assistant
           </h3>
-          <p className="text-xs text-gray-500">Cell ID: {selectedCellId}</p>
+          <p className="text-xs text-gray-500">
+            {isLocal && localSiteContext
+              ? `${localSiteContext.siteName} · ${localSiteContext.country}`
+              : `Cell ID: ${selectedCellId}`}
+          </p>
         </div>
       </div>
 
@@ -163,7 +204,9 @@ export function ChatInterface({
           <div className="flex items-start space-x-2 text-red-600 bg-red-50 p-3 rounded-md text-sm border border-red-100">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p>
-              Failed to load context for this grid cell. Data may be missing.
+              {isLocal
+                ? 'Failed to load context for this monitoring location. Data may be missing.'
+                : 'Failed to load context for this grid cell. Data may be missing.'}
             </p>
           </div>
         )}
@@ -224,6 +267,7 @@ export function ChatInterface({
 
             {idx === 0 &&
               msg.role === 'assistant' &&
+              !isLocal &&
               initialInsight?.statistics && (
                 <StatisticalDetailToggle
                   statistics={initialInsight.statistics}
@@ -240,12 +284,20 @@ export function ChatInterface({
                 <div className="text-[10px] text-gray-400 leading-relaxed">
                   {(() => {
                     const source = initialInsight.sources?.[0];
+                    // Local answers rest only on the site's field data, so
+                    // the fallback names the partner monitoring — never the
+                    // global Sievers 2021 paper.
+                    if (isLocal && !source) {
+                      return localSiteContext ? (
+                        <span>
+                          {`Source: ${localSiteContext.partner} field monitoring (${localSiteContext.year})`}
+                        </span>
+                      ) : null;
+                    }
                     const href = source?.doi
                       ? `https://doi.org/${source.doi}`
-                      : 'https://doi.org/10.1016/j.ecolind.2021.108141';
-                    const label =
-                      source?.citation ??
-                      'Sievers et al. (2021) Ecological Indicators 131:108141';
+                      : SIEVERS_2021_DOI;
+                    const label = source?.citation ?? SIEVERS_2021_LABEL;
                     return (
                       <a
                         href={href}
@@ -300,9 +352,7 @@ export function ChatInterface({
               </span>
               <button
                 type="button"
-                onClick={() =>
-                  setSuggestionsDismissedForCell(selectedCellId ?? null)
-                }
+                onClick={() => setSuggestionsDismissedFor(subjectKey)}
                 className="p-0.5 rounded text-gray-300 hover:text-gray-500 transition-colors cursor-pointer"
                 aria-label="Dismiss suggested questions"
               >
@@ -310,20 +360,19 @@ export function ChatInterface({
               </button>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {[
-                ...BASE_SUGGESTIONS,
-                ...(localSiteContext ? [LOCAL_DATA_SUGGESTION] : []),
-              ].map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => handleAsk(suggestion)}
-                  className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {suggestion}
-                </button>
-              ))}
+              {(isLocal ? LOCAL_SUGGESTIONS : BASE_SUGGESTIONS).map(
+                (suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => handleAsk(suggestion)}
+                    className="text-[11px] px-2.5 py-1 rounded-full border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {suggestion}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         )}

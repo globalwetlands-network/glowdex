@@ -2,13 +2,20 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchInsight } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
-import type { LocalSiteContext } from '@/api/types';
+import type { InsightMode, LocalSiteContext } from '@/api/types';
 import { useAIAnalytics } from '@/features/analytics';
 import { useBackendVersion } from '@/api/hooks/useBackendVersion';
 import { CrabIcon } from '@/components/icons/CrabIcon';
 
 interface AnalysisAssistantWidgetProps {
+  /**
+   * Workflow mode (GLO-207). Global interprets the selected cell; local
+   * interprets the selected site's field data. Defaults to global.
+   */
+  mode?: InsightMode;
   selectedCellId?: number | null;
+  /** Selected monitoring site — the AI subject in local mode. */
+  selectedSiteId?: string | null;
   localSiteContext?: LocalSiteContext | null;
   /**
    * True when a monitoring site is selected but partner
@@ -30,14 +37,22 @@ interface AnalysisAssistantWidgetProps {
 }
 
 export function AnalysisAssistantWidget({
+  mode = 'global',
   selectedCellId,
+  selectedSiteId,
   localSiteContext,
   isLocalContextPending,
   hasMangrove,
   dataSkewed = false,
 }: AnalysisAssistantWidgetProps) {
+  const isLocal = mode === 'local';
+  const cellId = isLocal ? null : (selectedCellId ?? null);
+  const siteId = isLocal ? (selectedSiteId ?? null) : null;
+
   const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
-    selectedCellId,
+    mode,
+    selectedCellId: cellId,
+    selectedSiteId: siteId,
     localSiteContext,
     cellHasMangrove: hasMangrove,
   });
@@ -54,25 +69,30 @@ export function AnalysisAssistantWidget({
     isLoading: isInsightLoading,
     error: initialError,
   } = useQuery({
+    // Keyed per mode so a cached global answer is never served in local
+    // mode (or vice versa). `year` keeps local answers distinct per
+    // monitoring year once more than one is available.
     queryKey: [
       'insight',
       {
         datasetVersion,
-        gridCellId: selectedCellId,
-        localSiteContext: localSiteContext ? localSiteContext.siteName : null,
+        mode,
+        gridCellId: cellId,
+        siteId,
+        year: isLocal ? (localSiteContext?.year ?? null) : null,
       },
     ],
     queryFn: () =>
-      fetchInsight({
-        gridCellId: selectedCellId!,
-        localSiteContext: localSiteContext ?? undefined,
-      }),
-    // Only blocks the query when a monitoring site is
-    // selected and partners data is still loading —
-    // plain cell selections (no site) are unaffected.
-    // Also suppressed during version skew so we never answer
-    // from a backend context that disagrees with the map.
-    enabled: !!selectedCellId && !isLocalContextPending && !dataSkewed,
+      isLocal
+        ? fetchInsight({ mode, localSiteContext: localSiteContext! })
+        : fetchInsight({ mode, gridCellId: cellId! }),
+    // Global: needs a cell, and is suppressed during version skew so we
+    // never answer from a backend context that disagrees with the map.
+    // Local: needs the site's field data, and waits for partners data so
+    // the AI gets the full institution name rather than an id slug.
+    enabled: isLocal
+      ? !!localSiteContext && !isLocalContextPending
+      : !!cellId && !dataSkewed,
   });
 
   useEffect(() => {
@@ -90,7 +110,9 @@ export function AnalysisAssistantWidget({
   // Version skew: the map may show data the backend context doesn't yet know
   // about. Degrade to a non-blocking notice rather than risk a stale answer.
   // NOTE: copy is placeholder pending product sign-off (GLO-177).
-  if (dataSkewed) {
+  // Skew concerns the global grid dataset only; local field data is
+  // unaffected, so local mode never shows this notice.
+  if (!isLocal && dataSkewed) {
     return (
       <div className="flex flex-col items-center justify-center h-48 px-4 text-center text-gray-500">
         <CrabIcon size={24} className="text-[#0F6E56] mb-2" />
@@ -131,8 +153,10 @@ export function AnalysisAssistantWidget({
 
   return (
     <ChatInterface
-      key={`${selectedCellId ?? 'empty'}-${localSiteContext?.siteName ?? 'no-site'}`}
-      selectedCellId={selectedCellId}
+      key={`${mode}-${cellId ?? 'none'}-${siteId ?? 'none'}`}
+      mode={mode}
+      selectedCellId={cellId}
+      selectedSiteId={siteId}
       initialInsight={initialInsight}
       initialError={initialError}
       localSiteContext={localSiteContext}

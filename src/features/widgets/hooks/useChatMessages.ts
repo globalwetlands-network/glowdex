@@ -13,8 +13,9 @@ export interface Message {
  * Stores follow-up conversation messages for the active chat session.
  *
  * The initial AI insight is derived in the UI layer and not stored here.
- * State resets automatically when ChatInterface remounts via
- * `key={selectedCellId}`.
+ * State resets automatically when ChatInterface remounts — its key in
+ * AnalysisAssistantWidget combines mode, cell id and site id, so switching
+ * any of them starts a fresh conversation.
  */
 export function useChatMessages() {
   const [messages, setMessages] = useState<Message[]>([]);

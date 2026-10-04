@@ -24,7 +24,9 @@
  * ─── Layer ordering ─────────────────────────────────────────────
  * Rendered below the grid layer in Map.tsx so habitat polygons are
  * visible as context through the semi-transparent grid without
- * obscuring typology colours.
+ * obscuring typology colours. Local mode (GLO-207) renders no grid,
+ * so Map.tsx passes a base-style label layer as the anchor instead —
+ * anchoring to a missing layer makes Mapbox throw on addLayer.
  */
 
 import { Source, Layer } from 'react-map-gl';
@@ -34,9 +36,14 @@ const GMW_LAYER_ENABLED = import.meta.env.VITE_GMW_LAYER_ENABLED === 'true';
 
 interface MangroveExtentLayerProps {
   enabled: boolean;
+  /** Layer id to insert beneath. Must exist on the map. */
+  beforeId?: string;
 }
 
-export function MangroveExtentLayer({ enabled }: MangroveExtentLayerProps) {
+export function MangroveExtentLayer({
+  enabled,
+  beforeId = 'grid-fill',
+}: MangroveExtentLayerProps) {
   // Disable gracefully if token is absent or feature flag is off
   if (!enabled || !GMW_TOKEN || !GMW_LAYER_ENABLED) return null;
 
@@ -58,7 +65,7 @@ export function MangroveExtentLayer({ enabled }: MangroveExtentLayerProps) {
         type="fill"
         source="gmw-extent-source"
         source-layer="gmw_v4019_sen2_mng"
-        beforeId="grid-fill"
+        beforeId={beforeId}
         paint={{
           'fill-color': '#1d9e75',
           'fill-opacity': 0.6,

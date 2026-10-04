@@ -100,3 +100,37 @@ describe('LocalWetlandsAnalysisWidget — no-data location', () => {
     expect(screen.queryByText(/^Updated /)).not.toBeInTheDocument();
   });
 });
+
+describe('LocalWetlandsAnalysisWidget — Local mode (GLO-207)', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+    cleanup();
+  });
+
+  it('shows the map-layer switch by default', () => {
+    renderWidget();
+    expect(screen.getByRole('switch')).toBeInTheDocument();
+  });
+
+  it('hides the map-layer switch when hideLayerToggle is set', () => {
+    renderWidget({ hideLayerToggle: true });
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('hides the switch in the empty (no site selected) state too', () => {
+    renderWidget({ hideLayerToggle: true, selectedSiteId: null });
+    expect(
+      screen.getByText(
+        'Select a monitoring location to view local field data.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('never proximity-associates a site when no cell is passed', () => {
+    const onSiteAssociated = vi.fn();
+    renderWidget({ selectedSiteId: null, onSiteAssociated });
+
+    expect(onSiteAssociated).not.toHaveBeenCalledWith(expect.any(String));
+  });
+});

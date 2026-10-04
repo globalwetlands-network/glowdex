@@ -4,7 +4,7 @@ import { fetchInsight } from '@/api';
 import { ApiError } from '@/api/client';
 import { useAIAnalytics } from '@/features/analytics';
 import type { Message } from './useChatMessages';
-import type { LocalSiteContext } from '@/api/types';
+import type { InsightMode, LocalSiteContext } from '@/api/types';
 
 const MAX_HISTORY_MESSAGES = 10;
 
@@ -24,7 +24,10 @@ function extractResetsIn(data: unknown): number {
 }
 
 interface Options {
+  /** Workflow mode (GLO-207). Defaults to global. */
+  mode?: InsightMode;
   selectedCellId: number | null | undefined;
+  selectedSiteId?: string | null;
   conversationMessages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   localSiteContext?: LocalSiteContext | null;
@@ -36,7 +39,9 @@ interface Options {
  * messages) to stay within the backend validation limit.
  */
 export function useAskMutation({
+  mode = 'global',
   selectedCellId,
+  selectedSiteId,
   conversationMessages,
   setMessages,
   localSiteContext,
@@ -46,12 +51,22 @@ export function useAskMutation({
     captureResponseReceived,
     captureErrorOccurred,
     captureRateLimitHit,
-  } = useAIAnalytics({ selectedCellId, localSiteContext });
+  } = useAIAnalytics({
+    mode,
+    selectedCellId,
+    selectedSiteId,
+    localSiteContext,
+  });
 
   const askMutation = useMutation({
     mutationFn: (question: string) => {
-      if (!selectedCellId) {
+      // Each mode needs its own subject: a cell in global mode, the site's
+      // field data in local mode.
+      if (mode === 'global' && !selectedCellId) {
         return Promise.reject(new Error('No cell selected'));
+      }
+      if (mode === 'local' && !localSiteContext) {
+        return Promise.reject(new Error('No monitoring location selected'));
       }
 
       // Trim conversation to stay within backend ArrayMaxSize limit.
@@ -69,7 +84,8 @@ export function useAskMutation({
       ];
 
       return fetchInsight({
-        gridCellId: selectedCellId,
+        mode,
+        gridCellId: selectedCellId ?? undefined,
         messages: trimmedHistory.map(({ role, content }) => ({
           role,
           content,
