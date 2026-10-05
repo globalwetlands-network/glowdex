@@ -8,6 +8,11 @@ export interface LocalSiteConditionContext {
   totalDensity: number;
   combinedSE: number;
   samplesN: number;
+  /**
+   * Distinguishes sampling points that share a siteType ("Reference 1",
+   * "Reference 2"); the plain condition name when it has one point.
+   */
+  label?: string;
 }
 
 /**

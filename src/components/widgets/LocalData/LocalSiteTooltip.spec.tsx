@@ -10,7 +10,6 @@ function obs(over: Partial<LocalObservation> = {}): LocalObservation {
   return {
     year: 2026,
     siteType: 'Rehabilitated',
-    species: '1',
     density: 24.9,
     se: 0.5,
     samplesN: 3,
@@ -66,6 +65,22 @@ describe('LocalSiteTooltip', () => {
     expect(screen.getByText('Reference')).toBeInTheDocument();
     expect(screen.getByText('Degraded')).toBeInTheDocument();
     expect(screen.getByText('Rehabilitated')).toBeInTheDocument();
+  });
+
+  it('shows the sum of rows for a condition with two points (current behaviour)', () => {
+    // Pins down today's summing; the proposed per-point tooltip will
+    // replace this with one line per row.
+    render(
+      <LocalSiteTooltip
+        site={makeSite({
+          observations: [obs({ density: 10 }), obs({ density: 12 })],
+        })}
+        name="Bayhead"
+        country="South Africa"
+        hoveredCondition="Rehabilitated"
+      />,
+    );
+    expect(screen.getByText('22.0 ind/m²')).toBeInTheDocument();
   });
 
   it('shows "Data still to be analysed" and no density for a site without observations', () => {
