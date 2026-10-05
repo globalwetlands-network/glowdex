@@ -17,6 +17,16 @@ interface EntryState {
   siteParam: string | null;
 }
 
+/**
+ * Current path with the given query and the existing `#hash` preserved.
+ * Uses the pathname (not a bare `?query`) so an emptied query still
+ * produces a valid URL.
+ */
+function buildUrl(params: URLSearchParams): string {
+  const query = params.toString();
+  return `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+}
+
 /** Reads mode and site from the current URL query string. */
 function readEntryState(): EntryState {
   const params = new URLSearchParams(window.location.search);
@@ -42,17 +52,20 @@ export function useEntryMode() {
   }, []);
 
   /**
-   * Cross-link into Local mode for one site. Pushes a query-only URL so the
-   * current path is kept (works under the `/glowdex/` base path and under a
-   * future `/map` route).
+   * Cross-link into Local mode for one site. Edits the current URL's query
+   * rather than rebuilding it, so the path (`/glowdex/` base today, a future
+   * `/map` route), unrelated params (e.g. `utm_*`, feature flags) and the
+   * `#hash` are all kept.
    *
    * NOTE: `develop` has no router. Once one lands (feature/landing-page), a
    * raw pushState won't be observed by it — re-verify this cross-link then,
    * or switch to the router's navigate.
    */
   const enterLocalSite = useCallback((siteId: string) => {
-    const params = new URLSearchParams({ mode: 'local', site: siteId });
-    window.history.pushState(null, '', `?${params.toString()}`);
+    const params = new URLSearchParams(window.location.search);
+    params.set('mode', 'local');
+    params.set('site', siteId);
+    window.history.pushState(null, '', buildUrl(params));
     setState({ entryMode: 'local', siteParam: siteId });
   }, []);
 
@@ -66,12 +79,7 @@ export function useEntryMode() {
     const params = new URLSearchParams(window.location.search);
     if (siteId) params.set('site', siteId);
     else params.delete('site');
-    const query = params.toString();
-    window.history.replaceState(
-      window.history.state,
-      '',
-      query ? `?${query}` : window.location.pathname,
-    );
+    window.history.replaceState(window.history.state, '', buildUrl(params));
     setState((prev) => ({ ...prev, siteParam: siteId }));
   }, []);
 

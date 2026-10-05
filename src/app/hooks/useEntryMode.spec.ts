@@ -69,6 +69,30 @@ describe('useEntryMode', () => {
     expect(result.current.siteParam).toBeNull();
   });
 
+  it('enterLocalSite keeps unrelated params and the hash', () => {
+    setUrl('/glowdex/?mode=global&utm_source=newsletter#about');
+    const { result } = renderHook(() => useEntryMode());
+
+    act(() => result.current.enterLocalSite('za-bayhead'));
+
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get('mode')).toBe('local');
+    expect(params.get('site')).toBe('za-bayhead');
+    expect(params.get('utm_source')).toBe('newsletter');
+    expect(window.location.hash).toBe('#about');
+    expect(window.location.pathname).toBe('/glowdex/');
+  });
+
+  it('replaceSiteParam keeps unrelated params and the hash', () => {
+    setUrl('/?mode=local&site=za-bayhead&utm_source=newsletter#about');
+    const { result } = renderHook(() => useEntryMode());
+
+    act(() => result.current.replaceSiteParam(null));
+
+    expect(window.location.search).toBe('?mode=local&utm_source=newsletter');
+    expect(window.location.hash).toBe('#about');
+  });
+
   it('follows browser back/forward via popstate', () => {
     setUrl('/?mode=global');
     const { result } = renderHook(() => useEntryMode());

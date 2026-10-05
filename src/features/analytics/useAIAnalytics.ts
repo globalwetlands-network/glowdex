@@ -101,14 +101,16 @@ export function useAIAnalytics({
           ...baseProps,
           has_local_context: !!localSiteContext,
           site_name: localSiteContext?.siteName ?? null,
-          has_mangrove: cellHasMangrove ?? false,
+          // Not applicable in Local mode (no grid cell) — null rather than a
+          // false that would read as "cell has no mangroves".
+          has_mangrove: mode === 'local' ? null : (cellHasMangrove ?? false),
           insight_length: insightText.length,
         });
       } catch (error) {
         console.error('Failed to capture ai_insight_loaded event:', error);
       }
     },
-    [baseProps, localSiteContext, cellHasMangrove, posthog],
+    [baseProps, mode, localSiteContext, cellHasMangrove, posthog],
   );
 
   const captureFollowupAsked = useCallback(

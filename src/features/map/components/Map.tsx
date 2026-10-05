@@ -282,6 +282,16 @@ export function GridMap({
     country: string;
     condition: string | null;
   } | null>(null);
+  // True once the Mapbox instance exists. react-map-gl creates it
+  // asynchronously, so a fly-to requested on first render (e.g. a deep link
+  // to a site) has to wait for it. Deliberately not gated on the `load`
+  // event: camera moves work before the first render, and `load` never
+  // fires in a hidden/background tab.
+  const [mapReady, setMapReady] = useState(false);
+  const setMapRef = useCallback((instance: MapRef | null) => {
+    mapRef.current = instance;
+    setMapReady(instance !== null);
+  }, []);
   const [longPressTileInfo, setLongPressTileInfo] = useState<{
     x: number;
     y: number;
@@ -561,15 +571,18 @@ export function GridMap({
     onSpeciesFlyComplete();
   }, [speciesFlyTarget, onSpeciesFlyComplete]);
 
+  // A cold `?mode=local&site=` load can set the target before the Mapbox
+  // instance exists. Keep it pending until the map is ready, and only clear
+  // it once the fly has actually been issued.
   useEffect(() => {
-    if (!siteFlyTarget) return;
-    mapRef.current?.flyTo({
+    if (!siteFlyTarget || !mapReady || !mapRef.current) return;
+    mapRef.current.flyTo({
       center: [siteFlyTarget.lng, siteFlyTarget.lat],
       zoom: 8,
       duration: 1000,
     });
     onSiteFlyComplete();
-  }, [siteFlyTarget, onSiteFlyComplete]);
+  }, [siteFlyTarget, onSiteFlyComplete, mapReady]);
 
   useEffect(() => {
     if (!partnerFlyTarget) return;
@@ -705,7 +718,7 @@ export function GridMap({
         activeSpeciesName={activeSpeciesName}
       />
       <MapGL
-        ref={mapRef}
+        ref={setMapRef}
         initialViewState={initialViewState}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"

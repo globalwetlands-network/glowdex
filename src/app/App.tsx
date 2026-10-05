@@ -11,9 +11,6 @@ import { useSelection } from '@/context/SelectionContext';
 import type { ObservationPoint } from '@/api/species';
 import type { LocalSiteContext } from '@/api/types';
 
-// Data
-import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
-
 // Feature Hooks & Components
 import {
   useFilterAnalytics,
@@ -40,6 +37,7 @@ import { MOBILE_BREAKPOINT } from './constants/app.constants';
 import { useEntryMode } from './hooks/useEntryMode';
 import { useSelectedCell } from './hooks/useSelectedCell';
 import { useTypologyScale } from './hooks/useTypologyScale';
+import { buildLocalSiteContext } from './utils/buildLocalSiteContext';
 import type { MobileTab } from './types/app.types';
 
 /**
@@ -211,7 +209,11 @@ function AppShell() {
 
   // Clicked partner state
   const [clickedPartnerId, setClickedPartnerId] = useState<string | null>(null);
-  const { data: partnersData, isLoading: isPartnersLoading } = usePartners();
+  const {
+    data: partnersData,
+    isLoading: isPartnersLoading,
+    isError: isPartnersError,
+  } = usePartners();
 
   const handlePartnerClick = useCallback(
     (partnerId: string) => {
@@ -333,58 +335,21 @@ function AppShell() {
   const selectedCell = useSelectedCell(selectedCellId, gridCells, geojson);
 
   /**
-   * Derives the local site context for the AI assistant from the selected
+   * Local site context for the AI assistant, built from the selected
    * monitoring site. Local mode only — Global mode never sends local data,
-   * so the two are never blended (GLO-207). Uses the most recent available
-   * year. Returns null when no site is selected, no data is available, or
-   * all conditions have zero samples (no field data collected).
-   *
-   * Partner institution name is resolved from the partners
-   * API — the AI receives the full name rather than the
-   * partner ID slug.
+   * so the two are never blended (GLO-207).
    */
-  const localSiteContext = useMemo((): LocalSiteContext | null => {
-    if (!isLocalMode || !selectedSiteId || !localSites.length) return null;
-
-    const site = localSites.find((s) => s.id === selectedSiteId);
-    if (!site || !site.observations.length) return null;
-
-    // availableYears is sorted ascending in
-    // deriveLocalWetlands — .at(-1) safely returns
-    // the most recent year.
-    const year = site.availableYears.at(-1) ?? null;
-    if (!year) return null;
-
-    // Filter out conditions with no samples — zero samplesN indicates
-    // no field data was collected for that condition in this year.
-    const conditions = aggregateByCondition(site.observations, year).filter(
-      (c) => c.samplesN > 0,
-    );
-
-    if (!conditions.length) return null;
-
-    // Wait for partners data to load before sending
-    // local context to the AI — prevents the AI
-    // receiving a partner ID slug instead of the full
-    // institution name. Once loaded the memo re-runs
-    // with the correct name and the query updates.
-    if (site.partnerId && !partnersData?.partners) {
-      return null;
-    }
-
-    const partnerName = site.partnerId
-      ? (partnersData?.partners.find((p) => p.id === site.partnerId)
-          ?.institution ?? site.name)
-      : site.name;
-
-    return {
-      siteName: site.name,
-      country: site.country,
-      partner: partnerName,
-      year,
-      conditions,
-    };
-  }, [isLocalMode, selectedSiteId, localSites, partnersData]);
+  const localSiteContext = useMemo(
+    (): LocalSiteContext | null =>
+      isLocalMode && selectedSiteId
+        ? buildLocalSiteContext(
+            localSites.find((s) => s.id === selectedSiteId),
+            partnersData?.partners,
+            isPartnersError,
+          )
+        : null,
+    [isLocalMode, selectedSiteId, localSites, partnersData, isPartnersError],
+  );
 
   /**
    * True only when the selected site has a partnerId that
