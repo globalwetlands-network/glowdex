@@ -9,8 +9,8 @@ function siteRow(over: Partial<LocalSiteRaw> = {}): LocalSiteRaw {
   return {
     Country_name: 'South Africa',
     Location_name: 'Bayhead',
-    Location_lat: '-29.8896064',
-    Location_long: '31.0125925',
+    Site_lat: '-29.8896064',
+    Site_long: '31.0125925',
     Year: '2026',
     Site_Type: 'Reference',
     site_id: 'za-bayhead',
@@ -23,11 +23,11 @@ function obsRow(over: Partial<LocalObservationRaw> = {}): LocalObservationRaw {
   return {
     Country_name: 'South Africa',
     Location_name: 'Bayhead',
-    Location_lat: '-29.8896064',
-    Location_long: '31.0125925',
+    Site_lat: '-29.8896064',
+    Site_long: '31.0125925',
     Year: '2026',
     Site_Type: 'Reference',
-    Species: '1',
+    Species_richness: '3',
     Density: '10',
     SE: '1',
     Samples_n: '5',
@@ -48,9 +48,9 @@ describe('deriveLocalWetlands', () => {
   it('collects one point per coordinate row for a site', () => {
     const sites = deriveLocalWetlands(
       [
-        siteRow({ Site_Type: 'Degraded', Location_long: '31.0383481' }),
-        siteRow({ Site_Type: 'Reference', Location_long: '31.0179211' }),
-        siteRow({ Site_Type: 'Rehabilitated', Location_long: '31.0408006' }),
+        siteRow({ Site_Type: 'Degraded', Site_long: '31.0383481' }),
+        siteRow({ Site_Type: 'Reference', Site_long: '31.0179211' }),
+        siteRow({ Site_Type: 'Rehabilitated', Site_long: '31.0408006' }),
       ],
       [],
     );
@@ -73,8 +73,8 @@ describe('deriveLocalWetlands', () => {
         siteRow({
           Country_name: 'China',
           Location_name: 'Zhuhai',
-          Location_lat: '',
-          Location_long: '',
+          Site_lat: '',
+          Site_long: '',
           Site_Type: '',
           site_id: 'cn-zhuhai',
           partner_id: '',
@@ -91,8 +91,8 @@ describe('deriveLocalWetlands', () => {
         siteRow({
           Country_name: 'Kenya',
           Location_name: 'Gazi',
-          Location_lat: '4.42483',
-          Location_long: '39.53684',
+          Site_lat: '4.42483',
+          Site_long: '39.53684',
           Site_Type: 'Restored',
           site_id: 'ke-gazi',
           partner_id: 'wiomn-ke',
@@ -113,8 +113,8 @@ describe('deriveLocalWetlands', () => {
         siteRow({
           Country_name: 'Australia',
           Location_name: 'Southern Moreton Bay',
-          Location_lat: '-27.693817',
-          Location_long: '153.322803',
+          Site_lat: '-27.693817',
+          Site_long: '153.322803',
           Site_Type: 'Reference',
           site_id: 'au-moreton-bay',
           partner_id: 'griffith-university-au',
@@ -150,8 +150,8 @@ describe('deriveLocalWetlands', () => {
       [
         siteRow({
           Location_name: 'Beachwood',
-          Location_lat: '-29.8064421',
-          Location_long: '31.0383481',
+          Site_lat: '-29.8064421',
+          Site_long: '31.0383481',
           site_id: 'za-beachwood',
           partner_id: 'uwc-za',
         }),
@@ -163,6 +163,66 @@ describe('deriveLocalWetlands', () => {
     // No density data -> empty observations -> "to be analysed" state.
     expect(sites[0].observations).toHaveLength(0);
     expect(sites[0].availableYears).toHaveLength(0);
+  });
+
+  it('falls back to the legacy Location_lat/Location_long headers', () => {
+    const legacy: LocalSiteRaw = {
+      Country_name: 'South Africa',
+      Location_name: 'Bayhead',
+      Location_lat: '-29.8896064',
+      Location_long: '31.0125925',
+      Year: '2026',
+      Site_Type: 'Reference',
+      site_id: 'za-bayhead',
+      partner_id: 'uwc-za',
+    };
+    const sites = deriveLocalWetlands([legacy], []);
+    expect(sites).toHaveLength(1);
+    expect(sites[0].coordinates).toEqual([31.0125925, -29.8896064]);
+  });
+
+  it('still loads sites when name, country and Site_Type columns are missing', () => {
+    const row = siteRow();
+    delete row.Location_name;
+    delete row.Country_name;
+    delete row.Site_Type;
+
+    const sites = deriveLocalWetlands([row], []);
+    expect(sites).toHaveLength(1);
+    expect(sites[0].name).toBe('');
+    expect(sites[0].country).toBe('');
+    expect(sites[0].points[0].condition).toBe('');
+  });
+
+  it('reads observations with no Species column and ignores Species_richness', () => {
+    const row = obsRow({ Species_richness: '7', Density: '4.5' });
+    expect(row).not.toHaveProperty('Species');
+
+    const sites = deriveLocalWetlands([siteRow()], [row]);
+    expect(sites[0].observations).toEqual([
+      {
+        year: 2026,
+        siteType: 'Reference',
+        density: 4.5,
+        se: 1,
+        samplesN: 5,
+      },
+    ]);
+  });
+
+  it('skips an observation whose Site_Type column is missing', () => {
+    const row = obsRow();
+    delete row.Site_Type;
+    const sites = deriveLocalWetlands([siteRow()], [row]);
+    expect(sites[0].observations).toHaveLength(0);
+  });
+
+  it('keeps every observation row for a condition with several points', () => {
+    const sites = deriveLocalWetlands(
+      [siteRow()],
+      [obsRow({ Density: '10' }), obsRow({ Density: '12' })],
+    );
+    expect(sites[0].observations.map((o) => o.density)).toEqual([10, 12]);
   });
 
   it('drops an observation whose site_id is missing', () => {

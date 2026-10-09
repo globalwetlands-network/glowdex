@@ -50,7 +50,7 @@ function deriveObservations(
       continue;
     }
 
-    const siteType = normalizeCondition(row.Site_Type);
+    const siteType = normalizeCondition(row.Site_Type?.trim() ?? '');
     if (!isSiteCondition(siteType)) {
       console.warn(`Skipping unknown Site_Type "${row.Site_Type}"`);
       continue;
@@ -71,6 +71,7 @@ function deriveObservations(
 
     // Only record an observation when density data is present. A month
     // with no measurements (empty Density/SE/Samples_n) is normal.
+    // Species_richness is accepted in the file but not read yet.
     const density = parseFloat(row.Density);
     const se = parseFloat(row.SE);
     const samplesN = parseInt(row.Samples_n, 10);
@@ -78,7 +79,6 @@ function deriveObservations(
       bySite.get(siteId)!.push({
         year,
         siteType,
-        species: row.Species.trim(),
         density,
         se,
         samplesN,
@@ -116,8 +116,10 @@ export function deriveLocalWetlands(
       continue;
     }
 
-    const lat = parseFloat(row.Location_lat);
-    const lng = parseFloat(row.Location_long);
+    // Current headers are Site_lat/Site_long; fall back to the legacy
+    // Location_lat/Location_long so an older file still maps.
+    const lat = parseFloat(row.Site_lat ?? row.Location_lat ?? '');
+    const lng = parseFloat(row.Site_long ?? row.Location_long ?? '');
     // Skip points without coordinates — a site with no valid points
     // renders no marker.
     if (isNaN(lat) || isNaN(lng)) {
@@ -127,7 +129,7 @@ export function deriveLocalWetlands(
     // Normalise synonyms (e.g. "Restored" → "Rehabilitated"); accept
     // any other non-empty Site_Type for markers — the strict
     // SiteCondition guard only applies to chart data.
-    const condition = normalizeCondition(row.Site_Type.trim());
+    const condition = normalizeCondition(row.Site_Type?.trim() ?? '');
     const point: LocalSitePoint = { coordinates: [lng, lat], condition };
 
     const existing = siteMap.get(siteId);
@@ -138,8 +140,8 @@ export function deriveLocalWetlands(
         points: [point],
         meta: {
           id: siteId,
-          name: row.Location_name.trim(),
-          country: row.Country_name.trim(),
+          name: row.Location_name?.trim() ?? '',
+          country: row.Country_name?.trim() ?? '',
           coordinates: [lng, lat], // representative point = first row
           partnerId: row.partner_id?.trim() || null,
         },
