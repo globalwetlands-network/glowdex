@@ -41,7 +41,7 @@ export function Hero() {
           Explore the world&apos;s mangroves
         </h1>
         <p className="m-0 max-w-[480px] text-base leading-[1.4] text-[#f2f1ec]">
-          MBCAM brings together a global comparison of mangrove areas and
+          MBCAM combines a global assessment of mangrove conditions with
           wildlife monitoring from partners on the ground.
         </p>
 
@@ -51,7 +51,7 @@ export function Hero() {
           </h2>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-5">
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
-              <MapCtaLink className="w-full">Local animal data</MapCtaLink>
+              <MapCtaLink className="w-full">Local wildlife data</MapCtaLink>
               <p className="m-0 text-[11px] leading-[1.35] text-white">
                 Wildlife recorded by partners at monitoring sites.{' '}
                 {/* TODO: link to the covered-locations list once it exists */}

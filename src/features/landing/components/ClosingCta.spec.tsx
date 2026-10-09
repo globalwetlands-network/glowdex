@@ -18,7 +18,7 @@ describe('ClosingCta', () => {
     const section = within(
       screen.getByRole('region', { name: 'Ready to explore?' }),
     );
-    for (const name of ['Local animal data', 'Global assessment']) {
+    for (const name of ['Local wildlife data', 'Global assessment']) {
       expect(section.getByRole('link', { name })).toHaveAttribute(
         'href',
         '/map',
@@ -26,7 +26,7 @@ describe('ClosingCta', () => {
     }
 
     fireEvent.pointerEnter(
-      section.getByRole('link', { name: 'Local animal data' }),
+      section.getByRole('link', { name: 'Local wildlife data' }),
     );
     expect(preloadMapApp).toHaveBeenCalled();
   });

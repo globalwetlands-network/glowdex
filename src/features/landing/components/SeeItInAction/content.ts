@@ -31,7 +31,7 @@ export const SECTION_SUBHEAD =
   'Select a mangrove area to learn more about its characteristics, how it compares with similar areas and the wildlife recorded there.';
 
 export const MODE_LABELS: Record<ExampleMode, string> = {
-  local: 'Local animal data',
+  local: 'Local wildlife data',
   global: 'Global assessment',
 };
 

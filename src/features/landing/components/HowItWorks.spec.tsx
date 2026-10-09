@@ -13,8 +13,11 @@ describe('HowItWorks', () => {
     for (const [index, [title, description]] of [
       ['Gather', /we bring together global data on every mangrove area/i],
       ['Group', /a statistical model sorts mangrove areas into typologies/i],
-      ['Compare', /measured against places like it/i],
-      ['Monitor', /partners monitor sites in the field/i],
+      [
+        'Compare',
+        /measuring it against places like it, not against a global average/i,
+      ],
+      ['Monitor', /their data joins the global dataset/i],
     ].entries()) {
       const item = within(items[index]);
       expect(item.getByText(String(index + 1))).toBeVisible();

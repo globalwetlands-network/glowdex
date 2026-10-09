@@ -9,9 +9,9 @@ interface WhoItsForProps {
 }
 
 /**
- * Persona blocks, each with the question that audience brings and how MBCAM
- * answers it as short bullet points. The grid auto-fits its columns, so three
- * or four personas lay out without a code change.
+ * Persona blocks, each with the question that audience brings (if any) and
+ * how MBCAM answers it as short bullet points. Four cards lay out as one
+ * column, then a 2×2 grid, then a single row, so they never leave an orphan.
  */
 export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
   return (
@@ -26,7 +26,7 @@ export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
         >
           {WHO_ITS_FOR_HEADING}
         </h2>
-        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(16rem,100%),1fr))] gap-6 p-0">
+        <ul className="m-0 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 xl:grid-cols-4">
           {personas.map((persona) => (
             <li
               key={persona.audience}
@@ -35,9 +35,11 @@ export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
               <h3 className="m-0 text-sm font-semibold tracking-wide text-glowdex-green uppercase">
                 {persona.audience}
               </h3>
-              <p className="m-0 text-xl leading-snug font-bold text-gray-900">
-                {persona.question}
-              </p>
+              {persona.question && (
+                <p className="m-0 text-xl leading-snug font-bold text-gray-900">
+                  {persona.question}
+                </p>
+              )}
               <ul className="m-0 list-disc space-y-2 pl-5 text-base leading-relaxed text-gray-600 marker:text-glowdex-green">
                 {persona.points.map((point) => (
                   <li key={point}>{point}</li>

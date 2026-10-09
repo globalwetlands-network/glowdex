@@ -1,31 +1,38 @@
-import { useId, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
-  FAQS,
+  FAQ_GROUPS,
   FAQS_HEADING,
   FAQS_INITIALLY_VISIBLE,
   type Faq,
+  type FaqGroup,
 } from '../config/faqs';
 
 interface FaqsProps {
-  faqs?: readonly Faq[];
+  groups?: readonly FaqGroup[];
   initiallyVisible?: number;
 }
 
 /**
- * Flat accordion of FAQs; each question expands independently (native
- * `<details>`). Only the first few show until the visitor asks for the rest.
- * Answers not yet decided show a labelled placeholder.
+ * Grouped accordion of FAQs; each question expands independently (native
+ * `<details>`). Only the first few questions (counted across groups) show
+ * until the visitor asks for the rest, and a group's heading appears once any
+ * of its questions does. Answers not yet decided show a labelled placeholder.
  */
 export function Faqs({
-  faqs = FAQS,
+  groups = FAQ_GROUPS,
   initiallyVisible = FAQS_INITIALLY_VISIBLE,
 }: FaqsProps) {
   const headingId = useId();
   const listId = useId();
   const [showAll, setShowAll] = useState(false);
-  const hiddenCount = Math.max(faqs.length - initiallyVisible, 0);
-  const visibleFaqs = showAll ? faqs : faqs.slice(0, initiallyVisible);
+  const total = groups.reduce((sum, group) => sum + group.faqs.length, 0);
+  const hiddenCount = Math.max(total - initiallyVisible, 0);
+
+  const visibleGroups = takeQuestions(
+    groups,
+    showAll ? total : initiallyVisible,
+  );
 
   return (
     <section
@@ -40,29 +47,18 @@ export function Faqs({
         >
           {FAQS_HEADING}
         </h2>
-        <div
-          id={listId}
-          className="divide-y divide-gray-100 border-t border-b border-gray-100"
-        >
-          {visibleFaqs.map((faq) => (
-            <details key={faq.question} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">
-                {faq.question}
-                <ChevronDown
-                  aria-hidden
-                  className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
-                />
-              </summary>
-              {faq.answer ? (
-                <p className="m-0 mt-2 text-sm leading-relaxed text-gray-600">
-                  {faq.answer}
-                </p>
-              ) : (
-                <p className="m-0 mt-2 text-sm text-gray-500 italic">
-                  To be confirmed
-                </p>
-              )}
-            </details>
+        <div id={listId} className="flex flex-col gap-10">
+          {visibleGroups.map((group) => (
+            <div key={group.heading}>
+              <h3 className="m-0 mb-2 text-sm font-semibold tracking-wide text-glowdex-green uppercase">
+                {group.heading}
+              </h3>
+              <div className="divide-y divide-gray-100 border-t border-b border-gray-100">
+                {group.faqs.map((faq) => (
+                  <FaqItem key={faq.question} faq={faq} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
         {hiddenCount > 0 && (
@@ -84,5 +80,95 @@ export function Faqs({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Keeps the first `limit` questions across groups, in reading order, and drops
+ * the groups left empty.
+ */
+function takeQuestions(groups: readonly FaqGroup[], limit: number): FaqGroup[] {
+  const offsets = groups.map((_, index) =>
+    groups.slice(0, index).reduce((sum, group) => sum + group.faqs.length, 0),
+  );
+  return groups
+    .map((group, index) => ({
+      ...group,
+      faqs: group.faqs.slice(0, Math.max(limit - offsets[index], 0)),
+    }))
+    .filter((group) => group.faqs.length > 0);
+}
+
+interface FaqItemProps {
+  faq: Faq;
+}
+
+function FaqItem({ faq }: FaqItemProps) {
+  return (
+    <details className="group py-5">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">
+        {faq.question}
+        <ChevronDown
+          aria-hidden
+          className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180"
+        />
+      </summary>
+      {faq.answer ? (
+        <p className="m-0 mt-2 text-sm leading-relaxed text-gray-600">
+          <AnswerText text={faq.answer} />
+        </p>
+      ) : (
+        <p className="m-0 mt-2 text-sm text-gray-500 italic">To be confirmed</p>
+      )}
+    </details>
+  );
+}
+
+interface AnswerTextProps {
+  text: string;
+}
+
+/** Renders an answer, turning each `[bracketed]` gap into a placeholder. */
+function AnswerText({ text }: AnswerTextProps) {
+  return text.split(/(\[[^\]]+\])/).map((part, index) => {
+    const placeholder = part.match(/^\[(.+)\]$/);
+    return placeholder ? (
+      <ComingSoonPlaceholder key={index}>
+        {placeholder[1]}
+      </ComingSoonPlaceholder>
+    ) : (
+      <Fragment key={index}>{part}</Fragment>
+    );
+  });
+}
+
+interface ComingSoonPlaceholderProps {
+  children: string;
+}
+
+/**
+ * Amber, dashed marker for copy that's still outstanding, with a "Coming soon"
+ * tooltip on hover or keyboard focus.
+ */
+function ComingSoonPlaceholder({ children }: ComingSoonPlaceholderProps) {
+  const tooltipId = useId();
+
+  return (
+    <span className="group/placeholder relative inline-block">
+      <span
+        tabIndex={0}
+        aria-describedby={tooltipId}
+        className="cursor-help rounded border border-dashed border-amber-400 bg-amber-50 px-1.5 font-medium text-amber-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+      >
+        {children}
+      </span>
+      <span
+        id={tooltipId}
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-focus-within/placeholder:opacity-100 group-hover/placeholder:opacity-100"
+      >
+        Coming soon
+      </span>
+    </span>
   );
 }

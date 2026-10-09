@@ -16,7 +16,7 @@ describe('WhyItMatters', () => {
     ).toBeVisible();
     expect(
       section.getByText(
-        "No two mangroves face the same conditions: one in Kenya and one in Australia are shaped by very different pressures. Comparing each place with similar ones shows what's typical and what stands out, which helps focus conservation where it's needed.",
+        "But a mangrove in Kenya and one in Australia face very different conditions. Comparing each to similar places, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
       ),
     ).toBeVisible();
   });

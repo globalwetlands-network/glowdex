@@ -10,37 +10,45 @@ function cards() {
 }
 
 describe('WhoItsFor', () => {
-  it('renders the three draft personas with their question and bullet points', () => {
+  it('renders the four personas, with a question line only where one is given', () => {
     render(<WhoItsFor />);
 
     const personaCards = cards();
-    expect(personaCards).toHaveLength(3);
+    expect(personaCards).toHaveLength(4);
 
     for (const [index, [audience, question, points]] of (
       [
         [
-          'Conservation and coastal managers',
-          'Where should we focus effort?',
+          'Conservation Managers',
+          null,
           [
             'Find your area on the map and see which kind of mangrove it is.',
-            "Compare it with similar places rather than a global average, so you can see what's unusual about it rather than only what's poor.",
+            'Compare it with similar places rather than a global average.',
             'Download a summary for a report or a funding proposal.',
           ],
         ],
         [
-          'Researchers',
+          'Researchers and Students',
           'How does my site compare with others like it?',
           [
-            'See how a place sits against others in its typology across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
+            'See how a site sits against others in its typology across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
             'Download the data and cite the method.',
           ],
         ],
         [
-          'Monitoring partners',
+          'Monitoring Partners',
           'How does what we record fit into the bigger picture?',
           [
             "See your site's wildlife records alongside the global picture for that area, and compare reference, degraded and rehabilitated sites.",
             'Your data becomes part of a global dataset others can use.',
+          ],
+        ],
+        [
+          'Curious Explorers',
+          null,
+          [
+            'Free and open to everyone.',
+            "Learn about the world's mangroves and local wildlife.",
           ],
         ],
       ] as const
@@ -49,7 +57,8 @@ describe('WhoItsFor', () => {
       expect(
         card.getByRole('heading', { level: 3, name: audience }),
       ).toBeVisible();
-      expect(card.getByText(question)).toBeVisible();
+      if (question) expect(card.getByText(question)).toBeVisible();
+      else expect(personaCards[index].querySelector('p')).toBeNull();
       expect(
         within(card.getByRole('list'))
           .getAllByRole('listitem')

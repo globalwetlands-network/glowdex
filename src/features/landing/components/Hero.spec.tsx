@@ -40,10 +40,10 @@ describe('Hero', () => {
       screen.getByRole('heading', { name: /explore the world's mangroves/i }),
     ).toBeVisible();
     expect(
-      screen.getByText(/brings together a global comparison/i),
+      screen.getByText(/combines a global assessment of mangrove conditions/i),
     ).toBeVisible();
     expect(
-      screen.getByRole('link', { name: 'Local animal data' }),
+      screen.getByRole('link', { name: 'Local wildlife data' }),
     ).toBeVisible();
     expect(
       screen.getByRole('link', { name: 'Global assessment' }),
@@ -61,7 +61,7 @@ describe('Hero', () => {
   it('routes both choices to /map', () => {
     renderHero();
 
-    for (const name of ['Local animal data', 'Global assessment']) {
+    for (const name of ['Local wildlife data', 'Global assessment']) {
       expect(screen.getByRole('link', { name })).toHaveAttribute(
         'href',
         '/map',
@@ -99,7 +99,7 @@ describe('Hero', () => {
     renderHero();
 
     fireEvent.pointerEnter(
-      screen.getByRole('link', { name: 'Local animal data' }),
+      screen.getByRole('link', { name: 'Local wildlife data' }),
     );
     fireEvent.focus(screen.getByRole('link', { name: 'Global assessment' }));
 
