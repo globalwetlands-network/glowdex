@@ -125,15 +125,44 @@ describe('useEntryMode', () => {
     expect(result.current.siteParam).toBeNull();
   });
 
+  it('setMode("global") pushes, drops the site and keeps other params', () => {
+    const { result } = renderEntryMode(
+      '/map?mode=local&site=za-bayhead&utm_source=newsletter#about',
+    );
+
+    act(() => result.current.setMode('global'));
+
+    const params = new URLSearchParams(result.current.location.search);
+    expect(result.current.navigationType).toBe('PUSH');
+    expect(result.current.entryMode).toBe('global');
+    expect(params.get('site')).toBeNull();
+    expect(params.get('utm_source')).toBe('newsletter');
+    expect(result.current.location.hash).toBe('#about');
+  });
+
+  it('setMode("local") pushes local mode, and Back undoes it', () => {
+    const { result } = renderEntryMode('/map');
+
+    act(() => result.current.setMode('local'));
+    expect(result.current.navigationType).toBe('PUSH');
+    expect(result.current.location.search).toBe('?mode=local');
+
+    act(() => {
+      void result.current.navigate(-1);
+    });
+    expect(result.current.entryMode).toBe('global');
+  });
+
   it('keeps the helpers stable across URL changes', () => {
     const { result } = renderEntryMode('/map?mode=global');
-    const { enterLocalSite, replaceSiteParam } = result.current;
+    const { enterLocalSite, replaceSiteParam, setMode } = result.current;
 
     act(() => result.current.enterLocalSite('za-bayhead'));
     act(() => result.current.replaceSiteParam('ke-gazi'));
 
     expect(result.current.enterLocalSite).toBe(enterLocalSite);
     expect(result.current.replaceSiteParam).toBe(replaceSiteParam);
+    expect(result.current.setMode).toBe(setMode);
   });
 
   describe('in the browser, under the /glowdex basename', () => {

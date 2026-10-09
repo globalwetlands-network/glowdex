@@ -5,12 +5,22 @@ import { Menu, Home, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
 import { DatasetVersionBadge } from './DatasetVersionBadge';
 import type { MenuItemKey } from '@/app/content/menuContent';
+import type { EntryMode } from '../hooks/useEntryMode';
+
+/** Same names as the landing page's two map buttons; short forms on phones. */
+const MODE_OPTIONS: { mode: EntryMode; label: string; shortLabel: string }[] = [
+  { mode: 'local', label: 'Local wildlife data', shortLabel: 'Local' },
+  { mode: 'global', label: 'Global assessment', shortLabel: 'Global' },
+];
 
 interface TopBarProps {
   onLogoClick?: () => void;
+  /** Current workflow. The Local/Global switch shows when this and `onModeChange` are set. */
+  mode?: EntryMode;
+  onModeChange?: (mode: EntryMode) => void;
 }
 
-export function TopBar({ onLogoClick }: TopBarProps) {
+export function TopBar({ onLogoClick, mode, onModeChange }: TopBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<MenuItemKey | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -96,7 +106,8 @@ export function TopBar({ onLogoClick }: TopBarProps) {
           <div className="text-white text-[15px] font-medium leading-tight">
             MBCAM
           </div>
-          <div className="text-white/60 text-[10px] uppercase tracking-wider leading-tight">
+          {/* Hidden on phones to leave room for the mode switch. */}
+          <div className="hidden sm:block text-white/60 text-[10px] uppercase tracking-wider leading-tight">
             Mangrove Biodiversity &amp; Condition Action Map
           </div>
         </div>
@@ -104,16 +115,50 @@ export function TopBar({ onLogoClick }: TopBarProps) {
 
       {/* Right side: Action buttons */}
       <div className="flex items-center gap-2">
-        <DatasetVersionBadge />
+        {mode && onModeChange && (
+          <div
+            role="group"
+            aria-label="Map mode"
+            className="flex rounded-md bg-white/10 p-0.5"
+          >
+            {MODE_OPTIONS.map((option) => {
+              const isActive = option.mode === mode;
+              return (
+                <button
+                  key={option.mode}
+                  type="button"
+                  // Full name even when the phone layout shows the short one.
+                  aria-label={option.label}
+                  aria-pressed={isActive}
+                  onClick={() => {
+                    if (!isActive) onModeChange(option.mode);
+                  }}
+                  className={`rounded px-2.5 py-1 text-[12px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    isActive
+                      ? 'bg-white text-glowdex-green'
+                      : 'cursor-pointer text-white/75 hover:text-white'
+                  }`}
+                >
+                  <span className="sm:hidden">{option.shortLabel}</span>
+                  <span className="hidden sm:inline">{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div className="hidden sm:block">
+          <DatasetVersionBadge />
+        </div>
 
         {/* Menu button with dropdown */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="px-3 py-1.5 text-white/75 text-[13px] rounded hover:bg-white/10 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+            aria-label="Menu"
+            className="px-2 sm:px-3 py-1.5 text-white/75 text-[13px] rounded hover:bg-white/10 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Menu size={16} />
-            Menu
+            <span className="hidden sm:inline">Menu</span>
           </button>
 
           {/* Dropdown menu */}

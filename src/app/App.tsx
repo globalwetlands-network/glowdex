@@ -34,7 +34,7 @@ import { TopBar } from './components/TopBar';
 
 // App Hooks, Constants & Types
 import { MOBILE_BREAKPOINT } from './constants/app.constants';
-import { useEntryMode } from './hooks/useEntryMode';
+import { useEntryMode, type EntryMode } from './hooks/useEntryMode';
 import { useSelectedCell } from './hooks/useSelectedCell';
 import { useTypologyScale } from './hooks/useTypologyScale';
 import { buildLocalSiteContext } from './utils/buildLocalSiteContext';
@@ -65,7 +65,7 @@ function AppShell() {
 
   // Workflow mode from `?mode=local|global` (GLO-207). Global is the default
   // and matches the app's behaviour before the split.
-  const { entryMode, siteParam, enterLocalSite, replaceSiteParam } =
+  const { entryMode, siteParam, enterLocalSite, replaceSiteParam, setMode } =
     useEntryMode();
   const isLocalMode = entryMode === 'local';
 
@@ -473,6 +473,24 @@ function AppShell() {
     panelActiveTab,
   ]);
 
+  // The top bar's Local/Global switch. History-backed, so Back undoes it.
+  const handleModeChange = useCallback(
+    (mode: EntryMode) => {
+      try {
+        posthog?.capture('map_mode_switched', {
+          from: entryMode,
+          to: mode,
+          site_id: selectedSiteId,
+          cell_id: selectedCellId !== null ? String(selectedCellId) : null,
+        });
+      } catch (error) {
+        console.error('Failed to capture map_mode_switched event:', error);
+      }
+      setMode(mode);
+    },
+    [posthog, entryMode, selectedSiteId, selectedCellId, setMode],
+  );
+
   const handleReset = useCallback(() => {
     try {
       posthog?.capture('cell_selection_cleared', {
@@ -686,7 +704,13 @@ function AppShell() {
     <>
       <WelcomeModal mode={entryMode} />
       <AppLayout
-        topBar={<TopBar onLogoClick={handleReset} />}
+        topBar={
+          <TopBar
+            onLogoClick={handleReset}
+            mode={entryMode}
+            onModeChange={handleModeChange}
+          />
+        }
         mapArea={mapArea}
         sidePanel={sidePanel}
         mobileActiveTab={mobileActiveTab}

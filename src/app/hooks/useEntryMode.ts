@@ -28,7 +28,8 @@ function parseEntry(search: string): {
 
 /**
  * Current workflow mode and site from the router's location, plus helpers to
- * cross-link into Local mode and to update the selected site in place.
+ * cross-link into Local mode, update the selected site in place, and switch
+ * mode.
  *
  * Navigation goes through React Router, so the router sees every change and
  * Back/Forward need no extra handling. The helpers edit the current query
@@ -90,5 +91,24 @@ export function useEntryMode() {
     [updateQuery],
   );
 
-  return { ...parseEntry(location.search), enterLocalSite, replaceSiteParam };
+  /**
+   * Switches workflow (the map's Local/Global switch). Pushes a history
+   * entry, so Back undoes it. Global never has a selected site, so switching
+   * to it drops `?site=`.
+   */
+  const setMode = useCallback(
+    (mode: EntryMode) =>
+      updateQuery((params) => {
+        params.set('mode', mode);
+        if (mode === 'global') params.delete('site');
+      }, false),
+    [updateQuery],
+  );
+
+  return {
+    ...parseEntry(location.search),
+    enterLocalSite,
+    replaceSiteParam,
+    setMode,
+  };
 }
