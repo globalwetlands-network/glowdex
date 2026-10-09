@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useLocation, useNavigate, type Location } from 'react-router-dom';
 
 /**
  * Which workflow the map is in (GLO-207).
@@ -6,30 +7,19 @@ import { useCallback, useEffect, useState } from 'react';
  * - `global`: grid tiles, cell selection, global analysis/filters.
  * - `local`: monitoring-site pins only, local wetlands analysis.
  *
- * The URL is the only contract with the landing page: `?mode=local`,
- * `?mode=global`, and `?mode=local&site=<id>`. Anything else (including no
- * param) means global, which is the app's behaviour before GLO-207.
+ * The URL is the only contract with the landing page: `/map?mode=local`,
+ * `/map?mode=global`, and `/map?mode=local&site=<id>`. Anything else
+ * (including no param) means global, which is the app's behaviour before
+ * GLO-207.
  */
 export type EntryMode = 'local' | 'global';
 
-interface EntryState {
+/** Reads mode and site from a query string. */
+function parseEntry(search: string): {
   entryMode: EntryMode;
   siteParam: string | null;
-}
-
-/**
- * Current path with the given query and the existing `#hash` preserved.
- * Uses the pathname (not a bare `?query`) so an emptied query still
- * produces a valid URL.
- */
-function buildUrl(params: URLSearchParams): string {
-  const query = params.toString();
-  return `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
-}
-
-/** Reads mode and site from the current URL query string. */
-function readEntryState(): EntryState {
-  const params = new URLSearchParams(window.location.search);
+} {
+  const params = new URLSearchParams(search);
   return {
     entryMode: params.get('mode') === 'local' ? 'local' : 'global',
     siteParam: params.get('site') || null,
@@ -37,37 +27,53 @@ function readEntryState(): EntryState {
 }
 
 /**
- * Current workflow mode and site from the URL, kept in sync with
- * back/forward, plus helpers to cross-link into Local mode and to update
- * the selected site in place.
+ * Current workflow mode and site from the router's location, plus helpers to
+ * cross-link into Local mode and to update the selected site in place.
+ *
+ * Navigation goes through React Router, so the router sees every change and
+ * Back/Forward need no extra handling. The helpers edit the current query
+ * rather than rebuilding it, so the path (`/map` under the `/glowdex/`
+ * basename), unrelated params (e.g. `utm_*`, feature flags) and the `#hash`
+ * are all kept. Their identities are stable across URL changes.
  */
 export function useEntryMode() {
-  const [state, setState] = useState<EntryState>(readEntryState);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Keep mode in sync with browser back/forward after a cross-link push.
-  useEffect(() => {
-    const onPopState = () => setState(readEntryState());
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
+  // The helpers read the latest location through a ref so they keep a
+  // stable identity instead of changing on every navigation.
+  const locationRef = useRef<Location>(location);
+  useLayoutEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+
+  const updateQuery = useCallback(
+    (edit: (params: URLSearchParams) => void, replace: boolean) => {
+      const current = locationRef.current;
+      const params = new URLSearchParams(current.search);
+      edit(params);
+      const query = params.toString();
+      navigate(
+        { search: query ? `?${query}` : '', hash: current.hash },
+        // A replace keeps the entry's state, as replaceState did before.
+        replace ? { replace: true, state: current.state } : undefined,
+      );
+    },
+    [navigate],
+  );
 
   /**
-   * Cross-link into Local mode for one site. Edits the current URL's query
-   * rather than rebuilding it, so the path (`/glowdex/` base today, a future
-   * `/map` route), unrelated params (e.g. `utm_*`, feature flags) and the
-   * `#hash` are all kept.
-   *
-   * NOTE: `develop` has no router. Once one lands (feature/landing-page), a
-   * raw pushState won't be observed by it — re-verify this cross-link then,
-   * or switch to the router's navigate.
+   * Cross-link into Local mode for one site. Pushes a history entry, so Back
+   * returns to where the visitor came from.
    */
-  const enterLocalSite = useCallback((siteId: string) => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('mode', 'local');
-    params.set('site', siteId);
-    window.history.pushState(null, '', buildUrl(params));
-    setState({ entryMode: 'local', siteParam: siteId });
-  }, []);
+  const enterLocalSite = useCallback(
+    (siteId: string) =>
+      updateQuery((params) => {
+        params.set('mode', 'local');
+        params.set('site', siteId);
+      }, false),
+    [updateQuery],
+  );
 
   /**
    * Keeps `?site=` in step with the site picked inside Local mode (dropdown,
@@ -75,13 +81,14 @@ export function useEntryMode() {
    * rather than pushes — picking sites isn't a navigation step for Back.
    * Passing null removes the param.
    */
-  const replaceSiteParam = useCallback((siteId: string | null) => {
-    const params = new URLSearchParams(window.location.search);
-    if (siteId) params.set('site', siteId);
-    else params.delete('site');
-    window.history.replaceState(window.history.state, '', buildUrl(params));
-    setState((prev) => ({ ...prev, siteParam: siteId }));
-  }, []);
+  const replaceSiteParam = useCallback(
+    (siteId: string | null) =>
+      updateQuery((params) => {
+        if (siteId) params.set('site', siteId);
+        else params.delete('site');
+      }, true),
+    [updateQuery],
+  );
 
-  return { ...state, enterLocalSite, replaceSiteParam };
+  return { ...parseEntry(location.search), enterLocalSite, replaceSiteParam };
 }
