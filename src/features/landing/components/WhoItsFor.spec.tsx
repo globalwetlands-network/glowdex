@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { Users } from 'lucide-react';
 import { WhoItsFor } from './WhoItsFor';
 
 /** The persona cards, found via their audience headings. */
@@ -71,10 +72,30 @@ describe('WhoItsFor', () => {
     render(
       <WhoItsFor
         personas={[
-          { audience: 'Students', question: 'Q1?', points: ['P1'] },
-          { audience: 'Managers', question: 'Q2?', points: ['P2'] },
-          { audience: 'Researchers', question: 'Q3?', points: ['P3'] },
-          { audience: 'Partners', question: 'Q4?', points: ['P4a', 'P4b'] },
+          {
+            icon: Users,
+            audience: 'Students',
+            question: 'Q1?',
+            points: ['P1'],
+          },
+          {
+            icon: Users,
+            audience: 'Managers',
+            question: 'Q2?',
+            points: ['P2'],
+          },
+          {
+            icon: Users,
+            audience: 'Researchers',
+            question: 'Q3?',
+            points: ['P3'],
+          },
+          {
+            icon: Users,
+            audience: 'Partners',
+            question: 'Q4?',
+            points: ['P4a', 'P4b'],
+          },
         ]}
       />,
     );
