@@ -18,7 +18,7 @@ export function ClosingCta() {
       </h2>
       <div className="mt-7 flex flex-wrap justify-center gap-4">
         <MapCtaLink className="w-full sm:w-[240px]">
-          Local animal data
+          Local wildlife data
         </MapCtaLink>
         <MapCtaLink className="w-full sm:w-[240px]">
           Global assessment

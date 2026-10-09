@@ -27,12 +27,12 @@ export const HOW_IT_WORKS_STEPS: readonly HowItWorksStep[] = [
   {
     title: 'Compare',
     description:
-      "Each place is compared with others in its typology, so it's measured against places like it rather than against the whole world.",
+      'We compare each place with others in its typology: measuring it against places like it, not against a global average.',
   },
   {
     title: 'Monitor',
     description:
-      'Partners monitor sites in the field, recording wildlife such as crabs at reference, degraded and rehabilitated sites.',
+      'Partners monitor sites in the field, recording wildlife such as crabs at reference, degraded and rehabilitated sites. Their data joins the global dataset, feeding back into future rounds of comparison.',
   },
 ];
 

@@ -1,26 +1,16 @@
 import logo from '@/assets/globalwetlands.png';
 import { useDatasetVersion } from '@/data/hooks/useDatasetVersion';
-import { ACKNOWLEDGEMENT, FOOTER_CREDIT, FOOTER_LINKS } from '../config/footer';
-
-/** Amber, dashed: marks copy that is still genuinely outstanding. */
-const PLACEHOLDER_CLASS =
-  'inline-block rounded border border-dashed border-amber-400 bg-amber-50 py-0.5 text-[11px] font-semibold text-amber-800';
-
-interface SiteFooterProps {
-  acknowledgement?: string | null;
-}
+import { FOOTER_CREDIT, FOOTER_LINKS } from '../config/footer';
 
 /**
- * Landing page footer: logo, nav, the developer credit, the acknowledgement
- * (a labelled placeholder until supplied) and the live dataset version.
+ * Landing page footer: logo, nav, the builder credit and the live dataset
+ * version.
  *
  * The version is the store manifest's `dataset_version`, as on the map's
  * `DatasetVersionBadge`. Its line is omitted until the manifest resolves, and
  * stays omitted if the store can't be reached.
  */
-export function SiteFooter({
-  acknowledgement = ACKNOWLEDGEMENT,
-}: SiteFooterProps) {
+export function SiteFooter() {
   const datasetVersion = useDatasetVersion();
 
   return (
@@ -43,13 +33,6 @@ export function SiteFooter({
         </nav>
         <p className="m-0 mb-2 max-w-[600px] text-xs leading-relaxed text-gray-500">
           {FOOTER_CREDIT}
-        </p>
-        <p className="m-0 mb-2 text-xs leading-relaxed text-gray-500">
-          {acknowledgement ?? (
-            <span className={`${PLACEHOLDER_CLASS} px-2`}>
-              Acknowledgement of support — wording to be agreed
-            </span>
-          )}
         </p>
         {datasetVersion && (
           <p className="m-0 flex items-center gap-2 text-xs text-gray-500">

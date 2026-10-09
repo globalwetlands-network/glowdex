@@ -13,7 +13,7 @@ describe('SiteFooter', () => {
     vi.mocked(useDatasetVersion).mockReturnValue('2026.09.0');
   });
 
-  it('renders the six footer links and the developer credit verbatim', () => {
+  it('renders the six footer links and the builder credit verbatim', () => {
     render(<SiteFooter />);
 
     const nav = within(screen.getByRole('navigation', { name: 'Footer' }));
@@ -21,9 +21,9 @@ describe('SiteFooter', () => {
       'About',
       'Methods',
       'FAQ',
-      'Contact',
       'Licence',
       'How to cite',
+      'Contact',
     ]);
     expect(nav.getByRole('link', { name: 'FAQ' })).toHaveAttribute(
       'href',
@@ -31,26 +31,16 @@ describe('SiteFooter', () => {
     );
     expect(
       screen.getByText(
-        'MBCAM is developed by the Global Wetlands Project at Griffith University and the University of the Western Cape, with partners worldwide.',
+        'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, with partners worldwide.',
       ),
     ).toBeInTheDocument();
     expect(FOOTER_CREDIT).toMatch(/with partners worldwide\.$/);
   });
 
-  it('flags the acknowledgement as a placeholder until supplied', () => {
-    render(<SiteFooter />);
+  it('shows no acknowledgement placeholder', () => {
+    const { container } = render(<SiteFooter />);
 
-    expect(
-      screen.getByText('Acknowledgement of support — wording to be agreed'),
-    ).toHaveClass('border-dashed', 'border-amber-400');
-  });
-
-  it('shows supplied copy plainly, with no placeholder styling left', () => {
-    const { container } = render(
-      <SiteFooter acknowledgement="Supported by a grant." />,
-    );
-
-    expect(screen.getByText('Supported by a grant.')).toBeInTheDocument();
+    expect(screen.queryByText(/Acknowledgement of support/)).toBeNull();
     expect(container.querySelector('.border-dashed')).toBeNull();
   });
 

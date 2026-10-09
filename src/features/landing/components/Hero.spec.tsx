@@ -40,10 +40,10 @@ describe('Hero', () => {
       screen.getByRole('heading', { name: /explore the world's mangroves/i }),
     ).toBeVisible();
     expect(
-      screen.getByText(/brings together a global comparison/i),
+      screen.getByText(/combines a global assessment of mangrove conditions/i),
     ).toBeVisible();
     expect(
-      screen.getByRole('link', { name: 'Local animal data' }),
+      screen.getByRole('link', { name: 'Local wildlife data' }),
     ).toBeVisible();
     expect(
       screen.getByRole('link', { name: 'Global assessment' }),
@@ -61,7 +61,7 @@ describe('Hero', () => {
   it('routes both choices to /map', () => {
     renderHero();
 
-    for (const name of ['Local animal data', 'Global assessment']) {
+    for (const name of ['Local wildlife data', 'Global assessment']) {
       expect(screen.getByRole('link', { name })).toHaveAttribute(
         'href',
         '/map',
@@ -69,8 +69,15 @@ describe('Hero', () => {
     }
   });
 
-  it('shows the photo by default', () => {
+  it('shows the video by default', () => {
+    mockReducedMotion(false);
     const { container } = renderHero();
+
+    expect(container.querySelector('video')).not.toBeNull();
+  });
+
+  it('shows the photo with ?hero=photo', () => {
+    const { container } = renderHero('/?hero=photo');
 
     expect(container.querySelector('video')).toBeNull();
     expect(
@@ -78,7 +85,7 @@ describe('Hero', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the crab video with ?hero=video', () => {
+  it('shows the video with ?hero=video', () => {
     mockReducedMotion(false);
     const { container } = renderHero('/?hero=video');
 
@@ -91,7 +98,7 @@ describe('Hero', () => {
 
     expect(container.querySelector('video')).toBeNull();
     expect(
-      screen.getByAltText(/crab walking among mangrove roots/i),
+      screen.getByAltText(/fish swimming among mangrove roots/i),
     ).toBeInTheDocument();
   });
 
@@ -99,7 +106,7 @@ describe('Hero', () => {
     renderHero();
 
     fireEvent.pointerEnter(
-      screen.getByRole('link', { name: 'Local animal data' }),
+      screen.getByRole('link', { name: 'Local wildlife data' }),
     );
     fireEvent.focus(screen.getByRole('link', { name: 'Global assessment' }));
 

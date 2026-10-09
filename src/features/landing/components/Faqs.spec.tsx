@@ -1,7 +1,17 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { FAQS } from '../config/faqs';
+import { FAQ_GROUPS } from '../config/faqs';
 import { Faqs } from './Faqs';
+
+const SHOWN_FAQS = FAQ_GROUPS.flatMap((group) => group.faqs).filter(
+  (faq) => !faq.hidden,
+);
+
+function groupHeadings() {
+  return screen
+    .getAllByRole('heading', { level: 3 })
+    .map((heading) => heading.textContent);
+}
 
 describe('Faqs', () => {
   it('shows the first 5 questions, then the rest on request', () => {
@@ -13,11 +23,11 @@ describe('Faqs', () => {
     expect(container.querySelectorAll('details')).toHaveLength(5);
 
     const toggle = screen.getByRole('button', {
-      name: 'Show 8 more questions',
+      name: 'Show 6 more questions',
     });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(toggle);
-    expect(container.querySelectorAll('details')).toHaveLength(13);
+    expect(container.querySelectorAll('details')).toHaveLength(11);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle).toHaveAccessibleName('Show fewer questions');
 
@@ -25,44 +35,133 @@ describe('Faqs', () => {
     expect(container.querySelectorAll('details')).toHaveLength(5);
   });
 
-  it('renders every question with its answer, and a placeholder for the four pending ones', () => {
+  it('shows a group heading only once any of its questions is visible', () => {
+    render(<Faqs />);
+    expect(groupHeadings()).toEqual([
+      'About MBCAM',
+      'How it works',
+      'Data & methods',
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
+    expect(groupHeadings()).toEqual([
+      'About MBCAM',
+      'How it works',
+      'Data & methods',
+      'Download, cite & contribute',
+    ]);
+  });
+
+  it('renders every question with its answer, in group order', () => {
     const { container } = render(<Faqs />);
     fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
 
     const items = container.querySelectorAll('details');
-    expect(items).toHaveLength(13);
+    expect(items).toHaveLength(SHOWN_FAQS.length);
 
-    FAQS.forEach((faq, index) => {
+    SHOWN_FAQS.forEach((faq, index) => {
       const item = within(items[index] as HTMLElement);
       expect(item.getByText(faq.question)).toBeInTheDocument();
-      if (faq.answer) expect(item.getByText(faq.answer)).toBeInTheDocument();
+      // Bracketed gaps render as placeholders: same words, no brackets.
+      const answer = items[index].querySelector('p')?.cloneNode(true) as
+        | HTMLElement
+        | undefined;
+      answer
+        ?.querySelectorAll('[role="tooltip"]')
+        .forEach((tip) => tip.remove());
+      expect(answer?.textContent).toBe(
+        faq.answer?.replace(/\[([^\]]+)\]/g, '$1'),
+      );
     });
-
-    const pending = Array.from(items)
-      .filter((item) =>
-        within(item as HTMLElement).queryByText('To be confirmed'),
-      )
-      .map((item) => item.querySelector('summary')?.textContent);
-    expect(pending).toEqual([
-      'How confident is the classification?',
-      'Can I download the data?',
-      'How do I cite MBCAM?',
-      'Can my organisation contribute monitoring data?',
-    ]);
+    expect(screen.queryByText('To be confirmed')).toBeNull();
   });
 
-  it('keeps the citation question separate from the Sievers et al. method reference', () => {
-    const cite = FAQS.find((faq) => faq.question === 'How do I cite MBCAM?');
-    expect(cite?.answer).toBeNull();
+  it('hides the questions kept back until confirmed', () => {
+    render(<Faqs />);
+    fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
+
     expect(
-      FAQS.find((faq) => faq.question === 'Where does the data come from?')
-        ?.answer,
-    ).toMatch(/Sievers and colleagues in 2021/);
+      screen.queryByText('How confident is the classification?'),
+    ).toBeNull();
+    expect(
+      screen.queryByText(
+        "What's the difference between the Global assessments and Local wildlife data?",
+      ),
+    ).toBeNull();
+  });
+
+  it('marks each bracketed gap as a placeholder with a "Coming soon" tooltip', () => {
+    render(<Faqs />);
+    fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
+
+    for (const gap of [
+      'licence to be confirmed',
+      'Contact method to be confirmed',
+    ]) {
+      const placeholder = screen.getByText(gap);
+      expect(placeholder).toHaveClass('border-dashed');
+      expect(placeholder).toHaveAccessibleDescription('Coming soon');
+      // Out of the reading flow until hover/focus, so it's announced once.
+      expect(
+        document.getElementById(
+          placeholder.getAttribute('aria-describedby') ?? '',
+        ),
+      ).toHaveClass('hidden');
+    }
+    expect(screen.queryByText(/\[/)).toBeNull();
+  });
+
+  it('never renders a hidden question, even from groups passed in', () => {
+    render(
+      <Faqs
+        groups={[
+          {
+            heading: 'Group',
+            faqs: [
+              { question: 'Shown?', answer: 'A1' },
+              { question: 'Hidden?', answer: 'A2', hidden: true },
+            ],
+          },
+        ]}
+        initiallyVisible={1}
+      />,
+    );
+
+    expect(screen.getByText('Shown?')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden?')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('keeps the citation answer separate from the Sievers et al. method reference', () => {
+    const answerTo = (question: string) =>
+      SHOWN_FAQS.find((faq) => faq.question === question)?.answer;
+
+    expect(answerTo('How do I cite MBCAM?')).not.toMatch(/Sievers/);
+    expect(answerTo('Where does the data come from?')).toMatch(
+      /Sievers and colleagues in 2021/,
+    );
+  });
+
+  it('shows a placeholder for an answer still to be decided', () => {
+    render(
+      <Faqs
+        groups={[
+          { heading: 'Group', faqs: [{ question: 'Pending?', answer: null }] },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('To be confirmed')).toBeInTheDocument();
   });
 
   it('hides the toggle when every question already fits', () => {
     render(
-      <Faqs faqs={[{ question: 'Only?', answer: 'A' }]} initiallyVisible={8} />,
+      <Faqs
+        groups={[
+          { heading: 'Group', faqs: [{ question: 'Only?', answer: 'A' }] },
+        ]}
+        initiallyVisible={8}
+      />,
     );
 
     expect(screen.queryByRole('button')).toBeNull();
@@ -71,9 +170,14 @@ describe('Faqs', () => {
   it('expands each question independently', () => {
     const { container } = render(
       <Faqs
-        faqs={[
-          { question: 'One?', answer: 'A1' },
-          { question: 'Two?', answer: 'A2' },
+        groups={[
+          {
+            heading: 'Group',
+            faqs: [
+              { question: 'One?', answer: 'A1' },
+              { question: 'Two?', answer: 'A2' },
+            ],
+          },
         ]}
       />,
     );
