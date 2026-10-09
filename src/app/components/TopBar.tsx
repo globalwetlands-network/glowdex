@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/globalwetlands.png';
-import { Menu, Info, HelpCircle, Database, Mail } from 'lucide-react';
+import { Menu, Home, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
 import { DatasetVersionBadge } from './DatasetVersionBadge';
 import type { MenuItemKey } from '@/app/content/menuContent';
@@ -13,6 +14,7 @@ export function TopBar({ onLogoClick }: TopBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<MenuItemKey | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,6 +31,15 @@ export function TopBar({ onLogoClick }: TopBarProps) {
   }, [isMenuOpen]);
 
   const menuItems = [
+    {
+      label: 'Home',
+      icon: Home,
+      onClick: () => {
+        setIsMenuOpen(false);
+        navigate('/');
+      },
+    },
+    { divider: true },
     {
       label: 'About',
       icon: Info,
