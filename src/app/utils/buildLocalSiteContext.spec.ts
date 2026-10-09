@@ -16,7 +16,6 @@ function makeSite(overrides: Partial<LocalSite> = {}): LocalSite {
       {
         year: 2026,
         siteType: 'Reference',
-        species: 'Crab A',
         density: 11.3,
         se: 3.0,
         samplesN: 5,
