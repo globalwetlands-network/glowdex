@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fetchInsight } from '@/api';
 import { fetchDatasetMeta } from '@/api/meta';
-import type { InsightResponse } from '@/api/types';
+import type { InsightResponse, LocalSiteContext } from '@/api/types';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 
 vi.mock('@/api', async (importOriginal) => ({
@@ -35,5 +35,80 @@ describe('AnalysisAssistantWidget', () => {
     expect(screen.getByText('A static example insight.')).toBeInTheDocument();
     expect(fetchInsight).not.toHaveBeenCalled();
     expect(fetchDatasetMeta).not.toHaveBeenCalled();
+  });
+
+  describe('local mode', () => {
+    afterEach(() => vi.mocked(fetchInsight).mockReset());
+
+    const context: LocalSiteContext = {
+      siteName: 'Bayhead',
+      country: 'South Africa',
+      partner: 'Bayhead',
+      year: 2026,
+      conditions: [
+        {
+          siteType: 'Reference',
+          totalDensity: 11.3,
+          combinedSE: 3,
+          samplesN: 5,
+        },
+      ],
+    };
+
+    function renderLocal(props: {
+      localSiteContext: LocalSiteContext | null;
+      isLocalContextPending?: boolean;
+    }) {
+      const client = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      const ui = (p: typeof props) => (
+        <QueryClientProvider client={client}>
+          <AnalysisAssistantWidget
+            mode="local"
+            selectedSiteId="za-bayhead"
+            {...p}
+          />
+        </QueryClientProvider>
+      );
+      const result = render(ui(props));
+      return {
+        ...result,
+        rerenderWith: (p: typeof props) => result.rerender(ui(p)),
+      };
+    }
+
+    it('shows a loading state, not "select a location", while partner data loads', () => {
+      renderLocal({ localSiteContext: null, isLocalContextPending: true });
+
+      expect(
+        screen.queryByText(/Select a monitoring location/),
+      ).not.toBeInTheDocument();
+      expect(fetchInsight).not.toHaveBeenCalled();
+    });
+
+    it('fetches a fresh answer when the site context changes (e.g. the partner name arrives)', async () => {
+      vi.mocked(fetchInsight).mockResolvedValue({
+        gridCellId: null,
+        text: 'Field summary.',
+        sources: [],
+        meta: { latencyMs: 0, totalTokensUsed: 0 },
+      });
+      const { rerenderWith } = renderLocal({ localSiteContext: context });
+      await waitFor(() => expect(fetchInsight).toHaveBeenCalledTimes(1));
+
+      rerenderWith({
+        localSiteContext: {
+          ...context,
+          partner: 'University of the Western Cape',
+        },
+      });
+
+      await waitFor(() => expect(fetchInsight).toHaveBeenCalledTimes(2));
+      expect(vi.mocked(fetchInsight).mock.calls[1][0]).toMatchObject({
+        mode: 'local',
+        localSiteContext: { partner: 'University of the Western Cape' },
+      });
+    });
   });
 });

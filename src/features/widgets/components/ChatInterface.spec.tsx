@@ -201,4 +201,21 @@ describe('ChatInterface sources (GLO-207)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/grid cell/i)).not.toBeInTheDocument();
   });
+
+  it('local mode shows a DOI-less source as plain text, never linked to Sievers', () => {
+    renderChatWith({
+      mode: 'local',
+      selectedSiteId: 'za-mngazana',
+      localSiteContext,
+      initialInsight: makeInsight({
+        sources: [{ citation: 'UWC field survey 2026', section: 'Methods' }],
+      }),
+    });
+
+    expect(screen.getByText('UWC field survey 2026')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /UWC field survey/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Sievers/)).not.toBeInTheDocument();
+  });
 });
