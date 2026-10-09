@@ -40,6 +40,8 @@ import { useChatMessages } from '@/features/widgets/hooks/useChatMessages';
 import { useAskMutation } from '@/features/widgets/hooks/useAskMutation';
 import { useAutoScroll } from '@/features/widgets/hooks/useAutoScroll';
 import { StatisticalDetailToggle } from './StatisticalDetailToggle';
+import { AssistantHeader } from './AssistantHeader';
+import { assistantSubtitle } from '../utils/assistantSubtitle';
 
 /** Wraps each occurrence of `phrases` in the given text children in a <mark>. */
 function highlightPhrases(children: ReactNode, phrases: string[]): ReactNode {
@@ -220,23 +222,9 @@ export function ChatInterface({
         readOnly ? '' : 'h-[400px]'
       }`}
     >
-      {/* Header */}
-      <div className="flex items-center space-x-2 bg-gray-50 p-3 border-b border-gray-200 shrink-0">
-        <div className="bg-blue-100 p-1.5 rounded-md">
-          <CrabIcon size={16} className="text-blue-700" />
-        </div>
-
-        <div>
-          <h3 className="text-sm font-bold text-gray-900">
-            Mangrove Analysis Assistant
-          </h3>
-          <p className="text-xs text-gray-500">
-            {isLocal && localSiteContext
-              ? `${localSiteContext.siteName} · ${localSiteContext.country}`
-              : `Cell ID: ${selectedCellId}`}
-          </p>
-        </div>
-      </div>
+      <AssistantHeader
+        subtitle={assistantSubtitle(mode, selectedCellId, localSiteContext)}
+      />
 
       {/* Messages */}
       <div

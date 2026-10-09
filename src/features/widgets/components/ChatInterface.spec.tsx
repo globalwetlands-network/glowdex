@@ -59,6 +59,12 @@ function renderChatWith(props: ComponentProps<typeof ChatInterface>) {
 }
 
 describe('ChatInterface', () => {
+  it('marks the assistant as Beta, with the same badge as the landing page', () => {
+    renderChat();
+
+    expect(screen.getByText('Beta')).toHaveClass('rounded-full', 'uppercase');
+  });
+
   it('shows the disclaimer and the Sievers et al. (2021) source', () => {
     renderChat();
 

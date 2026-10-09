@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { fetchInsight, insightSubject } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
+import { AssistantFrame } from '@/features/widgets/components/AssistantHeader';
+import { assistantSubtitle } from '@/features/widgets/utils/assistantSubtitle';
 import type {
   InsightMode,
   InsightResponse,
@@ -74,6 +76,7 @@ export function AnalysisAssistantWidget({
   const siteId = isLocal ? (selectedSiteId ?? null) : null;
   const isStatic = staticInsight !== undefined;
   const subject = insightSubject(mode, cellId, localSiteContext);
+  const subtitle = assistantSubtitle(mode, cellId, localSiteContext);
 
   const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
     mode,
@@ -140,7 +143,7 @@ export function AnalysisAssistantWidget({
   // unaffected, so local mode never shows this notice.
   if (!isLocal && dataSkewed) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 px-4 text-center text-gray-500">
+      <AssistantFrame subtitle={subtitle}>
         <CrabIcon size={24} className="text-[#0F6E56] mb-2" />
         <p className="text-sm font-medium text-gray-700">
           Catching up — data just updated
@@ -149,7 +152,7 @@ export function AnalysisAssistantWidget({
           The assistant is briefly unavailable while it syncs to the latest
           dataset. The map stays fully usable in the meantime.
         </p>
-      </div>
+      </AssistantFrame>
     );
   }
 
@@ -159,7 +162,7 @@ export function AnalysisAssistantWidget({
 
   if ((isInsightLoading || isAwaitingLocalContext) && !initialInsight) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+      <AssistantFrame subtitle={subtitle}>
         <style>{`
           @keyframes crab-bob {
             0%   { transform: translateY(0px); }
@@ -172,12 +175,16 @@ export function AnalysisAssistantWidget({
           .crab-bob     { animation: crab-bob     0.4s ease-in-out infinite alternate; }
           .crab-scuttle { animation: crab-scuttle 0.8s ease-in-out infinite alternate; }
         `}</style>
-        <div className="crab-bob mb-2">
+        <div
+          className="crab-bob mb-2"
+          aria-label="Loading the assistant's answer"
+          role="status"
+        >
           <div className="crab-scuttle">
             <CrabIcon size={24} className="text-[#0F6E56]" />
           </div>
         </div>
-      </div>
+      </AssistantFrame>
     );
   }
 

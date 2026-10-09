@@ -85,6 +85,20 @@ describe('AnalysisAssistantWidget', () => {
         screen.queryByText(/Select a monitoring location/),
       ).not.toBeInTheDocument();
       expect(fetchInsight).not.toHaveBeenCalled();
+      // The header and Beta badge are there from the start.
+      expect(
+        screen.getByRole('heading', { name: 'Mangrove Analysis Assistant' }),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Beta')).toBeInTheDocument();
+    });
+
+    it('shows the header with the site while the answer loads', () => {
+      vi.mocked(fetchInsight).mockReturnValue(new Promise(() => {}));
+      renderLocal({ localSiteContext: context });
+
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.getByText('Beta')).toBeInTheDocument();
+      expect(screen.getByText('Bayhead · South Africa')).toBeInTheDocument();
     });
 
     it('fetches a fresh answer when the site context changes (e.g. the partner name arrives)', async () => {
@@ -110,5 +124,22 @@ describe('AnalysisAssistantWidget', () => {
         localSiteContext: { partner: 'University of the Western Cape' },
       });
     });
+  });
+
+  it('shows the header, Beta badge and cell while a global answer loads', () => {
+    vi.mocked(fetchInsight).mockReturnValue(new Promise(() => {}));
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <AnalysisAssistantWidget mode="global" selectedCellId={18684} />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Mangrove Analysis Assistant' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.getByText('Cell ID: 18684')).toBeInTheDocument();
+    vi.mocked(fetchInsight).mockReset();
   });
 });
