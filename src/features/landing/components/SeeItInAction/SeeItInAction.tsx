@@ -18,7 +18,7 @@ import {
   EXAMPLE_LOCAL_UPDATED,
   EXAMPLE_TILE,
   EXAMPLE_TYPOLOGIES,
-  EXAMPLE_HIGHLIGHT,
+  EXAMPLE_HIGHLIGHTS,
   EXAMPLE_INSIGHTS,
 } from '../../fixtures/workedExample';
 import { AskTheAssistantExplainer } from './AskTheAssistantExplainer';
@@ -38,6 +38,16 @@ import { LandingQueryProvider } from './LandingQueryProvider';
 import { PRELOAD_ON_INTENT } from '../../preloadOnIntent';
 
 const noop = () => {};
+
+/**
+ * Opens the map in the example's own mode — on the example site itself in
+ * Local mode, which exists in the live data the fixture was snapshotted from.
+ */
+function tryItInTheMapHref(mode: ExampleMode): string {
+  return mode === 'local'
+    ? `/map?mode=local&site=${EXAMPLE_LOCAL_SITE.id}`
+    : '/map?mode=global';
+}
 
 const MODES: ExampleMode[] = ['local', 'global'];
 
@@ -85,7 +95,6 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
           <LocalWetlandsAnalysisWidget
             localSites={EXAMPLE_LOCAL_SITES}
             localDataUpdated={EXAMPLE_LOCAL_UPDATED}
-            selectedCell={EXAMPLE_CELL}
             selectedSiteId={EXAMPLE_LOCAL_SITE.id}
             onSiteSelect={noop}
             localSiteLayerEnabled={false}
@@ -129,21 +138,23 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
       return (
         <div className={PANEL_CLASS}>
           <AnalysisAssistantWidget
-            // Global mode has no local context, so the local-data chip and
-            // local findings drop out, just as in the app.
+            // Same split as the map (GLO-207): local reads only the site's
+            // field data, global only the tile — never both.
             key={mode}
-            selectedCellId={EXAMPLE_CELL.id}
+            mode={mode}
+            selectedCellId={mode === 'global' ? EXAMPLE_CELL.id : null}
+            selectedSiteId={mode === 'local' ? EXAMPLE_LOCAL_SITE.id : null}
             localSiteContext={
               mode === 'local' ? EXAMPLE_LOCAL_SITE_CONTEXT : null
             }
             hasMangrove={EXAMPLE_CELL.mangroves}
             staticInsight={EXAMPLE_INSIGHTS[mode]}
-            highlights={[EXAMPLE_HIGHLIGHT]}
+            highlights={[EXAMPLE_HIGHLIGHTS[mode]]}
             showSuggestions
             readOnly
             readOnlyHint={
               <Link
-                to="/map"
+                to={tryItInTheMapHref(mode)}
                 {...PRELOAD_ON_INTENT}
                 className="inline-flex items-center gap-1 font-semibold text-glowdex-green hover:underline"
               >

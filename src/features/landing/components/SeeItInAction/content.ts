@@ -1,9 +1,12 @@
+import type { InsightMode } from '@/api/types';
+
 /**
  * Copy for the "See it in action" section, verbatim from the landing-page
  * content review.
  */
 
-export type ExampleMode = 'local' | 'global';
+/** The worked example's two modes — the map's own (GLO-207). */
+export type ExampleMode = InsightMode;
 
 /** The parts of the worked example a step (and its label) points at. */
 export type ExampleTarget =

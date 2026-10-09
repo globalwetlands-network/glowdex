@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { usePostHog } from 'posthog-js/react';
-import type { LocalSiteContext } from '@/api/types';
+import type { InsightMode, LocalSiteContext } from '@/api/types';
 
 export type QuestionCategory =
   | 'methodology'
@@ -59,7 +59,11 @@ export function classifyQuestion(question: string): QuestionCategory {
 const QUESTION_MAX_LENGTH = 500;
 
 interface UseAIAnalyticsOptions {
+  /** Workflow mode (GLO-207). Defaults to global. */
+  mode?: InsightMode;
   selectedCellId: number | null | undefined;
+  /** Selected monitoring site — the AI subject in local mode. */
+  selectedSiteId?: string | null;
   localSiteContext?: LocalSiteContext | null;
   cellHasMangrove?: boolean;
 }
@@ -67,47 +71,63 @@ interface UseAIAnalyticsOptions {
 /**
  * Hook to capture analytics events for the AI Analysis Assistant.
  * Covers initial insight loading, follow-up questions, responses, and errors.
+ *
+ * Every event carries `mode` plus the subject of that mode: `cell_id` in
+ * global mode, `site_id` in local mode (the other is null). Events are
+ * skipped when the current mode has no subject.
  */
 export function useAIAnalytics({
+  mode = 'global',
   selectedCellId,
+  selectedSiteId,
   localSiteContext,
   cellHasMangrove,
 }: UseAIAnalyticsOptions) {
   const posthog = usePostHog();
 
+  const baseProps = useMemo(() => {
+    const cellId =
+      mode === 'global' && selectedCellId ? String(selectedCellId) : null;
+    const siteId = mode === 'local' ? (selectedSiteId ?? null) : null;
+    if (!cellId && !siteId) return null;
+    return { mode, cell_id: cellId, site_id: siteId };
+  }, [mode, selectedCellId, selectedSiteId]);
+
   const captureInsightLoaded = useCallback(
     (insightText: string) => {
-      if (!selectedCellId) return;
+      if (!baseProps) return;
       try {
         posthog?.capture('ai_insight_loaded', {
-          cell_id: String(selectedCellId),
+          ...baseProps,
           has_local_context: !!localSiteContext,
           site_name: localSiteContext?.siteName ?? null,
-          has_mangrove: cellHasMangrove ?? false,
+          // Not applicable in Local mode (no grid cell) — null rather than a
+          // false that would read as "cell has no mangroves".
+          has_mangrove: mode === 'local' ? null : (cellHasMangrove ?? false),
           insight_length: insightText.length,
         });
       } catch (error) {
         console.error('Failed to capture ai_insight_loaded event:', error);
       }
     },
-    [selectedCellId, localSiteContext, cellHasMangrove, posthog],
+    [baseProps, mode, localSiteContext, cellHasMangrove, posthog],
   );
 
   const captureFollowupAsked = useCallback(
     (question: string, conversationTurn: number) => {
-      if (!selectedCellId) return;
+      if (!baseProps) return;
       try {
         const isTruncated = question.length > QUESTION_MAX_LENGTH;
 
         if (isTruncated) {
           posthog?.capture('ai_question_truncated', {
-            cell_id: String(selectedCellId),
+            ...baseProps,
             question_length: question.length,
           });
         }
 
         posthog?.capture('ai_followup_asked', {
-          cell_id: String(selectedCellId),
+          ...baseProps,
           question_text: question.slice(0, QUESTION_MAX_LENGTH),
           question_length: question.length,
           question_category: classifyQuestion(question),
@@ -118,15 +138,15 @@ export function useAIAnalytics({
         console.error('Failed to capture ai_followup_asked event:', error);
       }
     },
-    [selectedCellId, localSiteContext, posthog],
+    [baseProps, localSiteContext, posthog],
   );
 
   const captureResponseReceived = useCallback(
     (responseText: string, conversationTurn: number) => {
-      if (!selectedCellId) return;
+      if (!baseProps) return;
       try {
         posthog?.capture('ai_response_received', {
-          cell_id: String(selectedCellId),
+          ...baseProps,
           response_length: responseText.length,
           conversation_turn: conversationTurn,
         });
@@ -134,15 +154,15 @@ export function useAIAnalytics({
         console.error('Failed to capture ai_response_received event:', error);
       }
     },
-    [selectedCellId, posthog],
+    [baseProps, posthog],
   );
 
   const captureErrorOccurred = useCallback(
     (errorType: 'initial_insight' | 'followup') => {
-      if (!selectedCellId) return;
+      if (!baseProps) return;
       try {
         posthog?.capture('ai_error_occurred', {
-          cell_id: String(selectedCellId),
+          ...baseProps,
           error_type: errorType,
           has_local_context: !!localSiteContext,
         });
@@ -150,34 +170,32 @@ export function useAIAnalytics({
         console.error('Failed to capture ai_error_occurred event:', error);
       }
     },
-    [selectedCellId, localSiteContext, posthog],
+    [baseProps, localSiteContext, posthog],
   );
 
   const captureRateLimitHit = useCallback(() => {
-    if (!selectedCellId) return;
+    if (!baseProps) return;
     try {
-      posthog?.capture('ai_rate_limit_hit', {
-        cell_id: String(selectedCellId),
-      });
+      posthog?.capture('ai_rate_limit_hit', baseProps);
     } catch (error) {
       console.error('Failed to capture ai_rate_limit_hit event:', error);
     }
-  }, [selectedCellId, posthog]);
+  }, [baseProps, posthog]);
 
   const captureOutboundLinkClicked = useCallback(
     (url: string, context: string) => {
-      if (!selectedCellId) return;
+      if (!baseProps) return;
       try {
         posthog?.capture('outbound_link_clicked', {
           url,
           context,
-          cell_id: String(selectedCellId),
+          ...baseProps,
         });
       } catch (error) {
         console.error('Failed to capture outbound_link_clicked event:', error);
       }
     },
-    [selectedCellId, posthog],
+    [baseProps, posthog],
   );
 
   return {

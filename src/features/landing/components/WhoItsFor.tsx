@@ -9,10 +9,10 @@ interface WhoItsForProps {
 }
 
 /**
- * Persona blocks, each with the question that audience brings (if any) and
- * how MBCAM answers it as short bullet points. Four cards lay out as one
- * column, then a 2×2 grid, then a single row, so they never leave an orphan.
- * The column classes assume four personas; revisit them if the count changes.
+ * Persona cards, two to a row from `md` up so lines stay a comfortable
+ * length. Every card opens the same way (icon and audience name), then the
+ * question that audience brings (if any) and how MBCAM answers it as short
+ * bullet points.
  */
 export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
   return (
@@ -27,22 +27,30 @@ export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
         >
           {WHO_ITS_FOR_HEADING}
         </h2>
-        <ul className="m-0 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 xl:grid-cols-4">
-          {personas.map((persona) => (
+        <ul className="m-0 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
+          {personas.map(({ audience, icon: Icon, question, points }) => (
             <li
-              key={persona.audience}
-              className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6"
+              key={audience}
+              className="flex flex-col gap-4 rounded-2xl bg-white p-6 md:p-8"
             >
-              <h3 className="m-0 text-sm font-semibold tracking-wide text-glowdex-green uppercase">
-                {persona.audience}
-              </h3>
-              {persona.question && (
-                <p className="m-0 text-xl leading-snug font-bold text-gray-900">
-                  {persona.question}
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-glowdex-teal/10 text-glowdex-green"
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="m-0 text-xl font-bold text-gray-900">
+                  {audience}
+                </h3>
+              </div>
+              {question && (
+                <p className="m-0 text-base font-medium text-glowdex-green">
+                  {question}
                 </p>
               )}
-              <ul className="m-0 list-disc space-y-2 pl-5 text-base leading-relaxed text-gray-600 marker:text-glowdex-green">
-                {persona.points.map((point) => (
+              <ul className="m-0 list-disc space-y-2 pl-5 text-base leading-relaxed text-gray-600 marker:text-glowdex-teal">
+                {points.map((point) => (
                   <li key={point}>{point}</li>
                 ))}
               </ul>

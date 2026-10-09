@@ -29,21 +29,28 @@ export interface LocalSiteContext {
   conditions: LocalSiteConditionContext[];
 }
 
-export interface InsightRequest {
-  gridCellId: number;
+/**
+ * Insight workflow (GLO-207). Mirrors InsightRequestDto.mode on the backend.
+ * `global` interprets a grid cell; `local` interprets one monitoring site's
+ * field data. Responses never blend the two.
+ */
+export type InsightMode = 'local' | 'global';
+
+/**
+ * What an insight is about: a grid cell in global mode, one site's field
+ * monitoring data in local mode — never both, so a request can't blend them.
+ */
+export type InsightSubject =
+  | { mode: 'global'; gridCellId: number }
+  | { mode: 'local'; localSiteContext: LocalSiteContext };
+
+export type InsightRequest = InsightSubject & {
   /** Legacy single-turn question. Prefer messages[] for multi-turn conversations. */
   question?: string;
   /** Multi-turn conversation history including the current user message as the last entry. */
   messages?: ConversationMessage[];
   contextId?: string;
-  /**
-   * Local field monitoring data for the site associated
-   * with this grid cell. When present, the AI synthesises
-   * both global modelled data and ground-truthed field
-   * measurements.
-   */
-  localSiteContext?: LocalSiteContext;
-}
+};
 
 export interface InsightSource {
   citation: string;
@@ -52,7 +59,8 @@ export interface InsightSource {
 }
 
 export interface InsightResponse {
-  gridCellId: number;
+  /** null in local mode (no grid cell involved). */
+  gridCellId: number | null;
   text: string;
   statistics?: AIStatisticalContextV1;
   sources?: InsightSource[];

@@ -1,8 +1,5 @@
 import type { EnrichedGridCell } from '@/app/types/app.types';
-import type {
-  AIStatisticalIndicatorSummary,
-  LocalSiteContext,
-} from '@/api/types';
+import type { AIStatisticalIndicatorSummary } from '@/api/types';
 import type { SpeciesConfigResponse } from '@/api/species';
 import { TYPOLOGY_5_INFO } from '@/data/constants/typology.constants';
 import { CONSERVATION_STATUS_INFO } from '@/data/speciesSpotlight';
@@ -42,21 +39,6 @@ export interface CellSummarySpecies {
   conservationStatus: string;
 }
 
-export interface CellSummaryLocalCondition {
-  siteType: string;
-  totalDensity: number;
-  combinedSE: number;
-  samplesN: number;
-}
-
-export interface CellSummaryLocalMonitoring {
-  siteName: string;
-  country: string;
-  partner: string;
-  year: number;
-  conditions: CellSummaryLocalCondition[];
-}
-
 export interface CellSummary {
   /** ISO date (YYYY-MM-DD) the summary was generated. */
   generatedDate: string;
@@ -65,7 +47,6 @@ export interface CellSummary {
   typology: CellSummaryTypology;
   indicators: CellSummaryIndicator[];
   species: CellSummarySpecies[];
-  localMonitoring: CellSummaryLocalMonitoring | null;
   /** Prose explaining that indicator values are typology-relative, not global. */
   caveat: string;
   /** Source attribution + generation date. */
@@ -77,7 +58,6 @@ export interface BuildCellSummaryInput {
   scale: 'scale5' | 'scale18';
   statisticalSummaries?: AIStatisticalIndicatorSummary[];
   species: SpeciesConfigResponse[];
-  localSiteContext: LocalSiteContext | null;
   /** ISO date string; injected so the builder stays pure/testable. */
   generatedDate: string;
 }
@@ -93,15 +73,15 @@ const TYPOLOGY_SOURCE =
  * be unit-tested and rendered to any output format (see
  * generateCellSummaryPdf).
  *
- * Gracefully handles cells with no species and no local monitoring data:
- * those sections come back as an empty array / null respectively.
+ * Gracefully handles cells with no species (an empty array). Local field
+ * monitoring data isn't part of a tile summary: since GLO-207 it belongs to
+ * the map's Local view, never a Global tile.
  */
 export function buildCellSummary({
   cell,
   scale,
   statisticalSummaries,
   species,
-  localSiteContext,
   generatedDate,
 }: BuildCellSummaryInput): CellSummary {
   const clusterId = (scale === 'scale5' ? cell.cluster5 : cell.cluster18) ?? 0;
@@ -152,21 +132,6 @@ export function buildCellSummary({
       s.conservationStatus,
   }));
 
-  const localMonitoring: CellSummaryLocalMonitoring | null = localSiteContext
-    ? {
-        siteName: localSiteContext.siteName,
-        country: localSiteContext.country,
-        partner: localSiteContext.partner,
-        year: localSiteContext.year,
-        conditions: localSiteContext.conditions.map((c) => ({
-          siteType: c.siteType,
-          totalDensity: c.totalDensity,
-          combinedSE: c.combinedSE,
-          samplesN: c.samplesN,
-        })),
-      }
-    : null;
-
   const caveat =
     `Indicator values and percentiles are relative to this location's ` +
     `typology (Typology ${clusterId}), not global absolutes. A percentile ` +
@@ -186,7 +151,6 @@ export function buildCellSummary({
     typology,
     indicators,
     species: summarySpecies,
-    localMonitoring,
     caveat,
     citation,
   };

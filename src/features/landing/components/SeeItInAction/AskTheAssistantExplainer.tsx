@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { BetaBadge } from '@/components/shared/BetaBadge';
 import {
   EXAMPLE_CELL,
   EXAMPLE_INDICATOR_PERCENTILES,
@@ -123,9 +124,7 @@ export function AskTheAssistantExplainer() {
           <h2 className="m-0 text-3xl font-bold text-gray-900 md:text-4xl">
             Ask the assistant
           </h2>
-          <span className="rounded-full border border-glowdex-teal/40 bg-glowdex-teal/10 px-2.5 py-0.5 text-xs font-bold tracking-wide text-glowdex-green uppercase">
-            Beta
-          </span>
+          <BetaBadge />
         </div>
         <p className="m-0 text-base text-gray-600 md:text-lg">
           {ASSISTANT_SUBHEAD}

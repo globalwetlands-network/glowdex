@@ -3,6 +3,12 @@ import type { MapMouseEvent } from 'react-map-gl';
 
 interface UseMapInteractionProps {
   onCellSelect?: (id: number | null) => void;
+  /**
+   * False while the grid isn't interactive (Local mode). Hover then reads as
+   * none, and turning it off or on clears any hover left over from before,
+   * so no stale pointer cursor or tooltip survives a mode switch.
+   */
+  enabled?: boolean;
 }
 
 /**
@@ -26,11 +32,21 @@ function normalizeCellId(
  */
 export function useMapInteraction({
   onCellSelect,
+  enabled = true,
 }: UseMapInteractionProps = {}) {
   const [hoveredCellId, setHoveredCellId] = useState<number | null>(null);
   const [hoverInfo, setHoverInfo] = useState<{ x: number; y: number } | null>(
     null,
   );
+
+  // Reset hover when `enabled` flips. Adjusting state during render (rather
+  // than in an effect) means no frame ever renders the stale hover.
+  const [wasEnabled, setWasEnabled] = useState(enabled);
+  if (wasEnabled !== enabled) {
+    setWasEnabled(enabled);
+    setHoveredCellId(null);
+    setHoverInfo(null);
+  }
 
   const onHover = useCallback((event: MapMouseEvent) => {
     const { features, point } = event;
@@ -63,8 +79,8 @@ export function useMapInteraction({
   );
 
   return {
-    hoveredCellId,
-    hoverInfo,
+    hoveredCellId: enabled ? hoveredCellId : null,
+    hoverInfo: enabled ? hoverInfo : null,
     onHover,
     onClick,
   };
