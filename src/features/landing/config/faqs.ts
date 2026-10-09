@@ -33,7 +33,7 @@ export const FAQS_HEADING = 'Frequently asked questions';
  */
 export const FAQS_INITIALLY_VISIBLE = 5;
 
-const ALL_FAQ_GROUPS: readonly FaqGroup[] = [
+export const FAQ_GROUPS: readonly FaqGroup[] = [
   {
     heading: 'About MBCAM',
     faqs: [
@@ -124,9 +124,3 @@ const ALL_FAQ_GROUPS: readonly FaqGroup[] = [
     ],
   },
 ];
-
-/** The groups as rendered: hidden questions dropped. */
-export const FAQ_GROUPS: readonly FaqGroup[] = ALL_FAQ_GROUPS.map((group) => ({
-  ...group,
-  faqs: group.faqs.filter((faq) => !faq.hidden),
-}));

@@ -69,8 +69,15 @@ describe('Hero', () => {
     }
   });
 
-  it('shows the photo by default', () => {
+  it('shows the video by default', () => {
+    mockReducedMotion(false);
     const { container } = renderHero();
+
+    expect(container.querySelector('video')).not.toBeNull();
+  });
+
+  it('shows the photo with ?hero=photo', () => {
+    const { container } = renderHero('/?hero=photo');
 
     expect(container.querySelector('video')).toBeNull();
     expect(
@@ -78,7 +85,7 @@ describe('Hero', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the crab video with ?hero=video', () => {
+  it('shows the video with ?hero=video', () => {
     mockReducedMotion(false);
     const { container } = renderHero('/?hero=video');
 
@@ -91,7 +98,7 @@ describe('Hero', () => {
 
     expect(container.querySelector('video')).toBeNull();
     expect(
-      screen.getByAltText(/crab walking among mangrove roots/i),
+      screen.getByAltText(/fish swimming among mangrove roots/i),
     ).toBeInTheDocument();
   });
 

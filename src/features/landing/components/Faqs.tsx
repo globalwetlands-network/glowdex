@@ -17,7 +17,8 @@ interface FaqsProps {
  * Grouped accordion of FAQs; each question expands independently (native
  * `<details>`). Only the first few questions (counted across groups) show
  * until the visitor asks for the rest, and a group's heading appears once any
- * of its questions does. Answers not yet decided show a labelled placeholder.
+ * of its questions does. Questions marked `hidden` are never shown. Answers not
+ * yet decided show a labelled placeholder.
  */
 export function Faqs({
   groups = FAQ_GROUPS,
@@ -26,13 +27,11 @@ export function Faqs({
   const headingId = useId();
   const listId = useId();
   const [showAll, setShowAll] = useState(false);
-  const total = groups.reduce((sum, group) => sum + group.faqs.length, 0);
-  const hiddenCount = Math.max(total - initiallyVisible, 0);
-
-  const visibleGroups = takeQuestions(
+  const { visibleGroups, total } = takeQuestions(
     groups,
-    showAll ? total : initiallyVisible,
+    showAll ? Infinity : initiallyVisible,
   );
+  const hiddenCount = Math.max(total - initiallyVisible, 0);
 
   return (
     <section
@@ -84,19 +83,23 @@ export function Faqs({
 }
 
 /**
- * Keeps the first `limit` questions across groups, in reading order, and drops
- * the groups left empty.
+ * Drops `hidden` questions, then keeps the first `limit` of the rest across
+ * groups, in reading order, leaving out groups with none left. `total` counts
+ * every shown question, before the limit.
  */
-function takeQuestions(groups: readonly FaqGroup[], limit: number): FaqGroup[] {
-  const offsets = groups.map((_, index) =>
-    groups.slice(0, index).reduce((sum, group) => sum + group.faqs.length, 0),
-  );
-  return groups
-    .map((group, index) => ({
-      ...group,
-      faqs: group.faqs.slice(0, Math.max(limit - offsets[index], 0)),
-    }))
-    .filter((group) => group.faqs.length > 0);
+function takeQuestions(
+  groups: readonly FaqGroup[],
+  limit: number,
+): { visibleGroups: FaqGroup[]; total: number } {
+  const visibleGroups: FaqGroup[] = [];
+  let total = 0;
+  for (const group of groups) {
+    const shown = group.faqs.filter((faq) => !faq.hidden);
+    const faqs = shown.slice(0, Math.max(limit - total, 0));
+    total += shown.length;
+    if (faqs.length > 0) visibleGroups.push({ ...group, faqs });
+  }
+  return { visibleGroups, total };
 }
 
 interface FaqItemProps {
@@ -148,7 +151,9 @@ interface ComingSoonPlaceholderProps {
 
 /**
  * Amber, dashed marker for copy that's still outstanding, with a "Coming soon"
- * tooltip on hover or keyboard focus.
+ * tooltip on hover or keyboard focus. The tooltip is `display: none` until
+ * then, so it isn't read inline or copied with the answer; screen readers get
+ * it once, as the marker's description.
  */
 function ComingSoonPlaceholder({ children }: ComingSoonPlaceholderProps) {
   const tooltipId = useId();
@@ -165,7 +170,7 @@ function ComingSoonPlaceholder({ children }: ComingSoonPlaceholderProps) {
       <span
         id={tooltipId}
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-focus-within/placeholder:opacity-100 group-hover/placeholder:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white group-focus-within/placeholder:block group-hover/placeholder:block"
       >
         Coming soon
       </span>

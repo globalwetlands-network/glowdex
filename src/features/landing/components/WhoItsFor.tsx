@@ -12,6 +12,7 @@ interface WhoItsForProps {
  * Persona blocks, each with the question that audience brings (if any) and
  * how MBCAM answers it as short bullet points. Four cards lay out as one
  * column, then a 2×2 grid, then a single row, so they never leave an orphan.
+ * The column classes assume four personas; revisit them if the count changes.
  */
 export function WhoItsFor({ personas = PERSONAS }: WhoItsForProps) {
   return (

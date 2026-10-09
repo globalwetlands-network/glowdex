@@ -58,9 +58,9 @@ workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages
 path, the SPA boots, and the router renders the matching route. (Deep links therefore return
 HTTP 404 with the correct page, which browsers ignore; a crawler would see the status.)
 
-The hero media (static photo vs crab video) is selected by `resolveHeroMediaVariant`
+The hero media (mangrove video vs static photo) is selected by `resolveHeroMediaVariant`
 (`src/features/landing/config/heroMedia.ts`): the `?hero=photo|video` query param wins, then
-`VITE_PUBLIC_HERO_MEDIA`, then `photo`. The video falls back to its poster for
+`VITE_PUBLIC_HERO_MEDIA`, then `video`. The video falls back to its poster for
 `prefers-reduced-motion`, Data Saver / slow connections, and playback errors.
 
 ## Layout & composition

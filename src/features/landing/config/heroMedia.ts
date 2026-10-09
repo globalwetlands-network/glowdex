@@ -1,18 +1,18 @@
 /**
  * Hero media configuration.
  *
- * Two media options are supported while the image-vs-video decision is pending
- * (GLO-188). `photo` stays the default until the crab video is licensed and the
- * vote is resolved; switch it via the `VITE_PUBLIC_HERO_MEDIA` repo variable, or
- * preview either option with the `?hero=photo|video` query param.
+ * Two media options are supported (GLO-188). `video` is the default; switch it
+ * via the `VITE_PUBLIC_HERO_MEDIA` repo variable, or preview either option with
+ * the `?hero=photo|video` query param. The video's poster doubles as its
+ * fallback for reduced motion, slow connections and playback errors.
  */
-import crabPoster from '@/assets/hero/crab-poster.jpg';
-import crabVideo from '@/assets/hero/crab.mp4';
+import heroPoster from '@/assets/hero/mangrove-fish-poster.jpg';
+import heroVideo from '@/assets/hero/mangrove-fish.mp4';
 import heroPhoto from '@/assets/hero/split-shot-photo.jpg';
 
 export type HeroMediaVariant = 'photo' | 'video';
 
-export const DEFAULT_HERO_MEDIA: HeroMediaVariant = 'photo';
+export const DEFAULT_HERO_MEDIA: HeroMediaVariant = 'video';
 
 const HERO_MEDIA_ENV = import.meta.env.VITE_PUBLIC_HERO_MEDIA as
   | string
@@ -37,7 +37,7 @@ export function resolveHeroMediaVariant(
 }
 
 // TODO: replace with licensed, compressed/optimised exports before ship — these
-// are watermarked iStock comps (see src/assets/hero/CREDITS.md).
+// are watermarked stock comps (see src/assets/hero/CREDITS.md).
 export const HERO_MEDIA = {
   photo: {
     src: heroPhoto,
@@ -45,9 +45,9 @@ export const HERO_MEDIA = {
     credit: 'Photo: jonathanfilskov-photography / iStock',
   },
   video: {
-    src: crabVideo,
-    poster: crabPoster,
-    alt: 'A crab walking among mangrove roots',
-    credit: 'Video: iStock',
+    src: heroVideo,
+    poster: heroPoster,
+    alt: 'Fish swimming among mangrove roots below the waterline',
+    credit: 'Video: Getty Images',
   },
 } as const;

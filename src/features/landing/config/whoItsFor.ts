@@ -2,9 +2,10 @@
  * "Who it's for" persona blocks (GLO-191), verbatim from the landing-page
  * content review: four audiences, two of them without a question line.
  *
- * The section renders whatever is in this list, so adding, removing,
- * reordering or rewording a persona is an edit here only — no component
- * changes.
+ * Rewording or reordering a persona is an edit here only. The grid in
+ * `WhoItsFor.tsx` is laid out for exactly four cards (one column, then 2×2,
+ * then one row), so adding or removing a persona also means revisiting its
+ * column classes.
  */
 export interface Persona {
   /** Who the block is for, e.g. "Researchers and Students". */

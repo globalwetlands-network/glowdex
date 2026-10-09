@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { FAQ_GROUPS } from '../config/faqs';
 import { Faqs } from './Faqs';
 
-const ALL_FAQS = FAQ_GROUPS.flatMap((group) => group.faqs);
+const SHOWN_FAQS = FAQ_GROUPS.flatMap((group) => group.faqs).filter(
+  (faq) => !faq.hidden,
+);
 
 function groupHeadings() {
   return screen
@@ -55,14 +57,19 @@ describe('Faqs', () => {
     fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
 
     const items = container.querySelectorAll('details');
-    expect(items).toHaveLength(ALL_FAQS.length);
+    expect(items).toHaveLength(SHOWN_FAQS.length);
 
-    ALL_FAQS.forEach((faq, index) => {
+    SHOWN_FAQS.forEach((faq, index) => {
       const item = within(items[index] as HTMLElement);
       expect(item.getByText(faq.question)).toBeInTheDocument();
       // Bracketed gaps render as placeholders: same words, no brackets.
-      const answer = items[index].querySelector('p')?.textContent ?? '';
-      expect(answer.replaceAll('Coming soon', '')).toBe(
+      const answer = items[index].querySelector('p')?.cloneNode(true) as
+        | HTMLElement
+        | undefined;
+      answer
+        ?.querySelectorAll('[role="tooltip"]')
+        .forEach((tip) => tip.remove());
+      expect(answer?.textContent).toBe(
         faq.answer?.replace(/\[([^\]]+)\]/g, '$1'),
       );
     });
@@ -94,13 +101,40 @@ describe('Faqs', () => {
       const placeholder = screen.getByText(gap);
       expect(placeholder).toHaveClass('border-dashed');
       expect(placeholder).toHaveAccessibleDescription('Coming soon');
+      // Out of the reading flow until hover/focus, so it's announced once.
+      expect(
+        document.getElementById(
+          placeholder.getAttribute('aria-describedby') ?? '',
+        ),
+      ).toHaveClass('hidden');
     }
     expect(screen.queryByText(/\[/)).toBeNull();
   });
 
+  it('never renders a hidden question, even from groups passed in', () => {
+    render(
+      <Faqs
+        groups={[
+          {
+            heading: 'Group',
+            faqs: [
+              { question: 'Shown?', answer: 'A1' },
+              { question: 'Hidden?', answer: 'A2', hidden: true },
+            ],
+          },
+        ]}
+        initiallyVisible={1}
+      />,
+    );
+
+    expect(screen.getByText('Shown?')).toBeInTheDocument();
+    expect(screen.queryByText('Hidden?')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('keeps the citation answer separate from the Sievers et al. method reference', () => {
     const answerTo = (question: string) =>
-      ALL_FAQS.find((faq) => faq.question === question)?.answer;
+      SHOWN_FAQS.find((faq) => faq.question === question)?.answer;
 
     expect(answerTo('How do I cite MBCAM?')).not.toMatch(/Sievers/);
     expect(answerTo('Where does the data come from?')).toMatch(
