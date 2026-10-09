@@ -175,7 +175,7 @@ loader ──▶ datasetClient.fetchAsset('grid-items.csv') ──▶ VITE_DATA_
   (cached for the session), reads its `path` + `dataset_version`, and loads the immutable
   bundle assets — `grid-items.csv`, `grid-items-residuals.csv`, `all-clusters.csv`,
   `grid.geojson`, `indicator-labels.json` — from `${store}/${manifest.path}/`. The resolved
-  `dataset_version` drives the `DatasetVersionBadge` and the backend-skew check.
+  `dataset_version` drives the landing page footer's version line and the backend-skew check.
 - **Local monitoring data (fixed path).** `local-sites.csv`, `local-observations.csv`, and
   `local-meta.json` are served from a fixed `${store}/local/` path on their own monthly
   cadence — **not** behind the manifest.

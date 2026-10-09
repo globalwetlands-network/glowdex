@@ -8,7 +8,7 @@ import { ClosingCta } from './ClosingCta';
 vi.mock('../preloadMapApp', () => ({ preloadMapApp: vi.fn() }));
 
 describe('ClosingCta', () => {
-  it('renders the heading and both buttons, routed to /map like the hero', () => {
+  it('renders the heading and both buttons, each opening its own map mode', () => {
     render(
       <MemoryRouter>
         <ClosingCta />
@@ -18,11 +18,11 @@ describe('ClosingCta', () => {
     const section = within(
       screen.getByRole('region', { name: 'Ready to explore?' }),
     );
-    for (const name of ['Local wildlife data', 'Global assessment']) {
-      expect(section.getByRole('link', { name })).toHaveAttribute(
-        'href',
-        '/map',
-      );
+    for (const [name, href] of [
+      ['Local wildlife data', '/map?mode=local'],
+      ['Global assessment', '/map?mode=global'],
+    ]) {
+      expect(section.getByRole('link', { name })).toHaveAttribute('href', href);
     }
 
     fireEvent.pointerEnter(

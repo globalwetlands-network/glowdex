@@ -6,6 +6,7 @@ import {
   EXAMPLE_DISTRIBUTIONS,
   EXAMPLE_INDICATOR_PERCENTILES,
   EXAMPLE_HIGHLIGHT,
+  EXAMPLE_HIGHLIGHTS,
   EXAMPLE_INSIGHTS,
   EXAMPLE_QUOTE,
   EXAMPLE_LOCAL_SITE,
@@ -25,7 +26,8 @@ describe('worked example fixture', () => {
     expect(EXAMPLE_LOCAL_SITE.name).toBe('Bayhead');
     expect(EXAMPLE_LOCAL_SITE.country).toBe('South Africa');
     expect(EXAMPLE_LOCAL_SITE_CONTEXT.siteName).toBe('Bayhead');
-    expect(EXAMPLE_INSIGHTS.local.gridCellId).toBe(EXAMPLE_CELL.id);
+    // Local answers are about the site only (GLO-207): no grid cell.
+    expect(EXAMPLE_INSIGHTS.local.gridCellId).toBeNull();
     expect(EXAMPLE_INSIGHTS.global.gridCellId).toBe(EXAMPLE_CELL.id);
   });
 
@@ -67,15 +69,12 @@ describe('worked example fixture', () => {
     expect(specScore.direction).toBe(1);
     expect(specScore.description).toMatch(/higher score = fewer threatened/);
     // "exceptionally low fish density … near median … moderately low"
-    for (const insight of Object.values(EXAMPLE_INSIGHTS)) {
-      expect(insight.text).toContain('exceptionally low fish density');
-      expect(insight.text).toContain('invertebrate density is near median');
-      expect(insight.text).toContain(
-        'the species threat score is moderately low',
-      );
-      // Saying the THREAT (not the score) is low would invert the meaning.
-      expect(insight.text).not.toMatch(/species threat is/);
-    }
+    const globalText = EXAMPLE_INSIGHTS.global.text;
+    expect(globalText).toContain('exceptionally low fish density');
+    expect(globalText).toContain('invertebrate density is near median');
+    expect(globalText).toContain('the species threat score is moderately low');
+    // Saying the THREAT (not the score) is low would invert the meaning.
+    expect(globalText).not.toMatch(/species threat is/);
     // "covers 64 hectares"
     expect(Math.round(EXAMPLE_MANGROVE_AREA_HA)).toBe(64);
     expect(EXAMPLE_INSIGHTS.global.text).toContain('covers 64 hectares');
@@ -90,14 +89,21 @@ describe('worked example fixture', () => {
     expect(density.Rehabilitated).toBeLessThan(density.Reference);
   });
 
-  it('keeps local findings to local mode, highlights, and no health language', () => {
-    expect(EXAMPLE_INSIGHTS.local.text).toContain(
-      'Local field data from Bayhead',
+  it('keeps each mode to its own findings, highlights, and no health language', () => {
+    // Local reads only the site's field data, credited to its partner…
+    const local = EXAMPLE_INSIGHTS.local.text;
+    expect(local).toContain(
+      `Field monitoring at Bayhead, South Africa, by the ` +
+        `${EXAMPLE_LOCAL_SITE_CONTEXT.partner} in ${EXAMPLE_LOCAL_SITE_CONTEXT.year}`,
     );
-    expect(EXAMPLE_INSIGHTS.global.text).not.toMatch(/local field data/i);
-    for (const insight of Object.values(EXAMPLE_INSIGHTS)) {
-      expect(insight.text).toContain(EXAMPLE_HIGHLIGHT);
-      expect(insight.text).not.toMatch(/health/i);
+    expect(local).not.toContain(EXAMPLE_HIGHLIGHT);
+    expect(local).not.toMatch(/hectares|typology|invertebrate/);
+    expect(EXAMPLE_INSIGHTS.local.sources).toEqual([]);
+    // …and global never mentions field monitoring.
+    expect(EXAMPLE_INSIGHTS.global.text).not.toMatch(/field monitoring/i);
+    for (const mode of ['local', 'global'] as const) {
+      expect(EXAMPLE_INSIGHTS[mode].text).toContain(EXAMPLE_HIGHLIGHTS[mode]);
+      expect(EXAMPLE_INSIGHTS[mode].text).not.toMatch(/health/i);
     }
     expect((EXAMPLE_QUOTE.highlight + EXAMPLE_QUOTE.rest).toLowerCase()).toBe(
       `${EXAMPLE_HIGHLIGHT}.`,

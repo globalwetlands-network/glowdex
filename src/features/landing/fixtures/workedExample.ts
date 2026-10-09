@@ -12,11 +12,11 @@ import type { Feature, Geometry } from 'geojson';
 import type { PartnersResponse } from '@/api/partners';
 import type { InsightResponse, LocalSiteContext } from '@/api/types';
 import type { EnrichedGridCell } from '@/app/types/app.types';
+import { buildLocalSiteContext } from '@/app/utils/buildLocalSiteContext';
 import {
   transformIndicators,
   type IndicatorRaw,
 } from '@/data/loaders/loadIndicators';
-import { aggregateByCondition } from '@/data/transforms/aggregateLocalObservations';
 import { deriveLocalWetlands } from '@/data/transforms/deriveLocalWetlands';
 import { deriveTypologies } from '@/data/transforms/deriveTypologies';
 import { joinGridData } from '@/data/transforms/joinGridWithClusters';
@@ -109,21 +109,23 @@ export const EXAMPLE_PARTNERS: PartnersResponse = {
   total: 1,
 };
 
-const exampleYear = EXAMPLE_LOCAL_SITE.availableYears.at(-1) ?? 0;
+/**
+ * Local field context for the assistant, built by the same function the map
+ * uses in Local mode, so it carries the map's per-sampling-point entries.
+ */
+export const EXAMPLE_LOCAL_SITE_CONTEXT: LocalSiteContext = (() => {
+  const context = buildLocalSiteContext(
+    EXAMPLE_LOCAL_SITE,
+    EXAMPLE_PARTNERS.partners,
+    false,
+  );
+  if (!context) {
+    throw new Error('Worked example: the local site has no field data');
+  }
+  return context;
+})();
 
-/** Local field context for the assistant, built the way App.tsx builds it. */
-export const EXAMPLE_LOCAL_SITE_CONTEXT: LocalSiteContext = {
-  siteName: EXAMPLE_LOCAL_SITE.name,
-  country: EXAMPLE_LOCAL_SITE.country,
-  partner: EXAMPLE_PARTNERS.partners[0].institution,
-  year: exampleYear,
-  conditions: aggregateByCondition(
-    EXAMPLE_LOCAL_SITE.observations,
-    exampleYear,
-  ).filter((c) => c.samplesN > 0),
-};
-
-/** The key finding, highlighted wherever the example shows the assistant. */
+/** The global key finding, highlighted in the global assistant and explainer. */
 export const EXAMPLE_HIGHLIGHT =
   'exceptionally low fish density compared to similar systems in its typology';
 
@@ -140,12 +142,23 @@ const GLOBAL_SUMMARY =
   // fewer threatened species) — never shorten this to "threat is low".
   'the species threat score is moderately low.';
 
+/** The local key finding, highlighted in the local assistant. */
+const LOCAL_HIGHLIGHT = 'well below the local reference';
+
+/** The phrase highlighted in each mode's assistant summary. */
+export const EXAMPLE_HIGHLIGHTS: Record<'local' | 'global', string> = {
+  global: EXAMPLE_HIGHLIGHT,
+  local: LOCAL_HIGHLIGHT,
+};
+
 /**
- * Illustrative assistant summaries for the worked example — one per mode.
- * Condensed from the live assistant's response for this tile (captured
- * 2026-09-29, dataset 2026.09.0) for display; not verbatim output. Every claim
- * matches the fixture data (see workedExample.spec.ts), and they avoid
- * "health" framing, which is blocked until the prompt-level fix (GLO-190).
+ * Illustrative assistant summaries for the worked example — one per mode,
+ * kept as separate as the map keeps them (GLO-207): global reads the tile,
+ * local reads only the site's field data, with no grid cell. Condensed from
+ * the live assistant's responses (captured 2026-09-29, dataset 2026.09.0) for
+ * display; not verbatim output. Every claim matches the fixture data (see
+ * workedExample.spec.ts), and they avoid "health" framing, which is blocked
+ * until the prompt-level fix (GLO-190).
  */
 export const EXAMPLE_INSIGHTS: Record<'local' | 'global', InsightResponse> = {
   global: {
@@ -158,11 +171,16 @@ export const EXAMPLE_INSIGHTS: Record<'local' | 'global', InsightResponse> = {
     meta: { latencyMs: 0, totalTokensUsed: 0 },
   },
   local: {
-    gridCellId: EXAMPLE_TILE_ID,
+    gridCellId: null,
     text:
-      `${GLOBAL_SUMMARY} Local field data from ${EXAMPLE_LOCAL_SITE.name} ` +
-      'shows crab densities in degraded and rehabilitated zones well below ' +
-      'the local reference.',
+      `Field monitoring at ${EXAMPLE_LOCAL_SITE_CONTEXT.siteName}, ` +
+      `${EXAMPLE_LOCAL_SITE_CONTEXT.country}, by the ` +
+      `${EXAMPLE_LOCAL_SITE_CONTEXT.partner} in ` +
+      `${EXAMPLE_LOCAL_SITE_CONTEXT.year} shows crab densities in degraded ` +
+      `and rehabilitated zones ${LOCAL_HIGHLIGHT}.`,
+    // Empty, as the live backend returns for local answers: ChatInterface
+    // then credits the partner's field monitoring, never Sievers et al.
+    sources: [],
     meta: { latencyMs: 0, totalTokensUsed: 0 },
   },
 };

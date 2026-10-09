@@ -6,9 +6,9 @@ import { FOOTER_CREDIT, FOOTER_LINKS } from '../config/footer';
  * Landing page footer: logo, nav, the builder credit and the live dataset
  * version.
  *
- * The version is the store manifest's `dataset_version`, as on the map's
- * `DatasetVersionBadge`. Its line is omitted until the manifest resolves, and
- * stays omitted if the store can't be reached.
+ * The version is the store manifest's `dataset_version`, the one place the
+ * site shows it. Its line is omitted until the manifest resolves, and stays
+ * omitted if the store can't be reached.
  */
 export function SiteFooter() {
   const datasetVersion = useDatasetVersion();

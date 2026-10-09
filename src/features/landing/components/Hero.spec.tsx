@@ -58,14 +58,15 @@ describe('Hero', () => {
     expect(screen.getByText(/free and open to everyone/i)).toBeVisible();
   });
 
-  it('routes both choices to /map', () => {
+  it('opens each choice in its own map mode', () => {
     renderHero();
 
-    for (const name of ['Local wildlife data', 'Global assessment']) {
-      expect(screen.getByRole('link', { name })).toHaveAttribute(
-        'href',
-        '/map',
-      );
+    for (const [name, href] of [
+      ['Local wildlife data', '/map?mode=local'],
+      ['Global assessment', '/map?mode=global'],
+      ['See covered locations', '/map?mode=local'],
+    ]) {
+      expect(screen.getByRole('link', { name })).toHaveAttribute('href', href);
     }
   });
 

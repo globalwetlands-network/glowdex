@@ -1,7 +1,9 @@
+import type { EntryMode } from '@/app/hooks/useEntryMode';
+
 /**
  * "Why it matters" copy (GLO-204), verbatim from the landing-page content
  * review. The Local/Global pair was added later to bring restoration tracking
- * forward.
+ * forward; it uses the same mode names as the hero and the map's switch.
  */
 export const WHY_IT_MATTERS_HEADING = 'Why it matters';
 
@@ -11,8 +13,13 @@ export const WHY_IT_MATTERS_PARAGRAPHS: readonly string[] = [
 ];
 
 export interface WhyItMattersScale {
+  /** The map workflow this scale opens. */
+  mode: EntryMode;
+  /** Mode name, shown as a capsule. */
   label: string;
   description: string;
+  /** Text of the link into that mode of the map. */
+  linkLabel: string;
 }
 
 /**
@@ -21,13 +28,17 @@ export interface WhyItMattersScale {
  */
 export const WHY_IT_MATTERS_SCALES: readonly WhyItMattersScale[] = [
   {
-    label: 'Local',
+    mode: 'local',
+    label: 'Local wildlife data',
     description:
-      'After a restoration effort or a disturbance, local monitoring tracks whether a site is recovering toward a healthy reference condition, comparing reference, degraded and rehabilitated areas over time.',
+      'After a restoration effort or a disturbance, local wildlife monitoring tracks whether a site is recovering toward a healthy reference condition, comparing reference, degraded and rehabilitated areas over time.',
+    linkLabel: 'Explore local wildlife data',
   },
   {
-    label: 'Global',
+    mode: 'global',
+    label: 'Global assessment',
     description:
-      'The global comparison shows how a place sits against others like it, giving restoration work a benchmark for what recovery should look like.',
+      'The global assessment shows how a place sits against others like it, giving restoration work a benchmark for what recovery should look like.',
+    linkLabel: 'Explore the global assessment',
   },
 ];

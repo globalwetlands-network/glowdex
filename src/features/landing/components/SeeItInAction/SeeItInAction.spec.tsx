@@ -70,7 +70,9 @@ describe('SeeItInAction carousel', () => {
     expect(
       slide().getByText('Mangrove Analysis Assistant'),
     ).toBeInTheDocument();
-    expect(slide().getByText('Cell ID: 21812')).toBeInTheDocument();
+    // Local mode labels the conversation by site, as in the map.
+    expect(slide().getByText('Bayhead · South Africa')).toBeInTheDocument();
+    expect(slide().queryByText(/Cell ID/)).not.toBeInTheDocument();
 
     next();
     expect(slide().target).toBe('site-tooltip');
@@ -144,16 +146,23 @@ describe('SeeItInAction carousel', () => {
     expect(wrapper).toHaveClass('invisible');
   });
 
-  it('shows the assistant read-only, linking to the map', () => {
+  it('shows the assistant read-only, linking to the map in the same mode', () => {
     renderSection();
     goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
       slide().getByPlaceholderText('Ask a follow-up question...'),
     ).toBeDisabled();
+    // Local opens the example site itself.
     expect(
       slide().getByRole('link', { name: /try it in the map/i }),
-    ).toHaveAttribute('href', '/map');
+    ).toHaveAttribute('href', '/map?mode=local&site=za-bayhead');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
+    goToStep(EXAMPLE_STEPS.global[3].label);
+    expect(
+      slide().getByRole('link', { name: /try it in the map/i }),
+    ).toHaveAttribute('href', '/map?mode=global');
   });
 });
 
@@ -171,7 +180,9 @@ describe('showcase analytics', () => {
 
   it('captures no events when the source link is clicked', () => {
     renderSection();
-    goToStep(EXAMPLE_STEPS.local[2].label);
+    // Only the global answer cites a paper; local credits the partner.
+    fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
+    goToStep(EXAMPLE_STEPS.global[3].label);
     fireEvent.click(slide().getByRole('link', { name: /Sievers et al/ }));
 
     expect(capture).not.toHaveBeenCalled();
@@ -179,19 +190,27 @@ describe('showcase analytics', () => {
 });
 
 describe('carousel assistant', () => {
-  const highlight =
-    'exceptionally low fish density compared to similar systems in its typology';
-
-  it('shows the local summary, highlighted, with the local-data chip', () => {
+  it('shows a site-only local summary, credited to the partner, with local questions', () => {
     renderSection();
     goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
-      slide().getByText(highlight, { selector: 'mark' }),
+      slide().getByText('well below the local reference', { selector: 'mark' }),
     ).toBeInTheDocument();
     expect(
-      slide().getByText(/Local field data from Bayhead/),
+      slide().getByText(/Field monitoring at Bayhead/),
     ).toBeInTheDocument();
+    // Site-scoped, as in the map's Local mode: no tile findings, no paper.
+    expect(slide().queryByText(/covers 64 hectares/)).not.toBeInTheDocument();
+    expect(
+      slide().queryByText(/exceptionally low fish density/),
+    ).not.toBeInTheDocument();
+    expect(
+      slide().getByText(
+        'Source: University of the Western Cape field monitoring (2026)',
+      ),
+    ).toBeInTheDocument();
+    expect(slide().queryByText(/Sievers/)).not.toBeInTheDocument();
     expect(
       slide().getByRole('button', {
         name: 'What does the local field data show?',
@@ -205,10 +224,13 @@ describe('carousel assistant', () => {
     goToStep(EXAMPLE_STEPS.global[3].label);
 
     expect(
-      slide().getByText(highlight, { selector: 'mark' }),
+      slide().getByText(
+        'exceptionally low fish density compared to similar systems in its typology',
+        { selector: 'mark' },
+      ),
     ).toBeInTheDocument();
     expect(slide().getByText(/covers 64 hectares/)).toBeInTheDocument();
-    expect(slide().queryByText(/Local field data/)).not.toBeInTheDocument();
+    expect(slide().queryByText(/Field monitoring/)).not.toBeInTheDocument();
     expect(
       slide().queryByRole('button', {
         name: 'What does the local field data show?',

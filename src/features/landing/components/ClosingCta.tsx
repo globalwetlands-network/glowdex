@@ -17,10 +17,10 @@ export function ClosingCta() {
         Ready to explore?
       </h2>
       <div className="mt-7 flex flex-wrap justify-center gap-4">
-        <MapCtaLink className="w-full sm:w-[240px]">
+        <MapCtaLink mode="local" className="w-full sm:w-[240px]">
           Local wildlife data
         </MapCtaLink>
-        <MapCtaLink className="w-full sm:w-[240px]">
+        <MapCtaLink mode="global" className="w-full sm:w-[240px]">
           Global assessment
         </MapCtaLink>
       </div>

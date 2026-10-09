@@ -1,15 +1,17 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { MONITORING_SITES_COUNT } from '../config/factSheet';
 import { resolveHeroMediaVariant } from '../config/heroMedia';
 import { useSlowConnection } from '../hooks/useSlowConnection';
 import { preloadMapApp } from '../preloadMapApp';
+import { PRELOAD_ON_INTENT } from '../preloadOnIntent';
 import { HeroMedia } from './HeroMedia';
 import { MapCtaLink } from './MapCtaLink';
 
 /**
  * Public landing page: full-bleed hero; `LandingPage` overlays the shared
- * `SiteHeader` on it in its transparent treatment. Both choices route to the map app at /map. Both bylines are always
+ * `SiteHeader` on it in its transparent treatment. Each choice opens the map
+ * app at /map in its own workflow (`?mode=local` / `?mode=global`). Both bylines are always
  * visible, with no hover or disclosure needed (a hard design requirement).
  * The page-level `<main>` belongs to `LandingPage`, which wraps this hero and
  * the sections below it.
@@ -51,13 +53,19 @@ export function Hero() {
           </h2>
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-5">
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
-              <MapCtaLink className="w-full">Local wildlife data</MapCtaLink>
+              <MapCtaLink mode="local" className="w-full">
+                Local wildlife data
+              </MapCtaLink>
               <p className="m-0 text-[11px] leading-[1.35] text-white">
                 Wildlife recorded by partners at monitoring sites.{' '}
-                {/* TODO: link to the covered-locations list once it exists */}
-                <a href="#" className="underline">
+                {/* Local mode shows every monitoring location on the map. */}
+                <Link
+                  to="/map?mode=local"
+                  {...PRELOAD_ON_INTENT}
+                  className="underline"
+                >
                   See covered locations
-                </a>
+                </Link>
                 .
               </p>
               <p className="m-0 text-[10px] text-[#d8e3da]">
@@ -65,7 +73,9 @@ export function Hero() {
               </p>
             </div>
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
-              <MapCtaLink className="w-full">Global assessment</MapCtaLink>
+              <MapCtaLink mode="global" className="w-full">
+                Global assessment
+              </MapCtaLink>
               <p className="m-0 text-[11px] leading-[1.35] text-white">
                 Overall ecosystem condition for any mangrove area.
               </p>

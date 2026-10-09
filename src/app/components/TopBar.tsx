@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/globalwetlands.png';
 import { Menu, Home, Info, HelpCircle, Database, Mail } from 'lucide-react';
 import { MenuDrawer } from './MenuDrawer';
-import { DatasetVersionBadge } from './DatasetVersionBadge';
 import type { MenuItemKey } from '@/app/content/menuContent';
 import type { EntryMode } from '../hooks/useEntryMode';
 
@@ -116,11 +115,19 @@ export function TopBar({ onLogoClick, mode, onModeChange }: TopBarProps) {
       {/* Right side: Action buttons */}
       <div className="flex items-center gap-2">
         {mode && onModeChange && (
+          // A two-position toggle: equal halves in a recessed track, with a
+          // white thumb that slides to the active side.
           <div
             role="group"
             aria-label="Map mode"
-            className="flex rounded-md bg-white/10 p-0.5"
+            className="relative inline-grid grid-cols-2 rounded-full bg-black/30 p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.35)] ring-1 ring-white/15"
           >
+            <span
+              aria-hidden="true"
+              className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white shadow-md transition-transform duration-300 ease-out motion-reduce:transition-none ${
+                mode === 'global' ? 'translate-x-full' : 'translate-x-0'
+              }`}
+            />
             {MODE_OPTIONS.map((option) => {
               const isActive = option.mode === mode;
               return (
@@ -133,10 +140,10 @@ export function TopBar({ onLogoClick, mode, onModeChange }: TopBarProps) {
                   onClick={() => {
                     if (!isActive) onModeChange(option.mode);
                   }}
-                  className={`rounded px-2.5 py-1 text-[12px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                  className={`relative z-10 rounded-full px-3 py-1 text-center text-[13px] font-semibold whitespace-nowrap transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:px-4 sm:py-1.5 ${
                     isActive
-                      ? 'bg-white text-glowdex-green'
-                      : 'cursor-pointer text-white/75 hover:text-white'
+                      ? 'text-glowdex-green'
+                      : 'cursor-pointer text-white/70 hover:text-white'
                   }`}
                 >
                   <span className="sm:hidden">{option.shortLabel}</span>
@@ -146,9 +153,6 @@ export function TopBar({ onLogoClick, mode, onModeChange }: TopBarProps) {
             })}
           </div>
         )}
-        <div className="hidden sm:block">
-          <DatasetVersionBadge />
-        </div>
 
         {/* Menu button with dropdown */}
         <div className="relative" ref={menuRef}>
