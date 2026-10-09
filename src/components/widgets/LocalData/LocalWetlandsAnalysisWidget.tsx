@@ -104,6 +104,12 @@ interface LocalWetlandsAnalysisWidgetProps {
    * monitoring-location pins on, so there is nothing to toggle.
    */
   hideLayerToggle?: boolean;
+  /**
+   * Static showcase (landing page): hides the map-layer toggle and
+   * disables the location selectors, so nothing looks interactive and
+   * no interaction analytics are captured.
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -113,7 +119,8 @@ interface LocalWetlandsAnalysisWidgetProps {
  */
 interface SectionHeaderProps {
   localSiteLayerEnabled: boolean;
-  onToggle: () => void;
+  /** Omit to hide the map-layer toggle. */
+  onToggle?: () => void;
   /** "Mon YYYY" caption, or null to hide the last-refreshed line. */
   updatedLabel: string | null;
   hideLayerToggle?: boolean;
@@ -135,7 +142,7 @@ function SectionHeader({
           <p className="text-[10px] text-gray-400">Updated {updatedLabel}</p>
         )}
       </div>
-      {!hideLayerToggle && (
+      {onToggle && !hideLayerToggle && (
         <button
           role="switch"
           aria-checked={localSiteLayerEnabled}
@@ -179,6 +186,7 @@ interface LocationSelectorsProps {
   selectedSiteValue: string;
   onCountryChange: (country: string) => void;
   onSiteSelect: (siteId: string) => void;
+  disabled?: boolean;
 }
 
 function LocationSelectors({
@@ -188,14 +196,16 @@ function LocationSelectors({
   selectedSiteValue,
   onCountryChange,
   onSiteSelect,
+  disabled = false,
 }: LocationSelectorsProps) {
   return (
     <div className="flex gap-2">
       <select
         value={selectedCountry}
         onChange={(e) => onCountryChange(e.target.value)}
+        disabled={disabled}
         aria-label="Country"
-        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer disabled:cursor-default"
       >
         {availableCountries.map((country) => (
           <option key={country} value={country}>
@@ -206,8 +216,9 @@ function LocationSelectors({
       <select
         value={selectedSiteValue}
         onChange={(e) => onSiteSelect(e.target.value)}
+        disabled={disabled}
         aria-label="Monitoring location"
-        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+        className="flex-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer disabled:cursor-default"
       >
         {activeSitesForSelector.map((site) => (
           <option key={site.id} value={site.id}>
@@ -229,6 +240,7 @@ export function LocalWetlandsAnalysisWidget({
   onLocalSiteLayerToggle,
   onSiteAssociated,
   hideLayerToggle = false,
+  readOnly = false,
 }: LocalWetlandsAnalysisWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData } = usePartners();
@@ -406,7 +418,7 @@ export function LocalWetlandsAnalysisWidget({
       <div className="space-y-3">
         <SectionHeader
           localSiteLayerEnabled={localSiteLayerEnabled}
-          onToggle={handleLayerToggle}
+          onToggle={readOnly ? undefined : handleLayerToggle}
           updatedLabel={updatedLabel}
           hideLayerToggle={hideLayerToggle}
         />
@@ -420,6 +432,7 @@ export function LocalWetlandsAnalysisWidget({
           <select
             value=""
             onChange={(e) => handleCountryChange(e.target.value)}
+            disabled={readOnly}
             className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
           >
             <option value="">Select country...</option>
@@ -440,6 +453,7 @@ export function LocalWetlandsAnalysisWidget({
             <select
               value={selectedSiteId ?? ''}
               onChange={(e) => handleSiteSelect(e.target.value)}
+              disabled={readOnly}
               className="w-full text-xs rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
             >
               <option value="">Select location...</option>
@@ -460,7 +474,7 @@ export function LocalWetlandsAnalysisWidget({
       <div className="space-y-3">
         <SectionHeader
           localSiteLayerEnabled={localSiteLayerEnabled}
-          onToggle={handleLayerToggle}
+          onToggle={readOnly ? undefined : handleLayerToggle}
           updatedLabel={updatedLabel}
           hideLayerToggle={hideLayerToggle}
         />
@@ -474,6 +488,7 @@ export function LocalWetlandsAnalysisWidget({
           selectedSiteValue={selectedSiteId ?? associatedSite.id}
           onCountryChange={handleCountryChange}
           onSiteSelect={handleSiteSelect}
+          disabled={readOnly}
         />
 
         {/* Site name + partner link */}
@@ -511,7 +526,7 @@ export function LocalWetlandsAnalysisWidget({
     <div className="space-y-3">
       <SectionHeader
         localSiteLayerEnabled={localSiteLayerEnabled}
-        onToggle={handleLayerToggle}
+        onToggle={readOnly ? undefined : handleLayerToggle}
         updatedLabel={updatedLabel}
         hideLayerToggle={hideLayerToggle}
       />
@@ -525,6 +540,7 @@ export function LocalWetlandsAnalysisWidget({
         selectedSiteValue={selectedSiteId ?? associatedSite.id}
         onCountryChange={handleCountryChange}
         onSiteSelect={handleSiteSelect}
+        disabled={readOnly}
       />
 
       {/* Site name + partner link */}

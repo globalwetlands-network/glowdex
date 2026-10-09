@@ -1,17 +1,23 @@
 /**
  * Raw row shape for the sites file (local-sites.csv) — the
  * authoritative source for coordinates and site list. One row
- * per coordinate point; a site may have several rows (one per
- * condition, sometimes at distinct lat/long). All fields are
- * strings because parseCsv uses dynamicTyping: false.
+ * per coordinate point; a site may have several rows (one or more
+ * per condition, sometimes at distinct lat/long). All fields are
+ * strings because parseCsv uses dynamicTyping: false. Columns that
+ * may be absent from a given file are optional — a missing column
+ * parses as undefined.
  */
 export interface LocalSiteRaw {
-  Country_name: string;
-  Location_name: string;
-  Location_lat: string;
-  Location_long: string;
+  Country_name?: string;
+  Location_name?: string;
+  /** Current coordinate headers. */
+  Site_lat?: string;
+  Site_long?: string;
+  /** Legacy coordinate headers, read when Site_lat/Site_long are absent. */
+  Location_lat?: string;
+  Location_long?: string;
   Year: string;
-  Site_Type: string;
+  Site_Type?: string;
   /** Stable per-site id (e.g. `za-bayhead`); the join key onto observations. */
   site_id: string;
   /** Partner organisation id owning the site (matches PARTNER_REGISTRY). */
@@ -25,13 +31,19 @@ export interface LocalSiteRaw {
  * parseCsv uses dynamicTyping: false.
  */
 export interface LocalObservationRaw {
-  Country_name: string;
-  Location_name: string;
-  Location_lat: string;
-  Location_long: string;
+  Country_name?: string;
+  Location_name?: string;
+  Site_lat?: string;
+  Site_long?: string;
+  /** Legacy coordinate headers. */
+  Location_lat?: string;
+  Location_long?: string;
   Year: string;
-  Site_Type: string;
-  Species: string;
+  Site_Type?: string;
+  /** Accepted but not yet used. */
+  Species_richness?: string;
+  /** Legacy column, no longer in the file and not read. */
+  Species?: string;
   Density: string;
   SE: string;
   Samples_n: string;
@@ -44,7 +56,6 @@ export type SiteCondition = 'Reference' | 'Degraded' | 'Rehabilitated';
 export interface LocalObservation {
   year: number;
   siteType: SiteCondition;
-  species: string;
   density: number;
   se: number;
   samplesN: number;
@@ -56,7 +67,8 @@ export interface LocalSiteMetadata {
   country: string;
   /**
    * [longitude, latitude] — GeoJSON convention.
-   * Derived from Location_long / Location_lat in CSV.
+   * Derived from Site_long / Site_lat in CSV (legacy Location_long /
+   * Location_lat).
    */
   coordinates: [number, number];
   /**
