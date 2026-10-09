@@ -35,6 +35,7 @@ import {
 import { ExampleMapBackdrop } from './ExampleMapBackdrop';
 import { FitToStage } from './FitToStage';
 import { LandingQueryProvider } from './LandingQueryProvider';
+import { PRELOAD_ON_INTENT } from '../../preloadOnIntent';
 
 const noop = () => {};
 
@@ -143,6 +144,7 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
             readOnlyHint={
               <Link
                 to="/map"
+                {...PRELOAD_ON_INTENT}
                 className="inline-flex items-center gap-1 font-semibold text-glowdex-green hover:underline"
               >
                 Try it in the map

@@ -5,6 +5,7 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import './styles/globals.css';
 import { LoadingState } from '@/app/components/LoadingState';
+import { MapAppErrorBoundary } from '@/app/components/MapAppErrorBoundary';
 import { LandingPage } from '@/features/landing/components/LandingPage';
 
 // Lazy so the landing page doesn't download the map app (mapbox-gl, plotly, …)
@@ -42,9 +43,11 @@ const routes = (
     <Route
       path="/map"
       element={
-        <Suspense fallback={<LoadingState />}>
-          <App />
-        </Suspense>
+        <MapAppErrorBoundary>
+          <Suspense fallback={<LoadingState />}>
+            <App />
+          </Suspense>
+        </MapAppErrorBoundary>
       }
     />
     <Route path="*" element={<Navigate to="/" replace />} />

@@ -25,7 +25,7 @@ describe('Faqs', () => {
     expect(container.querySelectorAll('details')).toHaveLength(5);
   });
 
-  it('renders every question with its answer, and a placeholder for the three pending ones', () => {
+  it('renders every question with its answer, and a placeholder for the four pending ones', () => {
     const { container } = render(<Faqs />);
     fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
 
@@ -44,6 +44,7 @@ describe('Faqs', () => {
       )
       .map((item) => item.querySelector('summary')?.textContent);
     expect(pending).toEqual([
+      'How confident is the classification?',
       'Can I download the data?',
       'How do I cite MBCAM?',
       'Can my organisation contribute monitoring data?',

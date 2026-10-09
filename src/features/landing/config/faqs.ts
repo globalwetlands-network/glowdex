@@ -54,11 +54,9 @@ export const FAQS: readonly Faq[] = [
     answer:
       'The global comparison is updated periodically, most recently with data to 2025. Local monitoring data is updated monthly.',
   },
-  {
-    question: 'How confident is the classification?',
-    answer:
-      'Each place shows how confident the model is in its typology, and the next closest typology. Confidence is lower where data is missing, and values estimated by the model rather than measured are marked.',
-  },
+  // Pending: the map doesn't show classification confidence, the next closest
+  // typology, or measured-vs-estimated markers yet.
+  { question: 'How confident is the classification?', answer: null },
   {
     question: "Why doesn't the species count match GBIF?",
     answer:
