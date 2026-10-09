@@ -26,6 +26,10 @@ export function buildLocalSiteContext(
 ): LocalSiteContext | null {
   if (!site || !site.observations.length) return null;
 
+  // Waiting on the partner name: bail out before building (and warning
+  // about) entries that would be thrown away and rebuilt once it arrives.
+  if (site.partnerId && !partners && !partnersFailed) return null;
+
   // availableYears is sorted ascending in deriveLocalWetlands —
   // .at(-1) safely returns the most recent year.
   const year = site.availableYears.at(-1) ?? null;
@@ -48,8 +52,6 @@ export function buildLocalSiteContext(
     );
   }
   const conditions = entries.slice(0, MAX_LOCAL_AI_CONDITIONS);
-
-  if (site.partnerId && !partners && !partnersFailed) return null;
 
   const partnerName = site.partnerId
     ? (partners?.find((p) => p.id === site.partnerId)?.institution ?? site.name)

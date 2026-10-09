@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, type Location } from 'react-router-dom';
+import type { InsightMode } from '@/api/types';
 
 /**
  * Which workflow the map is in (GLO-207).
@@ -12,7 +13,7 @@ import { useLocation, useNavigate, type Location } from 'react-router-dom';
  * (including no param) means global, which is the app's behaviour before
  * GLO-207.
  */
-export type EntryMode = 'local' | 'global';
+export type EntryMode = InsightMode;
 
 /** Reads mode and site from a query string. */
 function parseEntry(search: string): {

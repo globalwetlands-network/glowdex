@@ -10,7 +10,11 @@
  */
 import type { Feature, Geometry } from 'geojson';
 import type { PartnersResponse } from '@/api/partners';
-import type { InsightResponse, LocalSiteContext } from '@/api/types';
+import type {
+  InsightMode,
+  InsightResponse,
+  LocalSiteContext,
+} from '@/api/types';
 import type { EnrichedGridCell } from '@/app/types/app.types';
 import { buildLocalSiteContext } from '@/app/utils/buildLocalSiteContext';
 import {
@@ -146,7 +150,7 @@ const GLOBAL_SUMMARY =
 const LOCAL_HIGHLIGHT = 'well below the local reference';
 
 /** The phrase highlighted in each mode's assistant summary. */
-export const EXAMPLE_HIGHLIGHTS: Record<'local' | 'global', string> = {
+export const EXAMPLE_HIGHLIGHTS: Record<InsightMode, string> = {
   global: EXAMPLE_HIGHLIGHT,
   local: LOCAL_HIGHLIGHT,
 };
@@ -160,7 +164,7 @@ export const EXAMPLE_HIGHLIGHTS: Record<'local' | 'global', string> = {
  * workedExample.spec.ts), and they avoid "health" framing, which is blocked
  * until the prompt-level fix (GLO-190).
  */
-export const EXAMPLE_INSIGHTS: Record<'local' | 'global', InsightResponse> = {
+export const EXAMPLE_INSIGHTS: Record<InsightMode, InsightResponse> = {
   global: {
     gridCellId: EXAMPLE_TILE_ID,
     text:

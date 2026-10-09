@@ -167,11 +167,10 @@ function AppShell() {
     [posthog],
   );
 
-  // Monitoring-location pins: on by default in Local mode, off in Global
-  // (where they're an opt-in overlay). Local mode forces them on regardless.
-  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(
-    () => entryMode === 'local',
-  );
+  // Monitoring-location pins. Local mode always shows them. In Global they're
+  // an opt-in overlay that starts off however the visitor arrived (direct, or
+  // by switching from Local), and keeps whatever the visitor chooses in Global.
+  const [localSiteLayerEnabled, setLocalSiteLayerEnabled] = useState(false);
   const effectiveLocalSiteLayerEnabled = isLocalMode || localSiteLayerEnabled;
 
   const handleLocalSiteLayerToggle = useCallback((enabled: boolean) => {

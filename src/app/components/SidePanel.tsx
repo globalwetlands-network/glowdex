@@ -184,7 +184,6 @@ export function SidePanel({
                 <LocalWetlandsAnalysisWidget
                   localSites={localSites}
                   localDataUpdated={localDataUpdated}
-                  selectedCell={null}
                   selectedSiteId={selectedSiteId}
                   onSiteSelect={onSiteSelect}
                   localSiteLayerEnabled={localSiteLayerEnabled}
@@ -245,7 +244,6 @@ export function SidePanel({
                           statisticalSummaries={statisticalSummaries}
                           species={speciesConfig}
                           partners={partners}
-                          localSiteContext={localSiteContext}
                         />
                       </div>
                       <SelectionPanel

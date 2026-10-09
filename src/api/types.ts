@@ -36,21 +36,21 @@ export interface LocalSiteContext {
  */
 export type InsightMode = 'local' | 'global';
 
-export interface InsightRequest {
-  mode: InsightMode;
-  /** Required in global mode; never sent in local mode. */
-  gridCellId?: number;
+/**
+ * What an insight is about: a grid cell in global mode, one site's field
+ * monitoring data in local mode — never both, so a request can't blend them.
+ */
+export type InsightSubject =
+  | { mode: 'global'; gridCellId: number }
+  | { mode: 'local'; localSiteContext: LocalSiteContext };
+
+export type InsightRequest = InsightSubject & {
   /** Legacy single-turn question. Prefer messages[] for multi-turn conversations. */
   question?: string;
   /** Multi-turn conversation history including the current user message as the last entry. */
   messages?: ConversationMessage[];
   contextId?: string;
-  /**
-   * Local field monitoring data for the selected site. Required in local
-   * mode; never sent in global mode.
-   */
-  localSiteContext?: LocalSiteContext;
-}
+};
 
 export interface InsightSource {
   citation: string;

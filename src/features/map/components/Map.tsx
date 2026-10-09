@@ -321,6 +321,7 @@ export function GridMap({
 
   const { hoveredCellId, hoverInfo, onHover, onClick } = useMapInteraction({
     onCellSelect: handleCellSelect,
+    enabled: isGlobal,
   });
 
   const captureFirstMapInteraction = useCallback(

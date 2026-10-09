@@ -115,4 +115,19 @@ describe('buildLocalSiteContext', () => {
     expect(warn).toHaveBeenCalledOnce();
     warn.mockRestore();
   });
+
+  it('does not warn about the cap while the partner name is still loading', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const point = makeSite().observations[0];
+    const site = makeSite({
+      observations: Array.from(
+        { length: MAX_LOCAL_AI_CONDITIONS + 2 },
+        (_, i) => ({ ...point, density: i + 1 }),
+      ),
+    });
+
+    expect(buildLocalSiteContext(site, undefined, false)).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });

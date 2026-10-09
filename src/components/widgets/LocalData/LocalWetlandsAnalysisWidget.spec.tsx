@@ -48,7 +48,6 @@ function renderWidget(
   const props = {
     localSites,
     localDataUpdated: null,
-    selectedCell: null,
     selectedSiteId: noDataSite.id,
     onSiteSelect: vi.fn(),
     localSiteLayerEnabled: false,
@@ -127,10 +126,13 @@ describe('LocalWetlandsAnalysisWidget — Local mode (GLO-207)', () => {
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 
-  it('never proximity-associates a site when no cell is passed', () => {
-    const onSiteAssociated = vi.fn();
-    renderWidget({ selectedSiteId: null, onSiteAssociated });
+  it('shows no site until one is explicitly selected (no proximity fallback)', () => {
+    renderWidget({ selectedSiteId: null });
 
-    expect(onSiteAssociated).not.toHaveBeenCalledWith(expect.any(String));
+    expect(
+      screen.getByText(
+        'Select a monitoring location to view local field data.',
+      ),
+    ).toBeInTheDocument();
   });
 });

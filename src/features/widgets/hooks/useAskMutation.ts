@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { fetchInsight } from '@/api';
+import { fetchInsight, insightSubject } from '@/api';
 import { ApiError } from '@/api/client';
 import { useAIAnalytics } from '@/features/analytics';
 import type { Message } from './useChatMessages';
@@ -62,11 +62,15 @@ export function useAskMutation({
     mutationFn: (question: string) => {
       // Each mode needs its own subject: a cell in global mode, the site's
       // field data in local mode.
-      if (mode === 'global' && !selectedCellId) {
-        return Promise.reject(new Error('No cell selected'));
-      }
-      if (mode === 'local' && !localSiteContext) {
-        return Promise.reject(new Error('No monitoring location selected'));
+      const subject = insightSubject(mode, selectedCellId, localSiteContext);
+      if (!subject) {
+        return Promise.reject(
+          new Error(
+            mode === 'local'
+              ? 'No monitoring location selected'
+              : 'No cell selected',
+          ),
+        );
       }
 
       // Trim conversation to stay within backend ArrayMaxSize limit.
@@ -84,13 +88,11 @@ export function useAskMutation({
       ];
 
       return fetchInsight({
-        mode,
-        gridCellId: selectedCellId ?? undefined,
+        ...subject,
         messages: trimmedHistory.map(({ role, content }) => ({
           role,
           content,
         })),
-        localSiteContext: localSiteContext ?? undefined,
       });
     },
 

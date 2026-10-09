@@ -1,5 +1,11 @@
 import posthog from 'posthog-js';
-import type { InsightRequest, InsightResponse } from './types';
+import type {
+  InsightMode,
+  InsightRequest,
+  InsightResponse,
+  InsightSubject,
+  LocalSiteContext,
+} from './types';
 import { apiClient } from './client';
 
 /**
@@ -23,27 +29,41 @@ function getPostHogIdentity(): { distinctId?: string; sessionId?: string } {
 }
 
 /**
+ * The insight subject for `mode`, or null while it isn't available yet (no
+ * cell selected, or the site's field context not built). Callers fetch only
+ * once this is non-null.
+ */
+export function insightSubject(
+  mode: InsightMode,
+  gridCellId: number | null | undefined,
+  localSiteContext: LocalSiteContext | null | undefined,
+): InsightSubject | null {
+  if (mode === 'local') {
+    return localSiteContext ? { mode, localSiteContext } : null;
+  }
+  return gridCellId != null ? { mode, gridCellId } : null;
+}
+
+/**
  * Fetch insights from the AI backend for a grid cell (global mode) or a
  * monitoring site (local mode). Supports both single-turn (question) and
  * multi-turn (messages[]) requests.
  *
  * Each mode sends only its own subject so the backend can never blend them:
- * global omits localSiteContext, local omits gridCellId.
+ * global omits localSiteContext, local omits gridCellId. The types already
+ * forbid mixing them; this also holds for an untyped caller.
  */
-export async function fetchInsight({
-  mode,
-  gridCellId,
-  question,
-  messages,
-  contextId,
-  localSiteContext,
-}: InsightRequest): Promise<InsightResponse> {
+export async function fetchInsight(
+  request: InsightRequest,
+): Promise<InsightResponse> {
+  const { question, messages, contextId } = request;
   const body: Record<string, unknown> = {
-    mode,
-    ...(mode === 'global' ? { gridCellId } : {}),
+    mode: request.mode,
+    ...(request.mode === 'global'
+      ? { gridCellId: request.gridCellId }
+      : { localSiteContext: request.localSiteContext }),
     question,
     messages,
-    ...(mode === 'local' && localSiteContext ? { localSiteContext } : {}),
     // Forwarded to the backend AnalyticsInterceptor for AI event attribution.
     ...getPostHogIdentity(),
   };

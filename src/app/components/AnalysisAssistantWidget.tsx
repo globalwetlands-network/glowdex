@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchInsight } from '@/api';
+import { skipToken, useQuery } from '@tanstack/react-query';
+import { fetchInsight, insightSubject } from '@/api';
 import { ChatInterface } from '@/features/widgets/components/ChatInterface';
 import type {
   InsightMode,
@@ -73,6 +73,7 @@ export function AnalysisAssistantWidget({
   const cellId = isLocal ? null : (selectedCellId ?? null);
   const siteId = isLocal ? (selectedSiteId ?? null) : null;
   const isStatic = staticInsight !== undefined;
+  const subject = insightSubject(mode, cellId, localSiteContext);
 
   const { captureInsightLoaded, captureErrorOccurred } = useAIAnalytics({
     mode,
@@ -95,8 +96,10 @@ export function AnalysisAssistantWidget({
     error: initialError,
   } = useQuery({
     // Keyed per mode so a cached global answer is never served in local
-    // mode (or vice versa). `year` keeps local answers distinct per
-    // monitoring year once more than one is available.
+    // mode (or vice versa). Local answers are keyed on the whole site
+    // context the request sends (partner name, conditions, year), so a
+    // corrected partner name or refreshed field data fetches a new answer
+    // instead of reusing one built from the old data.
     queryKey: [
       'insight',
       {
@@ -104,23 +107,18 @@ export function AnalysisAssistantWidget({
         mode,
         gridCellId: cellId,
         siteId,
-        year: isLocal ? (localSiteContext?.year ?? null) : null,
+        localSiteContext: isLocal ? (localSiteContext ?? null) : null,
       },
     ],
-    queryFn: () =>
-      isLocal
-        ? fetchInsight({ mode, localSiteContext: localSiteContext! })
-        : fetchInsight({ mode, gridCellId: cellId! }),
+    // Skipped until the mode's subject exists (a cell, or the site's field
+    // data).
+    queryFn: subject ? () => fetchInsight(subject) : skipToken,
     // Never fetches for a static showcase (`staticInsight`).
-    // Global: needs a cell, and is suppressed during version skew so we
-    // never answer from a backend context that disagrees with the map.
-    // Local: needs the site's field data, and waits for partners data so
-    // the AI gets the full institution name rather than an id slug.
-    enabled:
-      !isStatic &&
-      (isLocal
-        ? !!localSiteContext && !isLocalContextPending
-        : !!cellId && !dataSkewed),
+    // Global: suppressed during version skew so we never answer from a
+    // backend context that disagrees with the map.
+    // Local: waits for partners data so the AI gets the full institution
+    // name rather than an id slug.
+    enabled: !isStatic && (isLocal ? !isLocalContextPending : !dataSkewed),
   });
 
   useEffect(() => {
@@ -155,7 +153,11 @@ export function AnalysisAssistantWidget({
     );
   }
 
-  if (isInsightLoading && !initialInsight) {
+  // A selected site waiting on partner data (for the full institution name)
+  // is still loading, not "nothing selected".
+  const isAwaitingLocalContext = isLocal && !!siteId && !!isLocalContextPending;
+
+  if ((isInsightLoading || isAwaitingLocalContext) && !initialInsight) {
     return (
       <div className="flex flex-col items-center justify-center h-48 text-gray-400">
         <style>{`

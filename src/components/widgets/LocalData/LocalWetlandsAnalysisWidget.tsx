@@ -2,16 +2,14 @@
  * LocalWetlandsAnalysisWidget
  *
  * Displays partner-collected local field data for the
- * monitoring site associated with the selected grid cell.
- *
- * Sits below GlobalWetlandsAnalysisWidget in the Analysis
- * tab. Only renders when a monitoring site falls within
- * the distance threshold of the selected cell.
+ * selected monitoring site. Renders in Local mode's Analysis
+ * tab (GLO-207) and in the landing page's read-only showcase.
  *
  * Data flow:
  * - Receives localSites from DataContext via SidePanel
- * - Finds the nearest site to the selected cell using
- *   findNearestSite with a distance threshold
+ * - Shows the explicitly selected site (`selectedSiteId`,
+ *   from a pin click or the dropdowns). There is no
+ *   proximity fallback: a grid cell never picks a site.
  * - Shows site name, country, partner link, inactive year
  *   selector, crab density chart, and species composition
  *   trigger
@@ -26,23 +24,13 @@
  * render partner website links.
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
-import type { EnrichedGridCell } from '@/app/types/app.types';
-import { findNearestSite } from '@/utils/geo';
-import { MAX_SITE_ASSOCIATION_DISTANCE_KM } from '@/data/constants/localWetlands.constants';
 import { usePartners } from '@/api/hooks/usePartners';
 import { SiteConditionChart } from './SiteConditionChart';
 import { SpeciesCompositionTrigger } from './SpeciesCompositionTrigger';
-
-/**
- * TODO: Pre-filter localSites by country or bounding box
- * before calling findNearestSite when the dataset grows
- * beyond a handful of sites — the current O(n) scan across
- * all sites globally is acceptable for small datasets.
- */
 
 /**
  * Formats an ISO date (YYYY-MM-DD) as "Mon YYYY" for the
@@ -75,30 +63,15 @@ interface LocalWetlandsAnalysisWidgetProps {
   /** ISO date local data was last refreshed, or null if unavailable. */
   localDataUpdated: string | null;
   /**
-   * Selected grid cell, used for proximity association. Local mode
-   * (GLO-207) passes null so a site is only ever chosen explicitly.
-   */
-  selectedCell?: EnrichedGridCell | null;
-  /**
    * Active site ID — single source of truth owned by
-   * App.tsx. Set by map pin clicks and dropdown
-   * interactions (via onSiteSelect). Cleared on cell
-   * select or clear selection so the widget reverts to
-   * proximity association.
-   * null when no explicit selection has been made.
+   * App.tsx (the `?site=` param). Set by map pin clicks and
+   * dropdown interactions (via onSiteSelect). null when no
+   * site has been selected.
    */
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
-  /**
-   * Called when a site is automatically associated with
-   * the selected cell via proximity. Allows App.tsx to
-   * compute localSiteContext for the AI even when no
-   * explicit site selection has been made.
-   * Called with null when no site is in proximity range.
-   */
-  onSiteAssociated?: (siteId: string | null) => void;
   /**
    * Hides the map-layer switch. Local mode (GLO-207) forces the
    * monitoring-location pins on, so there is nothing to toggle.
@@ -233,12 +206,10 @@ function LocationSelectors({
 export function LocalWetlandsAnalysisWidget({
   localSites,
   localDataUpdated,
-  selectedCell = null,
   selectedSiteId,
   onSiteSelect,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
-  onSiteAssociated,
   hideLayerToggle = false,
   readOnly = false,
 }: LocalWetlandsAnalysisWidgetProps) {
@@ -260,69 +231,39 @@ export function LocalWetlandsAnalysisWidget({
    */
   const [selectedYear] = useState<number | null>(null);
 
-  // associatedSiteResult must be defined before activeSitesForSelector.
-  // Returns the site and distanceKm when proximity-associated so the
-  // analytics event can include the distance; distanceKm is null for
-  // explicit (non-proximity) selections.
-  const associatedSiteResult = useMemo(() => {
-    // External selection (map pin click or dropdown)
-    // takes priority — fully controlled by App.tsx
-    // via selectedSiteId prop.
-    if (selectedSiteId) {
-      const site = localSites.find((s) => s.id === selectedSiteId) ?? null;
-      return site ? { site, distanceKm: null, isProximity: false } : null;
-    }
-
-    // Fall back to proximity association when no
-    // explicit selection has been made.
-    if (!selectedCell?.centerCoords || !localSites.length) {
-      return null;
-    }
-
-    const result = findNearestSite(
-      selectedCell.centerCoords.latitude,
-      selectedCell.centerCoords.longitude,
-      localSites,
-    );
-
-    if (!result || result.distanceKm > MAX_SITE_ASSOCIATION_DISTANCE_KM) {
-      return null;
-    }
-
-    return {
-      site: result.site,
-      distanceKm: result.distanceKm,
-      isProximity: true,
-    };
-  }, [selectedCell, localSites, selectedSiteId]);
-
-  const associatedSite = associatedSiteResult?.site ?? null;
+  // Must be defined before activeSitesForSelector.
+  const selectedSite = useMemo(
+    () =>
+      selectedSiteId
+        ? (localSites.find((s) => s.id === selectedSiteId) ?? null)
+        : null,
+    [localSites, selectedSiteId],
+  );
 
   const availableCountries = useMemo(() => {
     return [...new Set(localSites.map((s) => s.country))].sort();
   }, [localSites]);
 
   const activeSitesForSelector = useMemo(() => {
-    const country = associatedSite?.country ?? null;
+    const country = selectedSite?.country ?? null;
     if (!country) return [];
     return localSites.filter((s) => s.country === country);
-  }, [localSites, associatedSite]);
+  }, [localSites, selectedSite]);
 
   const activeYear = useMemo(() => {
-    if (!associatedSite) return null;
-    if (selectedYear && associatedSite.availableYears.includes(selectedYear)) {
+    if (!selectedSite) return null;
+    if (selectedYear && selectedSite.availableYears.includes(selectedYear)) {
       return selectedYear;
     }
-    return associatedSite.availableYears.at(-1) ?? null;
-  }, [associatedSite, selectedYear]);
+    return selectedSite.availableYears.at(-1) ?? null;
+  }, [selectedSite, selectedYear]);
 
   const partner = useMemo(() => {
-    if (!associatedSite?.partnerId || !partnersData?.partners) return null;
+    if (!selectedSite?.partnerId || !partnersData?.partners) return null;
     return (
-      partnersData.partners.find((p) => p.id === associatedSite.partnerId) ??
-      null
+      partnersData.partners.find((p) => p.id === selectedSite.partnerId) ?? null
     );
-  }, [associatedSite, partnersData]);
+  }, [selectedSite, partnersData]);
 
   const handleSiteSelect = useCallback(
     (siteId: string) => {
@@ -335,14 +276,14 @@ export function LocalWetlandsAnalysisWidget({
           site_country: site?.country ?? null,
           partner_id: site?.partnerId ?? null,
           trigger_source: 'site_dropdown',
-          had_cell_selected: !!selectedCell,
+          mode: 'local',
         });
       } catch (error) {
         console.error('Failed to capture local_site_selected event:', error);
       }
       onSiteSelect(siteId);
     },
-    [localSites, onSiteSelect, posthog, selectedCell],
+    [localSites, onSiteSelect, posthog],
   );
 
   const handleLayerToggle = useCallback(() => {
@@ -370,7 +311,7 @@ export function LocalWetlandsAnalysisWidget({
             site_country: firstSite.country,
             partner_id: firstSite.partnerId ?? null,
             trigger_source: 'country_dropdown',
-            had_cell_selected: !!selectedCell,
+            mode: 'local',
           });
         } catch (error) {
           console.error('Failed to capture local_site_selected event:', error);
@@ -380,40 +321,10 @@ export function LocalWetlandsAnalysisWidget({
         console.warn(`No sites found for country "${country}"`);
       }
     },
-    [localSites, onSiteSelect, posthog, selectedCell],
+    [localSites, onSiteSelect, posthog],
   );
 
-  useEffect(() => {
-    if (!onSiteAssociated) return;
-    // Only fire for proximity associations —
-    // explicit selections are already handled by
-    // handleSiteSelect → onSiteSelect in App.tsx.
-    if (!selectedSiteId) {
-      onSiteAssociated(associatedSite?.id ?? null);
-    }
-  }, [associatedSite, selectedSiteId, onSiteAssociated]);
-
-  useEffect(() => {
-    if (!associatedSiteResult?.isProximity || !associatedSite) return;
-    try {
-      posthog?.capture('local_site_proximity_associated', {
-        site_id: associatedSite.id,
-        site_name: associatedSite.name,
-        site_country: associatedSite.country,
-        partner_id: associatedSite.partnerId ?? null,
-        distance_km: associatedSiteResult.distanceKm,
-        cell_id:
-          selectedCell?.id !== undefined ? String(selectedCell.id) : null,
-      });
-    } catch (error) {
-      console.error(
-        'Failed to capture local_site_proximity_associated event:',
-        error,
-      );
-    }
-  }, [associatedSiteResult, associatedSite, selectedCell, posthog]);
-
-  if (!associatedSite) {
+  if (!selectedSite) {
     return (
       <div className="space-y-3">
         <SectionHeader
@@ -445,7 +356,7 @@ export function LocalWetlandsAnalysisWidget({
         </div>
 
         {/* Site selector — shown once a site is selected (country is known) */}
-        {associatedSite && (
+        {selectedSite && (
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-gray-500">
               Monitoring location
@@ -484,8 +395,8 @@ export function LocalWetlandsAnalysisWidget({
         <LocationSelectors
           availableCountries={availableCountries}
           activeSitesForSelector={activeSitesForSelector}
-          selectedCountry={associatedSite.country}
-          selectedSiteValue={selectedSiteId ?? associatedSite.id}
+          selectedCountry={selectedSite.country}
+          selectedSiteValue={selectedSiteId ?? selectedSite.id}
           onCountryChange={handleCountryChange}
           onSiteSelect={handleSiteSelect}
           disabled={readOnly}
@@ -495,9 +406,9 @@ export function LocalWetlandsAnalysisWidget({
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-gray-900">
-              {associatedSite.name}
+              {selectedSite.name}
             </p>
-            <p className="text-xs text-gray-500">{associatedSite.country}</p>
+            <p className="text-xs text-gray-500">{selectedSite.country}</p>
           </div>
           {partner?.websiteUrl?.startsWith('https://') && (
             <a
@@ -518,9 +429,9 @@ export function LocalWetlandsAnalysisWidget({
     );
   }
 
-  const yearIndex = associatedSite.availableYears.indexOf(activeYear);
+  const yearIndex = selectedSite.availableYears.indexOf(activeYear);
   const yearProgress =
-    yearIndex / Math.max(associatedSite.availableYears.length - 1, 1);
+    yearIndex / Math.max(selectedSite.availableYears.length - 1, 1);
 
   return (
     <div className="space-y-3">
@@ -536,8 +447,8 @@ export function LocalWetlandsAnalysisWidget({
       <LocationSelectors
         availableCountries={availableCountries}
         activeSitesForSelector={activeSitesForSelector}
-        selectedCountry={associatedSite.country}
-        selectedSiteValue={selectedSiteId ?? associatedSite.id}
+        selectedCountry={selectedSite.country}
+        selectedSiteValue={selectedSiteId ?? selectedSite.id}
         onCountryChange={handleCountryChange}
         onSiteSelect={handleSiteSelect}
         disabled={readOnly}
@@ -547,9 +458,9 @@ export function LocalWetlandsAnalysisWidget({
       <div className="flex items-center justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-gray-900">
-            {associatedSite.name}
+            {selectedSite.name}
           </p>
-          <p className="text-xs text-gray-500">{associatedSite.country}</p>
+          <p className="text-xs text-gray-500">{selectedSite.country}</p>
         </div>
         {/* Only render https:// URLs — http:// links are
             silently dropped as a security precaution.
@@ -588,7 +499,7 @@ export function LocalWetlandsAnalysisWidget({
 
       {/* Crab density chart */}
       <SiteConditionChart
-        observations={associatedSite.observations}
+        observations={selectedSite.observations}
         year={activeYear}
       />
 

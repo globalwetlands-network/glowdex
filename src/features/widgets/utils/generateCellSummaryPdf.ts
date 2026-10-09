@@ -211,40 +211,6 @@ export async function generateCellSummaryPdf(
     }
   }
 
-  // --- Local monitoring ---
-  heading('Local monitoring data');
-  const local = summary.localMonitoring;
-  if (!local) {
-    paragraph('No local field-monitoring data is associated with this tile.', {
-      italic: true,
-      color: [110, 110, 110],
-    });
-  } else {
-    labelValue('Site', `${local.siteName}, ${local.country}`);
-    labelValue('Partner', local.partner);
-    labelValue('Most recent year', String(local.year));
-    y += LINE * 0.3;
-    autoTable(doc, {
-      startY: y,
-      margin: { left: MARGIN, right: MARGIN },
-      head: [['Condition', 'Density', 'Std. error', 'Samples']],
-      body: local.conditions.map((c) =>
-        [
-          c.siteType,
-          formatNumber(c.totalDensity),
-          formatNumber(c.combinedSE),
-          String(c.samplesN),
-        ].map(sanitizePdfText),
-      ),
-      styles: { fontSize: 9, cellPadding: 4, textColor: [40, 40, 40] },
-      headStyles: { fillColor: BRAND_GREEN, textColor: [255, 255, 255] },
-      alternateRowStyles: { fillColor: [244, 248, 246] },
-    });
-    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } })
-      .lastAutoTable?.finalY;
-    y = (finalY ?? y) + LINE;
-  }
-
   // --- Source / citation ---
   heading('Source');
   paragraph(summary.citation, { size: 8, color: [110, 110, 110] });

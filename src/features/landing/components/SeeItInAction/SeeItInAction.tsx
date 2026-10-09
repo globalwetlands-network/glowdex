@@ -95,7 +95,6 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
           <LocalWetlandsAnalysisWidget
             localSites={EXAMPLE_LOCAL_SITES}
             localDataUpdated={EXAMPLE_LOCAL_UPDATED}
-            selectedCell={EXAMPLE_CELL}
             selectedSiteId={EXAMPLE_LOCAL_SITE.id}
             onSiteSelect={noop}
             localSiteLayerEnabled={false}

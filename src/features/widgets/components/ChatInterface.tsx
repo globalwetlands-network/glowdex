@@ -349,10 +349,16 @@ export function ChatInterface({
                         </span>
                       ) : null;
                     }
+                    const label = source?.citation ?? SIEVERS_2021_LABEL;
+                    // A local source without a DOI has nothing to link to;
+                    // falling back to the Sievers DOI would credit the
+                    // global paper for a local answer.
+                    if (isLocal && !source?.doi) {
+                      return <span>{label}</span>;
+                    }
                     const href = source?.doi
                       ? `https://doi.org/${source.doi}`
                       : SIEVERS_2021_DOI;
-                    const label = source?.citation ?? SIEVERS_2021_LABEL;
                     return (
                       <a
                         href={href}

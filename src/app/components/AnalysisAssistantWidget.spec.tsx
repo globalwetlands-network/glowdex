@@ -6,7 +6,10 @@ import { fetchDatasetMeta } from '@/api/meta';
 import type { InsightResponse } from '@/api/types';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 
-vi.mock('@/api', () => ({ fetchInsight: vi.fn() }));
+vi.mock('@/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api')>()),
+  fetchInsight: vi.fn(),
+}));
 vi.mock('@/api/meta', () => ({ fetchDatasetMeta: vi.fn() }));
 vi.mock('posthog-js/react', () => ({
   usePostHog: () => ({ capture: vi.fn() }),

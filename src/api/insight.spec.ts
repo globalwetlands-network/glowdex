@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchInsight } from './insight';
+import { fetchInsight, insightSubject } from './insight';
 import { apiClient } from './client';
-import type { LocalSiteContext } from './types';
+import type { InsightRequest, LocalSiteContext } from './types';
 
 vi.mock('./client', () => ({ apiClient: vi.fn().mockResolvedValue({}) }));
 vi.mock('posthog-js', () => ({ default: {} }));
@@ -26,7 +26,12 @@ describe('fetchInsight (GLO-207 mode separation)', () => {
   afterEach(() => vi.clearAllMocks());
 
   it('global mode sends mode + gridCellId and never localSiteContext', async () => {
-    await fetchInsight({ mode: 'global', gridCellId: 18684, localSiteContext });
+    // Both subjects, as an untyped caller could send: only global's goes out.
+    await fetchInsight({
+      mode: 'global',
+      gridCellId: 18684,
+      localSiteContext,
+    } as InsightRequest);
 
     const body = sentBody();
     expect(body.mode).toBe('global');
@@ -35,7 +40,11 @@ describe('fetchInsight (GLO-207 mode separation)', () => {
   });
 
   it('local mode sends mode + localSiteContext and never gridCellId', async () => {
-    await fetchInsight({ mode: 'local', gridCellId: 18684, localSiteContext });
+    await fetchInsight({
+      mode: 'local',
+      gridCellId: 18684,
+      localSiteContext,
+    } as InsightRequest);
 
     const body = sentBody();
     expect(body.mode).toBe('local');
@@ -53,5 +62,30 @@ describe('fetchInsight (GLO-207 mode separation)', () => {
       'siteName',
       'year',
     ]);
+  });
+});
+
+describe('insightSubject', () => {
+  it('is the cell in global mode and the site context in local mode', () => {
+    expect(insightSubject('global', 18684, localSiteContext)).toEqual({
+      mode: 'global',
+      gridCellId: 18684,
+    });
+    expect(insightSubject('local', 18684, localSiteContext)).toEqual({
+      mode: 'local',
+      localSiteContext,
+    });
+  });
+
+  it("is null until the mode's own subject exists", () => {
+    expect(insightSubject('global', null, localSiteContext)).toBeNull();
+    expect(insightSubject('local', 18684, null)).toBeNull();
+  });
+
+  it('accepts cell 0 (a valid id, not "no cell")', () => {
+    expect(insightSubject('global', 0, null)).toEqual({
+      mode: 'global',
+      gridCellId: 0,
+    });
   });
 });
