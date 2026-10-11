@@ -132,17 +132,6 @@ export function SidePanel({
       {/* Tab Strip */}
       <div className="hidden md:flex border-b border-gray-200 shrink-0">
         <button
-          onClick={() => onTabChange('biodiversity')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
-            activeTab === 'biodiversity'
-              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Leaf size={16} />
-          Biodiversity
-        </button>
-        <button
           onClick={() => onTabChange('analysis')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
             activeTab === 'analysis'
@@ -160,6 +149,17 @@ export function SidePanel({
               />
             )}
           </span>
+        </button>
+        <button
+          onClick={() => onTabChange('biodiversity')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
+            activeTab === 'biodiversity'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Leaf size={16} />
+          Biodiversity
         </button>
       </div>
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { CountryOption } from '../utils/siteAvailability';
 
@@ -21,8 +22,15 @@ interface LocationSelectorProps {
 
 const DATA_TO_COME = ' · data to come';
 
+// Native arrow hidden (appearance-none) and replaced by a chevron with room
+// to breathe; pr-9 keeps long names clear of it.
 const SELECT_CLASS =
-  'h-[38px] w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-2.5 text-[13px] font-medium text-gray-900 focus:border-glowdex-green focus:outline-none focus:ring-[3px] focus:ring-glowdex-green/15 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-[#c0c4cc]';
+  'peer h-[38px] w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white pl-2.5 pr-9 text-[13px] font-medium focus:border-glowdex-green focus:outline-none focus:ring-[3px] focus:ring-glowdex-green/15 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-[#c0c4cc]';
+
+/** Placeholder grey until a value is chosen (disabled styling overrides). */
+function textColor(value: string): string {
+  return value ? 'text-gray-900' : 'text-gray-400';
+}
 
 interface FieldProps {
   id: string;
@@ -39,7 +47,14 @@ function Field({ id, label, children }: FieldProps) {
       >
         {label}
       </label>
-      {children}
+      <div className="relative">
+        {children}
+        <ChevronDown
+          size={14}
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 peer-disabled:text-[#c0c4cc]"
+        />
+      </div>
     </div>
   );
 }
@@ -72,7 +87,7 @@ export function LocationSelector({
           id="local-continent"
           value={continent}
           onChange={(e) => onContinentChange(e.target.value)}
-          className={`${SELECT_CLASS} ${continent ? '' : 'text-gray-400'}`}
+          className={`${SELECT_CLASS} ${textColor(continent)}`}
         >
           <option value="" disabled>
             Select continent
@@ -91,7 +106,7 @@ export function LocationSelector({
           value={country}
           onChange={(e) => onCountryChange(e.target.value)}
           disabled={!continent}
-          className={SELECT_CLASS}
+          className={`${SELECT_CLASS} ${textColor(country)}`}
         >
           <option value="" disabled>
             Select country
@@ -111,7 +126,7 @@ export function LocationSelector({
           value={siteId}
           onChange={(e) => onLocationChange(e.target.value)}
           disabled={!country}
-          className={SELECT_CLASS}
+          className={`${SELECT_CLASS} ${textColor(siteId)}`}
         >
           <option value="" disabled>
             Select location

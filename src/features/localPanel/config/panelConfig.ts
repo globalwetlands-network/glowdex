@@ -34,7 +34,7 @@ export function viewLabel(view: CrabView, comparesSiteTypes: boolean): string {
  * for these metrics replaces the native CSV chart at that location, so only
  * one set of numbers is on screen. The CSV and the plot values differ (e.g.
  * Australia CSV 13.6 / 45.6 / 28 crabs per m² vs about 23 / 72 / 44 in the
- * plot) and the difference is unresolved with Rod and Diego.
+ * plot) and the difference is unresolved with the data partners.
  */
 export const PLOT_SUPERSEDES_NATIVE_METRICS: readonly CrabMetric[] = [
   'density',

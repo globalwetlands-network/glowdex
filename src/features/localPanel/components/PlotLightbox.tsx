@@ -31,6 +31,16 @@ export function PlotLightbox({
     else dialog.setAttribute('open', '');
   }, []);
 
+  /**
+   * Closes through the native dialog so the browser returns focus to the
+   * control that opened it, then tells the parent to unmount.
+   */
+  function requestClose(): void {
+    const dialog = dialogRef.current;
+    if (dialog?.open && typeof dialog.close === 'function') dialog.close();
+    onClose();
+  }
+
   const titleId = `lightbox-title-${plot.id}`;
 
   return (
@@ -38,9 +48,18 @@ export function PlotLightbox({
       ref={dialogRef}
       aria-labelledby={titleId}
       onClose={onClose}
-      // A click on the backdrop lands on the <dialog> itself.
+      // Backdrop clicks land on the <dialog> itself, but so do clicks on
+      // its own blank area (the phone sheet fills the screen), so only a
+      // click outside the dialog's box counts as the backdrop.
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target !== e.currentTarget) return;
+        const box = e.currentTarget.getBoundingClientRect();
+        const outside =
+          e.clientX < box.left ||
+          e.clientX > box.right ||
+          e.clientY < box.top ||
+          e.clientY > box.bottom;
+        if (outside) requestClose();
       }}
       className="m-0 h-full max-h-none w-full max-w-none bg-white p-0 backdrop:bg-gray-900/55 md:m-auto md:h-auto md:max-h-[calc(100dvh-64px)] md:w-[980px] md:max-w-[calc(100vw-64px)] md:rounded-[14px] md:shadow-2xl"
     >
@@ -60,7 +79,7 @@ export function PlotLightbox({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border border-gray-300 px-3 py-1.5 text-[12px] font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-glowdex-green/40"
           >
             <X size={12} aria-hidden="true" />

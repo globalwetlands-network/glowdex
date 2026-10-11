@@ -1,7 +1,7 @@
 /**
  * Demo plot manifest (GLO-221).
  *
- * Diego Gloria's plots (Plots_For_App_Oct2026), shown as a preview behind the
+ * Partner-supplied plots (Plots_For_App_Oct2026), shown as a preview behind the
  * `local-demo-plots` flag until the underlying data tables arrive and native
  * charts replace them. The PNGs are used exactly as delivered: never crop,
  * recolour or relabel them. Some use group labels that differ from our UI

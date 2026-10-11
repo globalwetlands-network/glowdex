@@ -35,6 +35,7 @@ export function hasResults(site: LocalSite, demoOn: boolean): boolean {
 export function comparesSiteTypes(site: LocalSite): boolean {
   const year = latestYear(site);
   const rows = site.observations.filter((o) => o.year === year);
+  if (!rows.length) return false;
   return new Set(rows.map((o) => o.siteType)).size === rows.length;
 }
 

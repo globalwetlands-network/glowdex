@@ -82,8 +82,13 @@ function PanelBody({
     view: CrabView;
   }>(DEFAULT_CRAB);
 
-  // Follow the selected site (pin clicks, "Open", back/forward): show its
-  // continent and country, and start each location on Crabs · Density.
+  // True between this panel asking to clear the site and the URL catching
+  // up, so a clear we caused keeps the continent/country the user just
+  // picked, while a clear from elsewhere (e.g. logo reset) resets them.
+  const [clearingSite, setClearingSite] = useState(false);
+
+  // Follow the selected site (pin clicks, "Open", back/forward, reset): show
+  // its continent and country, and start each location on Crabs · Density.
   const [syncedSiteId, setSyncedSiteId] = useState(selectedSiteId);
   if (selectedSiteId !== syncedSiteId) {
     setSyncedSiteId(selectedSiteId);
@@ -92,7 +97,11 @@ function PanelBody({
       setCountry(selectedSite.country);
       setSelection({ tab: 'crabs', ...DEFAULT_CRAB });
       setCrabState(DEFAULT_CRAB);
+    } else if (!clearingSite) {
+      setContinent('');
+      setCountry('');
     }
+    setClearingSite(false);
   }
 
   const countries = useMemo(
@@ -140,10 +149,16 @@ function PanelBody({
     onSiteSelect(siteId);
   }
 
+  /** Clears the site from inside the panel, keeping the user's picks. */
+  function clearSite(): void {
+    setClearingSite(true);
+    onSiteClear();
+  }
+
   function handleContinentChange(next: string): void {
     setContinent(next);
     setCountry('');
-    if (selectedSite) onSiteClear();
+    if (selectedSite) clearSite();
   }
 
   function handleCountryChange(next: string): void {
@@ -155,7 +170,7 @@ function PanelBody({
     if (withResults.length === 1) {
       selectSite(withResults[0].id, 'country_dropdown');
     } else if (selectedSite) {
-      onSiteClear();
+      clearSite();
     }
   }
 

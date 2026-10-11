@@ -4,13 +4,6 @@ import { usePostHog } from 'posthog-js/react';
 import type { DemoPlot } from '../demoPlots/manifest';
 import { PlotLightbox } from './PlotLightbox';
 
-/** False inside a display:none subtree (e.g. the hidden layout slot). */
-function isDisplayed(el: HTMLElement): boolean {
-  // jsdom has no layout, so treat "no layout engine" as displayed.
-  if (typeof el.checkVisibility === 'function') return el.checkVisibility();
-  return true;
-}
-
 interface PlotFigureProps {
   plot: DemoPlot;
   /** e.g. "Southern Moreton Bay, Australia". */
@@ -58,29 +51,48 @@ export function PlotFigure({
   }, [plot]);
 
   // Once per view (plot at a location), not per render; the ref also
-  // absorbs StrictMode's double effect run. AppLayout can mount the side
-  // panel twice (mobile and desktop slots), so only the copy that is
-  // actually displayed reports the view.
+  // absorbs StrictMode's double effect run. The view counts when the figure
+  // is first actually on screen: AppLayout can mount the side panel twice
+  // (mobile and desktop slots), and a figure can mount inside a hidden tab
+  // and be shown later, so neither may report on mount alone.
   const figureRef = useRef<HTMLElement>(null);
   const lastViewed = useRef<string | null>(null);
   useEffect(() => {
     const key = `${plot.siteId}/${plot.id}/${analytics.tab}`;
     if (lastViewed.current === key) return;
-    const figure = figureRef.current;
-    if (figure && !isDisplayed(figure)) return;
-    lastViewed.current = key;
-    try {
-      posthog?.capture('demo_plot_viewed', {
-        location_id: plot.siteId,
-        plot_id: plot.id,
-        tab: analytics.tab,
-        metric: analytics.metric,
-        view: analytics.view,
-        mode: 'local',
-      });
-    } catch (error) {
-      console.error('Failed to capture demo_plot_viewed event:', error);
+
+    /** Sends demo_plot_viewed once for this key. */
+    function report(): void {
+      if (lastViewed.current === key) return;
+      lastViewed.current = key;
+      try {
+        posthog?.capture('demo_plot_viewed', {
+          location_id: plot.siteId,
+          plot_id: plot.id,
+          tab: analytics.tab,
+          metric: analytics.metric,
+          view: analytics.view,
+          mode: 'local',
+        });
+      } catch (error) {
+        console.error('Failed to capture demo_plot_viewed event:', error);
+      }
     }
+
+    const figure = figureRef.current;
+    // No layout engine (tests, very old browsers): report on mount.
+    if (!figure || typeof IntersectionObserver === 'undefined') {
+      report();
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        report();
+        observer.disconnect();
+      }
+    });
+    observer.observe(figure);
+    return () => observer.disconnect();
   }, [plot, analytics.tab, analytics.metric, analytics.view, posthog]);
 
   const byline = `${plot.credit} · ${locationLabel}`;

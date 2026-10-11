@@ -282,18 +282,18 @@ function AppShell() {
     [localSites, posthog, selectedCellId, replaceSiteParam],
   );
 
-  /**
-   * Opens a site from Global mode by cross-linking to
-   * `?mode=local&site=<id>`. The URL change alone selects the site (see
-   * selectedSiteId) and masks the grid cell, so the transition never
-   * carries global cell data into the local view.
-   */
   /** Clears the selected site; the Local panel calls this on a new country. */
   const handleSiteClear = useCallback(
     () => replaceSiteParam(null),
     [replaceSiteParam],
   );
 
+  /**
+   * Opens a site from Global mode by cross-linking to
+   * `?mode=local&site=<id>`. The URL change alone selects the site (see
+   * selectedSiteId) and masks the grid cell, so the transition never
+   * carries global cell data into the local view.
+   */
   const handleEnterLocalSite = useCallback(
     (siteId: string) => {
       enterLocalSite(siteId);

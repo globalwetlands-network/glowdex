@@ -273,6 +273,35 @@ describe('LocalAnimalPanel', () => {
       expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
     });
 
+    it('closes through the native dialog and ignores clicks on its own blank area', async () => {
+      const close = vi.fn(function (this: HTMLDialogElement) {
+        this.removeAttribute('open');
+      });
+      const proto = HTMLDialogElement.prototype as unknown as {
+        close?: () => void;
+      };
+      const original = proto.close;
+      proto.close = close;
+      try {
+        renderPanel('au-moreton-bay');
+        await screen.findByRole('img');
+        fireEvent.click(pill(/Expand/));
+        const dialog = screen.getByRole('dialog', { hidden: true });
+        // jsdom has no layout: the box is 0×0 at the origin, so a click
+        // at (0, 0) is "inside" it, like a tap on the phone sheet.
+        fireEvent.click(dialog, { clientX: 0, clientY: 0 });
+        expect(
+          screen.getByRole('dialog', { hidden: true }),
+        ).toBeInTheDocument();
+        // Outside the box is the backdrop.
+        fireEvent.click(dialog, { clientX: 500, clientY: 500 });
+        expect(close).toHaveBeenCalled();
+        expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
+      } finally {
+        proto.close = original;
+      }
+    });
+
     it('never upscales the small nMDS image', async () => {
       renderPanel('au-moreton-bay');
       fireEvent.click(pill(/Wildlife/));
@@ -348,6 +377,51 @@ describe('LocalAnimalPanel', () => {
           /Results available: Australia, Costa Rica, Philippines and South Africa\./,
         ),
       ).toBeInTheDocument();
+    });
+
+    it('resets the selector when the site is cleared from outside (logo reset)', () => {
+      const { rerender, onSiteSelect, onSiteClear } =
+        renderPanel('au-moreton-bay');
+      expect(screen.getByLabelText('Country')).toHaveValue('Australia');
+      rerender(
+        <LocalAnimalPanel
+          localSites={SITES}
+          selectedSiteId={null}
+          onSiteSelect={onSiteSelect}
+          onSiteClear={onSiteClear}
+        />,
+      );
+      expect(screen.getByLabelText('Continent')).toHaveValue('');
+      expect(screen.getByLabelText('Country')).toHaveValue('');
+      expect(screen.getByLabelText('Country')).toBeDisabled();
+    });
+
+    it('keeps the new continent when the panel itself clears the site', () => {
+      const { rerender, onSiteSelect, onSiteClear } =
+        renderPanel('au-moreton-bay');
+      fireEvent.change(screen.getByLabelText('Continent'), {
+        target: { value: 'Africa' },
+      });
+      expect(onSiteClear).toHaveBeenCalled();
+      // The URL catches up: the site is now cleared.
+      rerender(
+        <LocalAnimalPanel
+          localSites={SITES}
+          selectedSiteId={null}
+          onSiteSelect={onSiteSelect}
+          onSiteClear={onSiteClear}
+        />,
+      );
+      expect(screen.getByLabelText('Continent')).toHaveValue('Africa');
+      expect(screen.getByLabelText('Country')).toBeEnabled();
+    });
+
+    it('reads "By site" at a location without rows', () => {
+      renderPanel('hk-wetland-park');
+      expect(pill(/^By site.*not yet available/)).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /By site type/ }),
+      ).not.toBeInTheDocument();
     });
 
     it('clears the site when the continent changes', () => {
