@@ -213,59 +213,36 @@ export function SidePanel({
           <>
             {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
 
-            {/* Location + Assistant cards — only shown when a cell is selected */}
+            {/* Location card — only shown when a cell is selected */}
             {selectedCell && (
-              <div className="space-y-4">
-                {/* Location card */}
-                <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                  <div className="p-4">
-                    <CollapsibleSection
-                      title="Location"
-                      icon={MapPin}
-                      defaultOpen={true}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <button
-                          onClick={onClearSelection}
-                          className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
-                        >
-                          Clear selection
-                        </button>
-                        <DownloadSummaryButton
-                          selectedCell={selectedCell}
-                          scale={filterState.typologyScale}
-                          statisticalSummaries={statisticalSummaries}
-                          species={speciesConfig}
-                          partners={partners}
-                        />
-                      </div>
-                      <SelectionPanel
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Location"
+                    icon={MapPin}
+                    defaultOpen={true}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <button
+                        onClick={onClearSelection}
+                        className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
+                      >
+                        Clear selection
+                      </button>
+                      <DownloadSummaryButton
                         selectedCell={selectedCell}
-                        typologies={typologies}
-                        currentScale={filterState.typologyScale}
+                        scale={filterState.typologyScale}
+                        statisticalSummaries={statisticalSummaries}
+                        species={speciesConfig}
+                        partners={partners}
                       />
-                    </CollapsibleSection>
-                  </div>
-                </div>
-
-                {/* Assistant card */}
-                <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                  <div className="p-4">
-                    <CollapsibleSection
-                      title="Assistant"
-                      icon={CrabIcon}
-                      defaultOpen={true}
-                    >
-                      <AnalysisAssistantWidget
-                        mode="global"
-                        selectedCellId={
-                          activeTab === 'analysis' ? selectedCell?.id : null
-                        }
-                        hasMangrove={selectedCell?.mangroves ?? false}
-                        dataSkewed={dataSkewed}
-                      />
-                    </CollapsibleSection>
-                  </div>
+                    </div>
+                    <SelectionPanel
+                      selectedCell={selectedCell}
+                      typologies={typologies}
+                      currentScale={filterState.typologyScale}
+                    />
+                  </CollapsibleSection>
                 </div>
               </div>
             )}
@@ -310,6 +287,28 @@ export function SidePanel({
                       distributions={distributions}
                       statisticalSummaries={statisticalSummaries}
                       isLoading={isLoading}
+                    />
+                  </CollapsibleSection>
+                </div>
+              </div>
+            )}
+
+            {/* Assistant card — last, after the analysis it answers questions about */}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Assistant"
+                    icon={CrabIcon}
+                    defaultOpen={true}
+                  >
+                    <AnalysisAssistantWidget
+                      mode="global"
+                      selectedCellId={
+                        activeTab === 'analysis' ? selectedCell?.id : null
+                      }
+                      hasMangrove={selectedCell?.mangroves ?? false}
+                      dataSkewed={dataSkewed}
                     />
                   </CollapsibleSection>
                 </div>

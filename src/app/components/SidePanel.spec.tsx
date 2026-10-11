@@ -149,6 +149,16 @@ describe('SidePanel mode gating (GLO-207)', () => {
   });
 
   describe('Global mode', () => {
+    it('puts the assistant last, after the analysis cards', () => {
+      renderPanel({ mode: 'global', selectedCell: cell });
+      const analysis = screen.getByTestId('global-widget');
+      const assistant = screen.getByTestId('assistant-global');
+      expect(
+        analysis.compareDocumentPosition(assistant) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
     it('shows the tile prompt and no local widget when nothing is selected', () => {
       renderPanel({ mode: 'global' });
 
