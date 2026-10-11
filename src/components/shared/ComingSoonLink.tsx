@@ -45,10 +45,31 @@ export function ComingSoonLink({
 }: ComingSoonLinkProps) {
   const posthog = usePostHog();
   const tooltipId = useId();
-  const [open, setOpen] = useState(false);
-  const touchTimer = useRef<number | undefined>(undefined);
+  // Each source is tracked on its own, so e.g. moving the mouse away doesn't
+  // hide the tooltip while the button still has keyboard focus.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [tapped, setTapped] = useState(false);
+  // Esc hides it whatever opened it, until the next hover, focus or tap.
+  const [dismissed, setDismissed] = useState(false);
+  const open = !dismissed && (hovered || focused || tapped);
+  const tapTimer = useRef<number | undefined>(undefined);
+  // Set for the moment between a pointer press and the focus it causes, so
+  // only keyboard focus pins the tooltip open (some browsers focus a button
+  // on click or tap).
+  const pointerPressed = useRef(false);
 
-  useEffect(() => () => window.clearTimeout(touchTimer.current), []);
+  useEffect(() => () => window.clearTimeout(tapTimer.current), []);
+
+  // Listen on the document so Esc also closes a hover-opened tooltip.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setDismissed(true);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open]);
 
   return (
     <span className={`relative inline-block ${wrapperClassName}`}>
@@ -58,28 +79,36 @@ export function ComingSoonLink({
         aria-describedby={tooltipId}
         className={`cursor-help underline decoration-dotted underline-offset-4 ${className}`}
         onPointerEnter={(e) => {
-          if (e.pointerType === 'mouse') setOpen(true);
+          // Mouse and hovering pens; touch has no hover.
+          if (e.pointerType === 'touch') return;
+          setHovered(true);
+          setDismissed(false);
         }}
         onPointerLeave={(e) => {
-          if (e.pointerType === 'mouse') setOpen(false);
+          if (e.pointerType !== 'touch') setHovered(false);
         }}
         onPointerDown={(e) => {
-          // Touch has no hover: a tap shows the tooltip briefly.
-          if (e.pointerType !== 'touch') return;
-          setOpen(true);
-          window.clearTimeout(touchTimer.current);
-          touchTimer.current = window.setTimeout(
-            () => setOpen(false),
+          pointerPressed.current = true;
+          window.setTimeout(() => {
+            pointerPressed.current = false;
+          }, 0);
+          // Touch and pen taps show the tooltip briefly.
+          if (e.pointerType === 'mouse') return;
+          setTapped(true);
+          setDismissed(false);
+          window.clearTimeout(tapTimer.current);
+          tapTimer.current = window.setTimeout(
+            () => setTapped(false),
             TOUCH_TOOLTIP_MS,
           );
         }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') setOpen(false);
+        onFocus={() => {
+          if (pointerPressed.current) return;
+          setFocused(true);
+          setDismissed(false);
         }}
-        onClick={(e) => {
-          e.preventDefault();
+        onBlur={() => setFocused(false)}
+        onClick={() => {
           try {
             posthog?.capture('coming_soon_clicked', {
               target_id: targetId,

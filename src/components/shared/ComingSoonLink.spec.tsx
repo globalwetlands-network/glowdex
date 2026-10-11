@@ -61,27 +61,62 @@ describe('ComingSoonLink', () => {
   it('shows the tooltip on keyboard focus, and Esc and blur close it', () => {
     const { button, tooltip } = renderLink();
 
-    fireEvent.focus(button);
+    act(() => button.focus());
     expect(tooltip).toHaveClass('block');
-    fireEvent.keyDown(button, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(tooltip).toHaveClass('hidden');
 
-    fireEvent.focus(button);
-    fireEvent.blur(button);
+    act(() => button.blur());
+    act(() => button.focus());
+    expect(tooltip).toHaveClass('block');
+    act(() => button.blur());
     expect(tooltip).toHaveClass('hidden');
   });
 
-  it('shows the tooltip for about two seconds after a tap', () => {
-    vi.useFakeTimers();
+  it('keeps the tooltip open while focused when the mouse moves away', () => {
     const { button, tooltip } = renderLink();
 
-    fireEvent.pointerDown(button, { pointerType: 'touch' });
+    act(() => button.focus());
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    fireEvent.pointerLeave(button, { pointerType: 'mouse' });
     expect(tooltip).toHaveClass('block');
-    act(() => vi.advanceTimersByTime(TOUCH_TOOLTIP_MS - 1));
-    expect(tooltip).toHaveClass('block');
-    act(() => vi.advanceTimersByTime(1));
+  });
+
+  it('does not pin the tooltip open on focus from a click or tap', () => {
+    const { button, tooltip } = renderLink();
+
+    fireEvent.pointerDown(button, { pointerType: 'mouse' });
+    act(() => button.focus());
     expect(tooltip).toHaveClass('hidden');
   });
+
+  it('closes a hover-opened tooltip with Esc, without focus', () => {
+    const { button, tooltip } = renderLink();
+
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    expect(tooltip).toHaveClass('block');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(tooltip).toHaveClass('hidden');
+    // The next hover shows it again.
+    fireEvent.pointerLeave(button, { pointerType: 'mouse' });
+    fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+    expect(tooltip).toHaveClass('block');
+  });
+
+  it.each(['touch', 'pen'])(
+    'shows the tooltip for about two seconds after a %s tap',
+    (pointerType) => {
+      vi.useFakeTimers();
+      const { button, tooltip } = renderLink();
+
+      fireEvent.pointerDown(button, { pointerType });
+      expect(tooltip).toHaveClass('block');
+      act(() => vi.advanceTimersByTime(TOUCH_TOOLTIP_MS - 1));
+      expect(tooltip).toHaveClass('block');
+      act(() => vi.advanceTimersByTime(1));
+      expect(tooltip).toHaveClass('hidden');
+    },
+  );
 
   it('does not navigate or change the URL when clicked', () => {
     window.history.replaceState(null, '', '/glowdex/?x=1');
