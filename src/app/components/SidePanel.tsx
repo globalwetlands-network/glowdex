@@ -17,7 +17,7 @@ import { DownloadSummaryButton } from '@/features/widgets/components/DownloadSum
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
-import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
+import { LocalAnimalPanel } from '@/features/localPanel';
 import { BiodiversityPanel } from './BiodiversityPanel';
 import { SelectTilePrompt } from './SelectTilePrompt';
 import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
@@ -55,10 +55,10 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
-  /** ISO date local data was last refreshed, or null if unavailable. */
-  localDataUpdated: string | null;
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
+  /** Clears the selected site (Local panel, when the user changes country). */
+  onSiteClear: () => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
   onViewLocalData: (siteId: string) => void;
@@ -99,9 +99,9 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
-  localDataUpdated,
   selectedSiteId,
   onSiteSelect,
+  onSiteClear,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
   onViewLocalData,
@@ -174,23 +174,16 @@ export function SidePanel({
       >
         {isLocal ? (
           <>
-            {/* Local mode: local wetlands widget + site-scoped assistant only.
-                No grid-cell cards, filters or tile prompt (GLO-207). */}
-            <div
-              ref={localDataRef}
-              className="rounded-xl border border-gray-100 bg-white shadow-sm"
-            >
-              <div className="p-4">
-                <LocalWetlandsAnalysisWidget
-                  localSites={localSites}
-                  localDataUpdated={localDataUpdated}
-                  selectedSiteId={selectedSiteId}
-                  onSiteSelect={onSiteSelect}
-                  localSiteLayerEnabled={localSiteLayerEnabled}
-                  onLocalSiteLayerToggle={onLocalSiteLayerToggle}
-                  hideLayerToggle
-                />
-              </div>
+            {/* Local mode: the local animal panel + site-scoped assistant
+                only. No grid-cell cards, filters or tile prompt (GLO-207,
+                GLO-221). */}
+            <div ref={localDataRef}>
+              <LocalAnimalPanel
+                localSites={localSites}
+                selectedSiteId={selectedSiteId}
+                onSiteSelect={onSiteSelect}
+                onSiteClear={onSiteClear}
+              />
             </div>
 
             {(localSiteContext || isLocalContextPending) && (

@@ -55,7 +55,6 @@ function AppShell() {
     typologies,
     indicators,
     localSites,
-    localDataUpdated,
     isLoading,
     error,
     retry,
@@ -289,6 +288,12 @@ function AppShell() {
    * selectedSiteId) and masks the grid cell, so the transition never
    * carries global cell data into the local view.
    */
+  /** Clears the selected site; the Local panel calls this on a new country. */
+  const handleSiteClear = useCallback(
+    () => replaceSiteParam(null),
+    [replaceSiteParam],
+  );
+
   const handleEnterLocalSite = useCallback(
     (siteId: string) => {
       enterLocalSite(siteId);
@@ -632,9 +637,9 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
-        localDataUpdated={localDataUpdated}
         selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
+        onSiteClear={handleSiteClear}
         localSiteLayerEnabled={effectiveLocalSiteLayerEnabled}
         onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
         // Global: cross-links to Local mode for the site (the local widget
@@ -672,9 +677,9 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
-      localDataUpdated,
       selectedSiteId,
       handleSiteSelect,
+      handleSiteClear,
       openSite,
       effectiveLocalSiteLayerEnabled,
       handleLocalSiteLayerToggle,
@@ -703,6 +708,7 @@ function AppShell() {
     <>
       <WelcomeModal mode={entryMode} />
       <AppLayout
+        mode={entryMode}
         topBar={
           <TopBar
             onLogoClick={handleReset}

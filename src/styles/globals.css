@@ -4,6 +4,10 @@
 @theme {
   --color-glowdex-green: #0a5c47;
   --color-glowdex-teal: #1d9e75;
+  /* Local animal panel (docs/design/local-animal-panel/tokens.json). */
+  --color-glowdex-interactive: #0f6e56;
+  --color-glowdex-interactive-hover: #085041;
+  --color-glowdex-tint: #ecf5f2;
 }
 
 /* Landing page only (LandingPage adds the class to <html> while mounted).
