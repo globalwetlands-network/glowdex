@@ -149,6 +149,20 @@ describe('ChatInterface sources (GLO-207)', () => {
     ).toBeInTheDocument();
   });
 
+  it('global mode treats cell 0 as a real subject, not "no cell"', () => {
+    renderChatWith({
+      mode: 'global',
+      selectedCellId: 0,
+      initialInsight: makeInsight({
+        gridCellId: 0,
+        text: 'Cell zero insight.',
+      }),
+    });
+
+    expect(screen.getByText('Cell zero insight.')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeEnabled();
+  });
+
   it('local mode shows the partner field-monitoring source, never Sievers', () => {
     renderChatWith({
       mode: 'local',

@@ -87,7 +87,10 @@ export function useAIAnalytics({
 
   const baseProps = useMemo(() => {
     const cellId =
-      mode === 'global' && selectedCellId ? String(selectedCellId) : null;
+      // Nullish, not truthy: 0 is a valid cell id (see insightSubject).
+      mode === 'global' && selectedCellId != null
+        ? String(selectedCellId)
+        : null;
     const siteId = mode === 'local' ? (selectedSiteId ?? null) : null;
     if (!cellId && !siteId) return null;
     return { mode, cell_id: cellId, site_id: siteId };

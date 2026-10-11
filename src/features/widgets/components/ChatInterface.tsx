@@ -106,7 +106,7 @@ export function ChatInterface({
     ? localSiteContext
       ? `site-${selectedSiteId ?? localSiteContext.siteName}`
       : null
-    : selectedCellId
+    : selectedCellId != null // 0 is a valid cell id
       ? `cell-${selectedCellId}`
       : null;
 

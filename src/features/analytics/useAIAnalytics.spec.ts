@@ -62,6 +62,19 @@ describe('useAIAnalytics (GLO-207)', () => {
     );
   });
 
+  it('global mode: treats cell 0 as a real subject, not "no cell"', () => {
+    const { result } = renderHook(() =>
+      useAIAnalytics({ mode: 'global', selectedCellId: 0 }),
+    );
+
+    result.current.captureInsightLoaded('text');
+
+    expect(capture).toHaveBeenCalledWith(
+      'ai_insight_loaded',
+      expect.objectContaining({ mode: 'global', cell_id: '0' }),
+    );
+  });
+
   it('skips events when the current mode has no subject', () => {
     const { result } = renderHook(() =>
       useAIAnalytics({ mode: 'local', selectedCellId: 18684 }),

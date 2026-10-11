@@ -21,7 +21,8 @@ export function useSelectedCell(
   geojson: GridGeoJSON | null,
 ): EnrichedGridCell | null {
   return useMemo(() => {
-    if (!selectedCellId || !gridCells || !geojson) {
+    // Nullish, not truthy: 0 is a valid cell id.
+    if (selectedCellId == null || !gridCells || !geojson) {
       return null;
     }
 
