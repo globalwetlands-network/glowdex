@@ -19,9 +19,9 @@ import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
 import { LocalAnimalPanel } from '@/features/localPanel';
 import { BiodiversityPanel } from './BiodiversityPanel';
-import { SelectTilePrompt } from './SelectTilePrompt';
+import { GlobalEmptyStateGuide } from './GlobalEmptyStateGuide';
+import { markTileGuideSeen } from './tileGuideSeen';
 import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
-import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 import type { EntryMode } from '../hooks/useEntryMode';
 
@@ -121,6 +121,12 @@ export function SidePanel({
     scrollToLocalDataSignal,
   );
 
+  // The first real tile selection switches the Global empty state guide
+  // from the looping demo to static steps on later visits.
+  useEffect(() => {
+    if (selectedCell) markTileGuideSeen();
+  }, [selectedCell]);
+
   useEffect(() => {
     if (activeTab === 'analysis') {
       window.dispatchEvent(new Event('resize'));
@@ -211,7 +217,7 @@ export function SidePanel({
           </>
         ) : (
           <>
-            {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+            {!selectedCell && <GlobalEmptyStateGuide />}
 
             {/* Location card — only shown when a cell is selected */}
             {selectedCell && (
