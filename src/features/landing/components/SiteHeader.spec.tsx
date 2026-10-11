@@ -18,20 +18,23 @@ function renderHeader(transparent?: boolean) {
 describe('SiteHeader', () => {
   afterEach(() => vi.mocked(preloadMapApp).mockClear());
 
-  it('renders the wordmark, the three nav links and the map CTA', () => {
+  it('renders the wordmark, the section nav links and the map CTA', () => {
     renderHeader();
 
     expect(screen.getByText('MBCAM')).toBeInTheDocument();
     const nav = within(screen.getByRole('navigation', { name: 'Main' }));
-    expect(nav.getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'About',
-      'Methods',
-      'FAQ',
+    // In-page sections only, so every header link works (GLO-210).
+    expect(
+      nav
+        .getAllByRole('link')
+        .map((link) => [link.textContent, link.getAttribute('href')]),
+    ).toEqual([
+      ['See it in action', '#see-it-in-action'],
+      ['How it works', '#how-it-works'],
+      ['Partners', '#partners'],
+      ['FAQ', '#faq'],
     ]);
-    expect(nav.getByRole('link', { name: 'FAQ' })).toHaveAttribute(
-      'href',
-      '#faq',
-    );
+    expect(nav.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /open the map/i })).toHaveAttribute(
       'href',
       '/map',

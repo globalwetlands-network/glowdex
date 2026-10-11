@@ -25,9 +25,10 @@ describe('Partners', () => {
     expect(
       section.getByText(/and more partners across 17 countries/i),
     ).toBeVisible();
-    expect(
-      section.getByRole('link', { name: /see all partners/i }),
-    ).toBeVisible();
+    // "Coming soon" until the partners page exists (GLO-210).
+    const seeAll = section.getByRole('button', { name: /see all partners/i });
+    expect(seeAll).toBeVisible();
+    expect(seeAll).toHaveAccessibleDescription('Coming soon');
   });
 
   it('shows a logo only for confirmed partners, and a name tile otherwise', () => {

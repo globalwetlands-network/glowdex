@@ -4,6 +4,7 @@ import griffithLogo from '@/assets/partners/griffith.png';
 import iiserKolkataLogo from '@/assets/partners/iiser-kolkata.png';
 import ucrLogo from '@/assets/partners/ucr.png';
 import uwcLogo from '@/assets/partners/uwc.png';
+import type { SiteDestinationId } from '@/constants/comingSoon';
 
 /**
  * Partners section (GLO-204), copy verbatim from the landing-page content
@@ -67,5 +68,6 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
 
 export const SEE_ALL_PARTNERS_LABEL = 'See all partners';
 
-// TODO: point at the partners page once it exists.
-export const SEE_ALL_PARTNERS_HREF = '#';
+/** Rendered through SiteLink: "Coming soon" until the partners page exists. */
+export const SEE_ALL_PARTNERS_DESTINATION =
+  'partners-all' satisfies SiteDestinationId;

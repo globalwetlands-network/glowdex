@@ -3,19 +3,24 @@
  * dataset version isn't configured here: the footer reads it live from the
  * store manifest.
  */
-export interface FooterLink {
-  label: string;
-  href: string;
-}
+import type { SiteDestinationId } from '@/constants/comingSoon';
 
-// TODO: point these at real pages once they exist; FAQ is on this page.
+/**
+ * A site page (rendered through SiteLink, so "Coming soon" until it's built,
+ * see src/constants/comingSoon.ts) or an in-page anchor.
+ */
+export type FooterLink =
+  | { label: string; destination: SiteDestinationId }
+  | { label: string; href: string };
+
 export const FOOTER_LINKS: readonly FooterLink[] = [
-  { label: 'About', href: '#' },
-  { label: 'Methods', href: '#' },
+  { label: 'About', destination: 'about' },
+  { label: 'Methods', destination: 'methods' },
   { label: 'FAQ', href: '#faq' },
-  { label: 'Licence', href: '#' },
-  { label: 'How to cite', href: '#' },
-  { label: 'Contact', href: '#' },
+  { label: 'Licence', destination: 'licence' },
+  { label: 'How to cite', destination: 'cite' },
+  { label: 'Contact', destination: 'contact' },
+  { label: 'Privacy', destination: 'privacy' },
 ];
 
 export const FOOTER_CREDIT =

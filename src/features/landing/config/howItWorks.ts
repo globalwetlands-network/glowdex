@@ -5,6 +5,9 @@
  * Wording still needs a scientific-accuracy check before final ship, so expect
  * edits here. The section renders whatever is in this list, in order.
  */
+
+import type { SiteDestinationId } from '@/constants/comingSoon';
+
 export interface HowItWorksStep {
   /** One-word step name, e.g. "Gather". */
   title: string;
@@ -38,5 +41,5 @@ export const HOW_IT_WORKS_STEPS: readonly HowItWorksStep[] = [
 
 export const METHODS_LINK_LABEL = 'Read the full methods';
 
-// TODO: point at the methods page once it exists (same as the header's Methods link).
-export const METHODS_HREF = '#';
+/** Rendered through SiteLink: "Coming soon" until the methods page exists. */
+export const METHODS_DESTINATION = 'methods' satisfies SiteDestinationId;

@@ -1,4 +1,5 @@
 import logo from '@/assets/globalwetlands.png';
+import { SiteLink } from '@/components/shared/SiteLink';
 import { useDatasetVersion } from '@/data/hooks/useDatasetVersion';
 import { FOOTER_CREDIT, FOOTER_LINKS } from '../config/footer';
 
@@ -25,11 +26,22 @@ export function SiteFooter() {
           aria-label="Footer"
           className="mb-5 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-gray-600"
         >
-          {FOOTER_LINKS.map((link) => (
-            <a key={link.label} href={link.href} className="hover:underline">
-              {link.label}
-            </a>
-          ))}
+          {FOOTER_LINKS.map((link) =>
+            'destination' in link ? (
+              <SiteLink
+                key={link.label}
+                id={link.destination}
+                location="footer"
+                className="hover:underline"
+              >
+                {link.label}
+              </SiteLink>
+            ) : (
+              <a key={link.label} href={link.href} className="hover:underline">
+                {link.label}
+              </a>
+            ),
+          )}
         </nav>
         <p className="m-0 mb-2 max-w-[600px] text-xs leading-relaxed text-gray-500">
           {FOOTER_CREDIT}

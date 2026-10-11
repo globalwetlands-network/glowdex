@@ -13,18 +13,29 @@ describe('SiteFooter', () => {
     vi.mocked(useDatasetVersion).mockReturnValue('2026.09.0');
   });
 
-  it('renders the six footer links and the builder credit verbatim', () => {
+  it('renders the footer nav in order and the builder credit verbatim', () => {
     render(<SiteFooter />);
 
     const nav = within(screen.getByRole('navigation', { name: 'Footer' }));
-    expect(nav.getAllByRole('link').map((link) => link.textContent)).toEqual([
+    // Links and coming-soon buttons, in DOM order.
+    const items = screen
+      .getByRole('navigation', { name: 'Footer' })
+      .querySelectorAll('a, button');
+    expect([...items].map((item) => item.textContent)).toEqual([
       'About',
       'Methods',
       'FAQ',
       'Licence',
       'How to cite',
       'Contact',
+      'Privacy',
     ]);
+    // Every item but FAQ is "Coming soon" until its page exists (GLO-210).
+    expect(nav.getAllByRole('link')).toHaveLength(1);
+    for (const button of nav.getAllByRole('button')) {
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveAccessibleDescription('Coming soon');
+    }
     expect(nav.getByRole('link', { name: 'FAQ' })).toHaveAttribute(
       'href',
       '#faq',

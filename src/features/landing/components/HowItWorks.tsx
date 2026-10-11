@@ -1,8 +1,9 @@
 import { ArrowRight } from 'lucide-react';
+import { SiteLink } from '@/components/shared/SiteLink';
 import {
   HOW_IT_WORKS_HEADING,
   HOW_IT_WORKS_STEPS,
-  METHODS_HREF,
+  METHODS_DESTINATION,
   METHODS_LINK_LABEL,
   type HowItWorksStep,
 } from '../config/howItWorks';
@@ -18,6 +19,7 @@ interface HowItWorksProps {
 export function HowItWorks({ steps = HOW_IT_WORKS_STEPS }: HowItWorksProps) {
   return (
     <section
+      id="how-it-works"
       aria-labelledby="how-it-works-heading"
       className="bg-white px-6 py-20 md:px-16"
     >
@@ -53,13 +55,15 @@ export function HowItWorks({ steps = HOW_IT_WORKS_STEPS }: HowItWorksProps) {
             </li>
           ))}
         </ol>
-        <a
-          href={METHODS_HREF}
-          className="inline-flex items-center gap-1.5 self-start text-base font-semibold text-glowdex-green hover:underline"
+        <SiteLink
+          id={METHODS_DESTINATION}
+          location="how-it-works"
+          wrapperClassName="self-start"
+          className="inline-flex items-center gap-1.5 text-base font-semibold text-glowdex-green hover:underline"
         >
           {METHODS_LINK_LABEL}
           <ArrowRight className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-        </a>
+        </SiteLink>
       </div>
     </section>
   );
