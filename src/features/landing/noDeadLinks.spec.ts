@@ -35,4 +35,19 @@ describe('no dead-end links (GLO-210)', () => {
       .map(([path]) => path);
     expect(offenders).toEqual([]);
   });
+
+  it('has a target id for every in-page anchor', () => {
+    const landing = Object.entries(SOURCES).filter(([path]) =>
+      path.startsWith('/src/features/landing/'),
+    );
+    const all = landing.map(([, source]) => source).join('\n');
+    const anchors = new Set(
+      [...all.matchAll(/["'`]#([a-z][\w-]*)["'`]/g)].map((m) => m[1]),
+    );
+    const missing = [...anchors].filter(
+      (id) => !new RegExp(`\\bid=["'\`]${id}["'\`]`).test(all),
+    );
+    expect(anchors.size).toBeGreaterThan(0);
+    expect(missing).toEqual([]);
+  });
 });

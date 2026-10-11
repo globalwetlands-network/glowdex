@@ -19,6 +19,7 @@ interface HowItWorksProps {
 export function HowItWorks({ steps = HOW_IT_WORKS_STEPS }: HowItWorksProps) {
   return (
     <section
+      id="how-it-works"
       aria-labelledby="how-it-works-heading"
       className="bg-white px-6 py-20 md:px-16"
     >

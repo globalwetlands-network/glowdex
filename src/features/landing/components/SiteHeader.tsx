@@ -5,13 +5,18 @@ import { SiteLink } from '@/components/shared/SiteLink';
 import type { SiteDestinationId } from '@/constants/comingSoon';
 import { PRELOAD_ON_INTENT } from '../preloadOnIntent';
 
-/** Site pages go through SiteLink ("Coming soon" until built); FAQ is on this page. */
+/**
+ * In-page sections, so every header link works today. Site pages (About,
+ * Methods, ...) live in the footer via SiteLink until they're built; add one
+ * here with `destination` when it ships.
+ */
 const NAV_LINKS: ReadonlyArray<
   | { label: string; destination: SiteDestinationId }
   | { label: string; href: string }
 > = [
-  { label: 'About', destination: 'about' },
-  { label: 'Methods', destination: 'methods' },
+  { label: 'See it in action', href: '#see-it-in-action' },
+  { label: 'How it works', href: '#how-it-works' },
+  { label: 'Partners', href: '#partners' },
   { label: 'FAQ', href: '#faq' },
 ];
 

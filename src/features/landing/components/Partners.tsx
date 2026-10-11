@@ -24,6 +24,7 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
 
   return (
     <section
+      id="partners"
       aria-labelledby={headingId}
       className="bg-white px-6 py-16 md:px-16"
     >

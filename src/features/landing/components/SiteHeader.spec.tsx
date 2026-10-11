@@ -18,22 +18,23 @@ function renderHeader(transparent?: boolean) {
 describe('SiteHeader', () => {
   afterEach(() => vi.mocked(preloadMapApp).mockClear());
 
-  it('renders the wordmark, the three nav links and the map CTA', () => {
+  it('renders the wordmark, the section nav links and the map CTA', () => {
     renderHeader();
 
     expect(screen.getByText('MBCAM')).toBeInTheDocument();
     const nav = within(screen.getByRole('navigation', { name: 'Main' }));
-    // About and Methods are "Coming soon" until their pages exist (GLO-210).
+    // In-page sections only, so every header link works (GLO-210).
     expect(
-      nav.getAllByRole('button').map((button) => button.textContent),
-    ).toEqual(['About', 'Methods']);
-    for (const button of nav.getAllByRole('button')) {
-      expect(button).toHaveAccessibleDescription('Coming soon');
-    }
-    expect(nav.getByRole('link', { name: 'FAQ' })).toHaveAttribute(
-      'href',
-      '#faq',
-    );
+      nav
+        .getAllByRole('link')
+        .map((link) => [link.textContent, link.getAttribute('href')]),
+    ).toEqual([
+      ['See it in action', '#see-it-in-action'],
+      ['How it works', '#how-it-works'],
+      ['Partners', '#partners'],
+      ['FAQ', '#faq'],
+    ]);
+    expect(nav.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /open the map/i })).toHaveAttribute(
       'href',
       '/map',

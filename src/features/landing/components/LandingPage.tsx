@@ -188,13 +188,17 @@ export function LandingPage() {
           <Hero />
         </div>
         <FactSheet />
-        <SectionErrorBoundary>
-          <WhenNearViewport>
-            <Suspense fallback={<SectionPlaceholder />}>
-              <SeeItInAction />
-            </Suspense>
-          </WhenNearViewport>
-        </SectionErrorBoundary>
+        {/* The header's anchor target lives here, not on the lazy section,
+            so it exists before the section's chunk loads. */}
+        <div id="see-it-in-action">
+          <SectionErrorBoundary>
+            <WhenNearViewport>
+              <Suspense fallback={<SectionPlaceholder />}>
+                <SeeItInAction />
+              </Suspense>
+            </WhenNearViewport>
+          </SectionErrorBoundary>
+        </div>
         <WhoItsFor />
         <HowItWorks />
         <WhyItMatters />
