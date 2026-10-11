@@ -17,11 +17,11 @@ import { DownloadSummaryButton } from '@/features/widgets/components/DownloadSum
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
-import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
+import { LocalAnimalPanel } from '@/features/localPanel';
 import { BiodiversityPanel } from './BiodiversityPanel';
-import { SelectTilePrompt } from './SelectTilePrompt';
+import { GlobalEmptyStateGuide } from './GlobalEmptyStateGuide';
+import { markTileGuideSeen } from './tileGuideSeen';
 import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
-import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
 import type { EntryMode } from '../hooks/useEntryMode';
 
@@ -55,10 +55,10 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
-  /** ISO date local data was last refreshed, or null if unavailable. */
-  localDataUpdated: string | null;
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
+  /** Clears the selected site (Local panel, when the user changes country). */
+  onSiteClear: () => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
   onViewLocalData: (siteId: string) => void;
@@ -99,9 +99,9 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
-  localDataUpdated,
   selectedSiteId,
   onSiteSelect,
+  onSiteClear,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
   onViewLocalData,
@@ -121,6 +121,12 @@ export function SidePanel({
     scrollToLocalDataSignal,
   );
 
+  // The first real tile selection switches the Global empty state guide
+  // from the looping demo to static steps on later visits.
+  useEffect(() => {
+    if (selectedCell) markTileGuideSeen();
+  }, [selectedCell]);
+
   useEffect(() => {
     if (activeTab === 'analysis') {
       window.dispatchEvent(new Event('resize'));
@@ -131,17 +137,6 @@ export function SidePanel({
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
       {/* Tab Strip */}
       <div className="hidden md:flex border-b border-gray-200 shrink-0">
-        <button
-          onClick={() => onTabChange('biodiversity')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
-            activeTab === 'biodiversity'
-              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Leaf size={16} />
-          Biodiversity
-        </button>
         <button
           onClick={() => onTabChange('analysis')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
@@ -161,6 +156,17 @@ export function SidePanel({
             )}
           </span>
         </button>
+        <button
+          onClick={() => onTabChange('biodiversity')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
+            activeTab === 'biodiversity'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Leaf size={16} />
+          Biodiversity
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -174,23 +180,16 @@ export function SidePanel({
       >
         {isLocal ? (
           <>
-            {/* Local mode: local wetlands widget + site-scoped assistant only.
-                No grid-cell cards, filters or tile prompt (GLO-207). */}
-            <div
-              ref={localDataRef}
-              className="rounded-xl border border-gray-100 bg-white shadow-sm"
-            >
-              <div className="p-4">
-                <LocalWetlandsAnalysisWidget
-                  localSites={localSites}
-                  localDataUpdated={localDataUpdated}
-                  selectedSiteId={selectedSiteId}
-                  onSiteSelect={onSiteSelect}
-                  localSiteLayerEnabled={localSiteLayerEnabled}
-                  onLocalSiteLayerToggle={onLocalSiteLayerToggle}
-                  hideLayerToggle
-                />
-              </div>
+            {/* Local mode: the local animal panel + site-scoped assistant
+                only. No grid-cell cards, filters or tile prompt (GLO-207,
+                GLO-221). */}
+            <div ref={localDataRef}>
+              <LocalAnimalPanel
+                localSites={localSites}
+                selectedSiteId={selectedSiteId}
+                onSiteSelect={onSiteSelect}
+                onSiteClear={onSiteClear}
+              />
             </div>
 
             {(localSiteContext || isLocalContextPending) && (
@@ -218,61 +217,38 @@ export function SidePanel({
           </>
         ) : (
           <>
-            {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+            {!selectedCell && <GlobalEmptyStateGuide />}
 
-            {/* Location + Assistant cards — only shown when a cell is selected */}
+            {/* Location card — only shown when a cell is selected */}
             {selectedCell && (
-              <div className="space-y-4">
-                {/* Location card */}
-                <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                  <div className="p-4">
-                    <CollapsibleSection
-                      title="Location"
-                      icon={MapPin}
-                      defaultOpen={true}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <button
-                          onClick={onClearSelection}
-                          className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
-                        >
-                          Clear selection
-                        </button>
-                        <DownloadSummaryButton
-                          selectedCell={selectedCell}
-                          scale={filterState.typologyScale}
-                          statisticalSummaries={statisticalSummaries}
-                          species={speciesConfig}
-                          partners={partners}
-                        />
-                      </div>
-                      <SelectionPanel
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Location"
+                    icon={MapPin}
+                    defaultOpen={true}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <button
+                        onClick={onClearSelection}
+                        className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
+                      >
+                        Clear selection
+                      </button>
+                      <DownloadSummaryButton
                         selectedCell={selectedCell}
-                        typologies={typologies}
-                        currentScale={filterState.typologyScale}
+                        scale={filterState.typologyScale}
+                        statisticalSummaries={statisticalSummaries}
+                        species={speciesConfig}
+                        partners={partners}
                       />
-                    </CollapsibleSection>
-                  </div>
-                </div>
-
-                {/* Assistant card */}
-                <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-                  <div className="p-4">
-                    <CollapsibleSection
-                      title="Assistant"
-                      icon={CrabIcon}
-                      defaultOpen={true}
-                    >
-                      <AnalysisAssistantWidget
-                        mode="global"
-                        selectedCellId={
-                          activeTab === 'analysis' ? selectedCell?.id : null
-                        }
-                        hasMangrove={selectedCell?.mangroves ?? false}
-                        dataSkewed={dataSkewed}
-                      />
-                    </CollapsibleSection>
-                  </div>
+                    </div>
+                    <SelectionPanel
+                      selectedCell={selectedCell}
+                      typologies={typologies}
+                      currentScale={filterState.typologyScale}
+                    />
+                  </CollapsibleSection>
                 </div>
               </div>
             )}
@@ -317,6 +293,28 @@ export function SidePanel({
                       distributions={distributions}
                       statisticalSummaries={statisticalSummaries}
                       isLoading={isLoading}
+                    />
+                  </CollapsibleSection>
+                </div>
+              </div>
+            )}
+
+            {/* Assistant card — last, after the analysis it answers questions about */}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Assistant"
+                    icon={CrabIcon}
+                    defaultOpen={true}
+                  >
+                    <AnalysisAssistantWidget
+                      mode="global"
+                      selectedCellId={
+                        activeTab === 'analysis' ? selectedCell?.id : null
+                      }
+                      hasMangrove={selectedCell?.mangroves ?? false}
+                      dataSkewed={dataSkewed}
                     />
                   </CollapsibleSection>
                 </div>

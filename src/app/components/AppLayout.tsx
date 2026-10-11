@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react';
 import type { MobileTab } from '../types/app.types';
+import type { EntryMode } from '../hooks/useEntryMode';
 import { MobileTabNavigation } from './MobileTabNavigation';
 
 interface AppLayoutProps {
+  /** Local mode gives the side panel half the desktop width (GLO-198). */
+  mode: EntryMode;
   topBar: ReactNode;
   mapArea: ReactNode;
   sidePanel: ReactNode;
@@ -17,6 +20,7 @@ interface AppLayoutProps {
  * Mobile: Tab navigation + Content area (panel OR map)
  */
 export function AppLayout({
+  mode,
   topBar,
   mapArea,
   sidePanel,
@@ -24,6 +28,11 @@ export function AppLayout({
   onMobileTabChange,
   showAnalysisBadge,
 }: AppLayoutProps) {
+  // Local: panel and map split 50/50. Global keeps the 37.5% panel.
+  const isLocal = mode === 'local';
+  const panelFlex = isLocal ? 'md:flex-1' : 'md:flex-[0.75]';
+  const mapFlex = isLocal ? 'md:flex-1' : 'md:flex-[1.25]';
+
   return (
     <div className="h-dvh w-screen flex flex-col overflow-hidden bg-gray-100">
       {/* Top Bar - Visible on all screen sizes */}
@@ -32,7 +41,9 @@ export function AppLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Desktop: Side Panel (Left) */}
-        <div className="hidden md:flex md:flex-[0.75] md:order-1 h-full min-w-0">
+        <div
+          className={`hidden md:flex ${panelFlex} md:order-1 h-full min-w-0`}
+        >
           {sidePanel}
         </div>
 
@@ -44,7 +55,9 @@ export function AppLayout({
         </div>
 
         {/* Desktop: Map Area (Right) */}
-        <div className="hidden md:flex md:flex-[1.25] md:order-2 md:relative h-full min-w-0">
+        <div
+          className={`hidden md:flex ${mapFlex} md:order-2 md:relative h-full min-w-0`}
+        >
           {mapArea}
         </div>
       </div>

@@ -15,17 +15,8 @@ vi.mock('./AnalysisAssistantWidget', () => ({
 vi.mock('./GlobalWetlandsAnalysisWidget', () => ({
   GlobalWetlandsAnalysisWidget: () => <div data-testid="global-widget" />,
 }));
-vi.mock('@/components/widgets/LocalData', () => ({
-  LocalWetlandsAnalysisWidget: ({
-    hideLayerToggle,
-  }: {
-    hideLayerToggle?: boolean;
-  }) => (
-    <div
-      data-testid="local-widget"
-      data-hide-toggle={String(!!hideLayerToggle)}
-    />
-  ),
+vi.mock('@/features/localPanel', () => ({
+  LocalAnimalPanel: () => <div data-testid="local-panel" />,
 }));
 vi.mock('@/features/widgets/components/FilterControls', () => ({
   FilterControls: () => <div data-testid="filters" />,
@@ -88,9 +79,9 @@ function renderPanel(overrides: Partial<ComponentProps<typeof SidePanel>>) {
     onTabChange: vi.fn(),
     clickedPartnerId: null,
     localSites: [],
-    localDataUpdated: null,
     selectedSiteId: null,
     onSiteSelect: vi.fn(),
+    onSiteClear: vi.fn(),
     localSiteLayerEnabled: true,
     onLocalSiteLayerToggle: vi.fn(),
     onViewLocalData: vi.fn(),
@@ -107,13 +98,10 @@ describe('SidePanel mode gating (GLO-207)', () => {
   afterEach(() => cleanup());
 
   describe('Local mode', () => {
-    it('Analysis shows only the local widget (toggle hidden), no global content', () => {
+    it('Analysis shows only the local animal panel, no global content', () => {
       renderPanel({ mode: 'local' });
 
-      expect(screen.getByTestId('local-widget')).toHaveAttribute(
-        'data-hide-toggle',
-        'true',
-      );
+      expect(screen.getByTestId('local-panel')).toBeInTheDocument();
       expect(screen.queryByTestId('global-widget')).not.toBeInTheDocument();
       expect(screen.queryByTestId('filters')).not.toBeInTheDocument();
       expect(screen.queryByTestId('selection-panel')).not.toBeInTheDocument();
@@ -161,10 +149,20 @@ describe('SidePanel mode gating (GLO-207)', () => {
   });
 
   describe('Global mode', () => {
+    it('puts the assistant last, after the analysis cards', () => {
+      renderPanel({ mode: 'global', selectedCell: cell });
+      const analysis = screen.getByTestId('global-widget');
+      const assistant = screen.getByTestId('assistant-global');
+      expect(
+        analysis.compareDocumentPosition(assistant) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
     it('shows the tile prompt and no local widget when nothing is selected', () => {
       renderPanel({ mode: 'global' });
 
-      expect(screen.queryByTestId('local-widget')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('local-panel')).not.toBeInTheDocument();
       expect(
         screen.getAllByText(/Select a colored tile/).length,
       ).toBeGreaterThan(0);
@@ -176,7 +174,7 @@ describe('SidePanel mode gating (GLO-207)', () => {
       expect(screen.getByTestId('global-widget')).toBeInTheDocument();
       expect(screen.getByTestId('filters')).toBeInTheDocument();
       expect(screen.getByTestId('assistant-global')).toBeInTheDocument();
-      expect(screen.queryByTestId('local-widget')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('local-panel')).not.toBeInTheDocument();
     });
 
     it('keeps the pin switch on the Biodiversity tab and the tile footer', () => {

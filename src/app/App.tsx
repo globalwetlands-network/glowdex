@@ -55,7 +55,6 @@ function AppShell() {
     typologies,
     indicators,
     localSites,
-    localDataUpdated,
     isLoading,
     error,
     retry,
@@ -281,6 +280,12 @@ function AppShell() {
       });
     },
     [localSites, posthog, selectedCellId, replaceSiteParam],
+  );
+
+  /** Clears the selected site; the Local panel calls this on a new country. */
+  const handleSiteClear = useCallback(
+    () => replaceSiteParam(null),
+    [replaceSiteParam],
   );
 
   /**
@@ -632,9 +637,9 @@ function AppShell() {
         onTabChange={handlePanelTabChange}
         clickedPartnerId={clickedPartnerId}
         localSites={localSites}
-        localDataUpdated={localDataUpdated}
         selectedSiteId={selectedSiteId}
         onSiteSelect={handleSiteSelect}
+        onSiteClear={handleSiteClear}
         localSiteLayerEnabled={effectiveLocalSiteLayerEnabled}
         onLocalSiteLayerToggle={handleLocalSiteLayerToggle}
         // Global: cross-links to Local mode for the site (the local widget
@@ -672,9 +677,9 @@ function AppShell() {
       handlePanelTabChange,
       clickedPartnerId,
       localSites,
-      localDataUpdated,
       selectedSiteId,
       handleSiteSelect,
+      handleSiteClear,
       openSite,
       effectiveLocalSiteLayerEnabled,
       handleLocalSiteLayerToggle,
@@ -703,6 +708,7 @@ function AppShell() {
     <>
       <WelcomeModal mode={entryMode} />
       <AppLayout
+        mode={entryMode}
         topBar={
           <TopBar
             onLogoClick={handleReset}

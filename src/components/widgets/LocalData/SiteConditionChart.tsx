@@ -37,11 +37,17 @@ import { SITE_CONDITION_COLORS } from '@/data/constants/localWetlands.constants'
 interface SiteConditionChartProps {
   observations: LocalObservation[];
   year: number;
+  /**
+   * Bar colour per condition. Defaults to SITE_CONDITION_COLORS; the Local
+   * animal panel passes its neutral site-type palette (GLO-221).
+   */
+  colors?: Record<string, string>;
 }
 
 export function SiteConditionChart({
   observations,
   year,
+  colors = SITE_CONDITION_COLORS,
 }: SiteConditionChartProps) {
   const entries = observationEntries(observations, year);
   const bars: ConditionEntry[] = CONDITIONS.flatMap((siteType) => {
@@ -72,10 +78,10 @@ export function SiteConditionChart({
       width: 6,
     },
     marker: {
-      color: bars.map((b) => SITE_CONDITION_COLORS[b.siteType]),
+      color: bars.map((b) => colors[b.siteType]),
       opacity: 0.85,
       line: {
-        color: bars.map((b) => SITE_CONDITION_COLORS[b.siteType]),
+        color: bars.map((b) => colors[b.siteType]),
         width: 1,
       },
     },

@@ -8,7 +8,7 @@ interface CapturedTrace {
   x: string[];
   y: number[];
   error_y: { array: number[] };
-  marker: { color: string[] };
+  marker: { color: string[]; line: { color: string[] } };
 }
 
 interface CapturedPlot {
@@ -97,5 +97,28 @@ describe('SiteConditionChart', () => {
       'Degraded',
       'Rehabilitated',
     ]);
+  });
+
+  it('uses a custom colour map for both bar fill and outline', () => {
+    const colors = {
+      Reference: '#111111',
+      Degraded: '#222222',
+      Rehabilitated: '#333333',
+    };
+    render(
+      <SiteConditionChart
+        observations={[
+          obs({ siteType: 'Reference' }),
+          obs({ siteType: 'Degraded' }),
+          obs({ siteType: 'Rehabilitated' }),
+        ]}
+        year={2026}
+        colors={colors}
+      />,
+    );
+    const { marker } = plotProps.current!.data[0];
+    const expected = ['#111111', '#222222', '#333333'];
+    expect(marker.color).toEqual(expected);
+    expect(marker.line.color).toEqual(expected);
   });
 });
