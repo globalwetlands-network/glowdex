@@ -334,6 +334,24 @@ describe('LocalAnimalPanel', () => {
       expect(screen.getByText('Kenya')).toBeInTheDocument();
     });
 
+    it('gives each mounted copy its own field ids (mobile + desktop slots)', () => {
+      const props = {
+        localSites: SITES,
+        selectedSiteId: null,
+        onSiteSelect: vi.fn(),
+        onSiteClear: vi.fn(),
+      };
+      render(
+        <>
+          <LocalAnimalPanel {...props} />
+          <LocalAnimalPanel {...props} />
+        </>,
+      );
+      const selects = screen.getAllByLabelText('Country');
+      expect(selects).toHaveLength(2);
+      expect(selects[0].id).not.toBe(selects[1].id);
+    });
+
     it('disables Country and Location until the step before is chosen', () => {
       renderPanel(null);
       expect(screen.getByLabelText('Country')).toBeDisabled();

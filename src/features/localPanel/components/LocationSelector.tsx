@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { CountryOption } from '../utils/siteAvailability';
@@ -76,15 +76,22 @@ export function LocationSelector({
   onCountryChange,
   onLocationChange,
 }: LocationSelectorProps) {
+  // Per-instance ids: AppLayout can mount the side panel twice (mobile and
+  // desktop slots), and fixed ids would pair a label with the hidden copy.
+  const idPrefix = useId();
+  const continentId = `${idPrefix}-continent`;
+  const countryId = `${idPrefix}-country`;
+  const locationId = `${idPrefix}-location`;
+
   const countriesInContinent = countries.filter(
     (c) => c.continent === continent,
   );
 
   return (
     <div className="grid grid-cols-1 gap-2.5 @lg:grid-cols-3">
-      <Field id="local-continent" label="Continent">
+      <Field id={continentId} label="Continent">
         <select
-          id="local-continent"
+          id={continentId}
           value={continent}
           onChange={(e) => onContinentChange(e.target.value)}
           className={`${SELECT_CLASS} ${textColor(continent)}`}
@@ -100,9 +107,9 @@ export function LocationSelector({
         </select>
       </Field>
 
-      <Field id="local-country" label="Country">
+      <Field id={countryId} label="Country">
         <select
-          id="local-country"
+          id={countryId}
           value={country}
           onChange={(e) => onCountryChange(e.target.value)}
           disabled={!continent}
@@ -120,9 +127,9 @@ export function LocationSelector({
         </select>
       </Field>
 
-      <Field id="local-location" label="Location">
+      <Field id={locationId} label="Location">
         <select
-          id="local-location"
+          id={locationId}
           value={siteId}
           onChange={(e) => onLocationChange(e.target.value)}
           disabled={!country}
