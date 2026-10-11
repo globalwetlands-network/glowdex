@@ -1,14 +1,19 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/globalwetlands.png';
+import { SiteLink } from '@/components/shared/SiteLink';
+import type { SiteDestinationId } from '@/constants/comingSoon';
 import { PRELOAD_ON_INTENT } from '../preloadOnIntent';
 
-const NAV_LINKS = [
-  // TODO: point About / Methods at real pages once they exist.
-  { label: 'About', href: '#' },
-  { label: 'Methods', href: '#' },
+/** Site pages go through SiteLink ("Coming soon" until built); FAQ is on this page. */
+const NAV_LINKS: ReadonlyArray<
+  | { label: string; destination: SiteDestinationId }
+  | { label: string; href: string }
+> = [
+  { label: 'About', destination: 'about' },
+  { label: 'Methods', destination: 'methods' },
   { label: 'FAQ', href: '#faq' },
-] as const;
+];
 
 interface SiteHeaderProps {
   /** Overlaid on the hero media: no background, white text. */
@@ -56,11 +61,23 @@ export function SiteHeader({ transparent = false }: SiteHeaderProps) {
           transparent ? 'text-white' : 'text-gray-700'
         }`}
       >
-        {NAV_LINKS.map((link) => (
-          <a key={link.label} href={link.href} className="hover:underline">
-            {link.label}
-          </a>
-        ))}
+        {NAV_LINKS.map((link) =>
+          'destination' in link ? (
+            <SiteLink
+              key={link.label}
+              id={link.destination}
+              location="header"
+              placement="bottom"
+              className="hover:underline"
+            >
+              {link.label}
+            </SiteLink>
+          ) : (
+            <a key={link.label} href={link.href} className="hover:underline">
+              {link.label}
+            </a>
+          ),
+        )}
       </nav>
       <Link
         to="/map"

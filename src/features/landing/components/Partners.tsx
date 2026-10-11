@@ -1,10 +1,11 @@
 import { useId } from 'react';
+import { SiteLink } from '@/components/shared/SiteLink';
 import { PARTNER_COUNTRIES_COUNT } from '../config/factSheet';
 import {
   FEATURED_PARTNERS,
   PARTNERS_HEADING,
   PARTNERS_SUBHEAD,
-  SEE_ALL_PARTNERS_HREF,
+  SEE_ALL_PARTNERS_DESTINATION,
   SEE_ALL_PARTNERS_LABEL,
   type Partner,
 } from '../config/partners';
@@ -56,12 +57,13 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
         </ul>
         <p className="m-0 mt-6 text-sm text-gray-600">
           And more partners across {PARTNER_COUNTRIES_COUNT} countries.{' '}
-          <a
-            href={SEE_ALL_PARTNERS_HREF}
+          <SiteLink
+            id={SEE_ALL_PARTNERS_DESTINATION}
+            location="partners"
             className="font-semibold text-glowdex-green hover:underline"
           >
             {SEE_ALL_PARTNERS_LABEL} →
-          </a>
+          </SiteLink>
         </p>
       </div>
     </section>

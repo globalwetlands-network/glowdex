@@ -28,12 +28,15 @@ describe('HowItWorks', () => {
     }
   });
 
-  it('links to the full methods', () => {
+  it('shows the full-methods link as coming soon until the page exists', () => {
     render(<HowItWorks />);
 
-    expect(
-      screen.getByRole('link', { name: /read the full methods/i }),
-    ).toBeVisible();
+    const methods = screen.getByRole('button', {
+      name: /read the full methods/i,
+    });
+    expect(methods).toBeVisible();
+    expect(methods).toHaveAttribute('aria-disabled', 'true');
+    expect(methods).toHaveAccessibleDescription('Coming soon');
   });
 
   it('renders whatever steps the content supplies', () => {

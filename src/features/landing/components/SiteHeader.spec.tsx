@@ -23,11 +23,13 @@ describe('SiteHeader', () => {
 
     expect(screen.getByText('MBCAM')).toBeInTheDocument();
     const nav = within(screen.getByRole('navigation', { name: 'Main' }));
-    expect(nav.getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'About',
-      'Methods',
-      'FAQ',
-    ]);
+    // About and Methods are "Coming soon" until their pages exist (GLO-210).
+    expect(
+      nav.getAllByRole('button').map((button) => button.textContent),
+    ).toEqual(['About', 'Methods']);
+    for (const button of nav.getAllByRole('button')) {
+      expect(button).toHaveAccessibleDescription('Coming soon');
+    }
     expect(nav.getByRole('link', { name: 'FAQ' })).toHaveAttribute(
       'href',
       '#faq',
