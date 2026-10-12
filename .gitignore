@@ -35,3 +35,6 @@ Thumbs.db
 .ds-sync/
 ds-bundle/
 .design-sync/.cache/
+
+# Hero video masters (>100 MB, exceed GitHub file limit) — only the web export is committed
+src/assets/hero/*.mov

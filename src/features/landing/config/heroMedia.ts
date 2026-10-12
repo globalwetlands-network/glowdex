@@ -6,8 +6,8 @@
  * the `?hero=photo|video` query param. The video's poster doubles as its
  * fallback for reduced motion, slow connections and playback errors.
  */
-import heroPoster from '@/assets/hero/mangrove-fish-poster.jpg';
-import heroVideo from '@/assets/hero/mangrove-fish.mp4';
+import heroPoster from '@/assets/hero/hero-video-moses-perch-poster.jpg';
+import heroVideo from '@/assets/hero/hero-video-moses-perch.mp4';
 import heroPhoto from '@/assets/hero/split-shot-photo.jpg';
 
 export type HeroMediaVariant = 'photo' | 'video';
@@ -36,8 +36,8 @@ export function resolveHeroMediaVariant(
   return DEFAULT_HERO_MEDIA;
 }
 
-// TODO: replace with licensed, compressed/optimised exports before ship — these
-// are watermarked stock comps (see src/assets/hero/CREDITS.md).
+// The video is the licensed, web-optimised export. TODO: the photo is still a
+// watermarked stock comp — replace before ship (see src/assets/hero/CREDITS.md).
 export const HERO_MEDIA = {
   photo: {
     src: heroPhoto,
@@ -47,7 +47,7 @@ export const HERO_MEDIA = {
   video: {
     src: heroVideo,
     poster: heroPoster,
-    alt: 'Fish swimming among mangrove roots below the waterline',
-    credit: 'Video: Getty Images',
+    alt: 'A school of Moses perch swimming among mangrove roots below the waterline',
+    credit: 'Video: Baramee Temboonkiat',
   },
 } as const;

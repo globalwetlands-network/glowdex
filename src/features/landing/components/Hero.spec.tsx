@@ -99,7 +99,7 @@ describe('Hero', () => {
 
     expect(container.querySelector('video')).toBeNull();
     expect(
-      screen.getByAltText(/fish swimming among mangrove roots/i),
+      screen.getByAltText(/moses perch swimming among mangrove roots/i),
     ).toBeInTheDocument();
   });
 
