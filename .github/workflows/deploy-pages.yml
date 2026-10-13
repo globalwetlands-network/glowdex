@@ -56,9 +56,12 @@ jobs:
           # public/data/ copies to fall back to, so an empty value ships a build
           # that fails to load its data.
           VITE_DATA_STORE_URL: ${{ vars.VITE_DATA_STORE_URL }}
+          # Pages base path (GLO-181): empty/unset builds for /glowdex/; set to /
+          # when serving from the root of a custom domain.
+          PAGES_BASE_PATH: ${{ vars.PAGES_BASE_PATH }}
 
       # Pages has no rewrite rules: serve the SPA for unknown paths so deep links
-      # like /glowdex/map boot the app and the router renders the route.
+      # like <base>/map boot the app and the router renders the route.
       - name: Add SPA fallback for client-side routes
         run: cp dist/index.html dist/404.html
 
