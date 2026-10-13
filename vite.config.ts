@@ -3,8 +3,9 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ command }) => {
-  const isBuild = command === 'build';
+export default defineConfig(({ command, isPreview }) => {
+  // `vite preview` runs with command 'serve', so it needs the build's base too.
+  const isBuild = command === 'build' || isPreview === true;
   // GitHub Pages path the build is served under (GLO-181). Build-time config from
   // the PAGES_BASE_PATH repo variable, not a VITE_ var: an unset Actions variable
   // expands to '', so fall back with || and normalise to /leading/trailing/ slashes.
