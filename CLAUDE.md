@@ -122,4 +122,11 @@ run them.
 - Branch from Linear issues: `feature/glo-<number>-<kebab-slug>` (or `chore/<slug>`).
 - PRs target `develop` (though `main` remains the repo's default branch). Fill out
   `.github/pull_request_template.md`.
+- **Release PRs (`develop` → `main`) must use "Create a merge commit", never squash.** A squash
+  leaves `main` with a commit `develop` doesn't have, so the next release PR conflicts on every
+  file touched since (this happened after #60). If it does happen, merge `main` back into
+  `develop` with a real merge commit, resolving to `develop`'s side once you've confirmed `main`
+  has no unique content.
+- When creating a branch from a remote ref, use `git switch --no-track -c <branch> origin/develop`.
+  Without `--no-track` the new branch's upstream is `develop`, and a push can land on `develop` directly.
 - **Never run git commit/push here** — the maintainer commits and pushes manually.
