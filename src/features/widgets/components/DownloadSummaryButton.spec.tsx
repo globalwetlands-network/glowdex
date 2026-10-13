@@ -38,7 +38,6 @@ function renderButton() {
       statisticalSummaries={[]}
       species={[]}
       partners={[]}
-      localSiteContext={null}
     />,
   );
 }

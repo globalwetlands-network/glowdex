@@ -48,7 +48,6 @@ function renderWidget(
   const props = {
     localSites,
     localDataUpdated: null,
-    selectedCell: null,
     selectedSiteId: noDataSite.id,
     onSiteSelect: vi.fn(),
     localSiteLayerEnabled: false,
@@ -98,5 +97,42 @@ describe('LocalWetlandsAnalysisWidget — no-data location', () => {
   it('omits the "Updated" caption when localDataUpdated is null', () => {
     renderWidget({ localDataUpdated: null });
     expect(screen.queryByText(/^Updated /)).not.toBeInTheDocument();
+  });
+});
+
+describe('LocalWetlandsAnalysisWidget — Local mode (GLO-207)', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+    cleanup();
+  });
+
+  it('shows the map-layer switch by default', () => {
+    renderWidget();
+    expect(screen.getByRole('switch')).toBeInTheDocument();
+  });
+
+  it('hides the map-layer switch when hideLayerToggle is set', () => {
+    renderWidget({ hideLayerToggle: true });
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('hides the switch in the empty (no site selected) state too', () => {
+    renderWidget({ hideLayerToggle: true, selectedSiteId: null });
+    expect(
+      screen.getByText(
+        'Select a monitoring location to view local field data.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('shows no site until one is explicitly selected (no proximity fallback)', () => {
+    renderWidget({ selectedSiteId: null });
+
+    expect(
+      screen.getByText(
+        'Select a monitoring location to view local field data.',
+      ),
+    ).toBeInTheDocument();
   });
 });

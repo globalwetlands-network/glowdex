@@ -9,7 +9,7 @@ interface MobileTabNavigationProps {
 
 /**
  * Mobile bottom tab navigation component
- * Allows users to switch between Biodiversity, Analysis, and Map views
+ * Allows users to switch between Analysis, Biodiversity, and Map views
  */
 export function MobileTabNavigation({
   activeTab,
@@ -21,8 +21,8 @@ export function MobileTabNavigation({
     icon: typeof Leaf;
     label: string;
   }> = [
-    { id: 'biodiversity', icon: Leaf, label: 'Biodiversity' },
     { id: 'analysis', icon: BarChart2, label: 'Analysis' },
+    { id: 'biodiversity', icon: Leaf, label: 'Biodiversity' },
     { id: 'map', icon: Map, label: 'Map' },
   ];
 

@@ -1,29 +1,5 @@
-export const PARTNERS = [
-  { name: 'Griffith University', region: 'Australia' },
-  { name: 'University of Tasmania', region: 'Australia' },
-  { name: 'University of the Western Cape', region: 'South Africa' },
-  { name: 'Nelson Mandela University', region: 'South Africa' },
-  { name: 'Universidad de Costa Rica', region: 'Costa Rica' },
-  { name: 'University of Aveiro', region: 'Portugal' },
-  {
-    name: 'Indian Institute of Science Education and Research',
-    region: 'India',
-  },
-  { name: 'Katala Foundation', region: 'Philippines' },
-  { name: 'World Academy of Sustainable Development', region: 'International' },
-  { name: 'Universidade Eduardo Mondlane', region: 'Mozambique' },
-  {
-    name: 'Western Indian Ocean Mangrove Network',
-    region: 'Indian Ocean Region',
-  },
-  { name: 'Bôndy International', region: 'International' },
-  { name: 'University of Warwick', region: 'United Kingdom' },
-  { name: 'Universidade do Estado do Rio de Janeiro', region: 'Brazil' },
-  { name: 'Universitas Gadjah Mada', region: 'Indonesia' },
-  { name: 'WWF', region: 'International' },
-  { name: 'University of Southern Denmark', region: 'Denmark' },
-  { name: 'National Environment Management Council', region: 'Tanzania' },
-] as const;
+// The partner list is shared with the landing page; edit it there.
+export { RESEARCH_PARTNERS as PARTNERS } from '@/constants/partners';
 
 export const REFERENCES = [
   {

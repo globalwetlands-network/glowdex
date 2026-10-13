@@ -4,3 +4,5 @@
 export { useSelectionAnalytics } from './useSelectionAnalytics';
 export { useFilterAnalytics } from './useFilterAnalytics';
 export { useAIAnalytics } from './useAIAnalytics';
+export { useDemoPlots } from './useDemoPlots';
+export type { DemoPlotsState } from './useDemoPlots';

@@ -2,10 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildCellSummary } from './buildCellSummary';
 import type { BuildCellSummaryInput } from './buildCellSummary';
 import type { EnrichedGridCell } from '@/app/types/app.types';
-import type {
-  AIStatisticalIndicatorSummary,
-  LocalSiteContext,
-} from '@/api/types';
+import type { AIStatisticalIndicatorSummary } from '@/api/types';
 import type { SpeciesConfigResponse } from '@/api/species';
 
 function makeCell(overrides: Partial<EnrichedGridCell> = {}): EnrichedGridCell {
@@ -53,29 +50,18 @@ const speciesConfig: SpeciesConfigResponse = {
   regionBounds: [],
 };
 
-const localSiteContext: LocalSiteContext = {
-  siteName: 'Bintan Reference Plots',
-  country: 'Indonesia',
-  partner: 'Example Institute',
-  year: 2023,
-  conditions: [
-    { siteType: 'Reference', totalDensity: 12.5, combinedSE: 1.2, samplesN: 8 },
-  ],
-};
-
 function baseInput(): BuildCellSummaryInput {
   return {
     cell: makeCell(),
     scale: 'scale5',
     statisticalSummaries: [indicatorSummary],
     species: [speciesConfig],
-    localSiteContext,
     generatedDate: '2026-08-24',
   };
 }
 
 describe('buildCellSummary', () => {
-  it('assembles location, typology, indicators, species and local data', () => {
+  it('assembles location, typology, indicators and species, with no local data', () => {
     const summary = buildCellSummary(baseInput());
 
     expect(summary.location.tileId).toBe(4821);
@@ -98,8 +84,9 @@ describe('buildCellSummary', () => {
     // conservation code is expanded to its human label
     expect(summary.species[0].conservationStatus).toBe('Data Deficient');
 
-    expect(summary.localMonitoring?.siteName).toBe('Bintan Reference Plots');
-    expect(summary.localMonitoring?.conditions).toHaveLength(1);
+    // Local field data belongs to the map's Local view (GLO-207), never a
+    // Global tile summary.
+    expect(summary).not.toHaveProperty('localMonitoring');
   });
 
   it('always includes the typology-relative caveat and a source citation', () => {
@@ -111,15 +98,13 @@ describe('buildCellSummary', () => {
     expect(summary.citation).toContain('2026-08-24');
   });
 
-  it('handles a cell with no species and no local monitoring data', () => {
+  it('handles a cell with no species', () => {
     const summary = buildCellSummary({
       ...baseInput(),
       species: [],
-      localSiteContext: null,
     });
 
     expect(summary.species).toEqual([]);
-    expect(summary.localMonitoring).toBeNull();
     // caveat + citation still present
     expect(summary.caveat).toBeTruthy();
     expect(summary.citation).toBeTruthy();

@@ -24,19 +24,25 @@ architecture doc when you need detail.
 
 ## Project structure
 
-| Path                                                                                      | Responsibility                                                                                                               |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/`                                                                                | Composition root: `App.tsx`, `AppProviders.tsx`, top-level layout, panels, and app-level hooks                               |
-| `src/features/map/`                                                                       | Map shell (`Map.tsx`), layers (`GridLayer.tsx`), map hooks (interaction, view state)                                         |
-| `src/features/widgets/`                                                                   | Analysis widgets (selection panel, filters, violin plot, chat/AI insights) + their hooks/types/config                        |
-| `src/features/analytics/`                                                                 | PostHog wiring                                                                                                               |
-| `src/api/`                                                                                | Backend access: `client.ts` (fetch wrapper), per-resource modules, `hooks/` (React Query), `config.ts`, `types.ts`           |
-| `src/data/`                                                                               | Dataset loading, transforms, and types (grid cells, typologies, GeoJSON)                                                     |
-| `src/components/`                                                                         | Shared / legacy UI: `widgets/` (SpeciesSpotlight, Partner, LocalData), `icons/`, `map/markers`, `shared/`, `TypologyLegend/` |
-| `src/context/`, `src/hooks/`, `src/utils/`, `src/constants/`, `src/types/`, `src/styles/` | Cross-cutting helpers                                                                                                        |
+| Path                                                                                      | Responsibility                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/`                                                                                | Composition root: `App.tsx`, `AppProviders.tsx`, top-level layout, panels, and app-level hooks                                                                                                                                                                                                                                                         |
+| `src/features/landing/`                                                                   | Public landing page at `/` (`LandingPage`): shared `SiteHeader` (transparent over the hero, solid below), `Hero`, `FactSheet`, the "See it in action" carousel of real app widgets (fixture: `fixtures/workedExample`), then Who it's for, How it works, Why it matters, Partners, FAQs, Closing CTA and `SiteFooter`. Section copy lives in `config/` |
+| `src/features/map/`                                                                       | Map shell (`Map.tsx`), layers (`GridLayer.tsx`), map hooks (interaction, view state)                                                                                                                                                                                                                                                                   |
+| `src/features/widgets/`                                                                   | Analysis widgets (selection panel, filters, violin plot, chat/AI insights) + their hooks/types/config                                                                                                                                                                                                                                                  |
+| `src/features/analytics/`                                                                 | PostHog wiring                                                                                                                                                                                                                                                                                                                                         |
+| `src/api/`                                                                                | Backend access: `client.ts` (fetch wrapper), per-resource modules, `hooks/` (React Query), `config.ts`, `types.ts`                                                                                                                                                                                                                                     |
+| `src/data/`                                                                               | Dataset loading, transforms, and types (grid cells, typologies, GeoJSON)                                                                                                                                                                                                                                                                               |
+| `src/components/`                                                                         | Shared / legacy UI: `widgets/` (SpeciesSpotlight, Partner, LocalData), `icons/`, `map/markers`, `shared/`, `TypologyLegend/`                                                                                                                                                                                                                           |
+| `src/context/`, `src/hooks/`, `src/utils/`, `src/constants/`, `src/types/`, `src/styles/` | Cross-cutting helpers                                                                                                                                                                                                                                                                                                                                  |
 
 Newer code lives under `src/features/` and `src/app/`; `src/components/` holds shared and
 some legacy widgets still in use. Prefer `features/` for new feature work.
+
+**Routing:** `react-router-dom` in `src/main.tsx` — `/` → `LandingPage` (hero, fact sheet, See it in action), `/map` → the map
+app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL` (`/glowdex/` in prod);
+the Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
+`/glowdex/map` work on GitHub Pages.
 
 ## Conventions & patterns
 
@@ -44,9 +50,12 @@ some legacy widgets still in use. Prefer `features/` for new feature work.
   modules, styled-components, or inline `style` objects — except for genuinely dynamic values
   that can't be expressed as utilities (e.g. a typology fill color computed at runtime).
   Global CSS lives in `src/styles/`. Brand colors are the custom tokens `glowdex-green`
-  (`#0a5c47`) and `glowdex-teal` (`#1d9e75`), defined in `tailwind.config.js`. **Gotcha:** any
-  class name built dynamically (e.g. `` `bg-${color}` ``) is purged at build unless added to
-  the `safelist` in `tailwind.config.js` — prefer static, fully-spelled class names.
+  (`#0a5c47`) and `glowdex-teal` (`#1d9e75`), defined in the `@theme` block in
+  `src/styles/globals.css` (Tailwind v4 CSS-first config; there is no `tailwind.config.js`).
+  **Gotcha:** Tailwind only compiles class names it finds spelled out in full in source, so a
+  class built dynamically (e.g. `` `bg-${color}` ``) is dropped at build. Prefer static,
+  fully-spelled class names; if you truly can't, list them with `@source inline("…")` in
+  `globals.css`.
 - **API calls — never `fetch` directly.** Call `apiClient<T>(endpoint, options)` from
   `@/api/client` inside a per-resource function in `src/api/*.ts` (e.g. `fetchPartners`,
   `fetchInsight`). `apiClient` injects the `x-api-key` header and base URL, applies a timeout,

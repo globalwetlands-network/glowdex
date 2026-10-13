@@ -34,5 +34,12 @@ export const SITE_CONDITION_COLORS: Record<string, string> = {
 /** Stable display order for condition badges. Unknowns are appended. */
 export const SITE_CONDITION_ORDER = ['Reference', 'Degraded', 'Rehabilitated'];
 
+/**
+ * Maximum condition entries sent to the AI per site. Mirrors
+ * MAX_LOCAL_CONDITIONS on the backend (insight.constants.ts), which
+ * rejects a larger list with a 400.
+ */
+export const MAX_LOCAL_AI_CONDITIONS = 12;
+
 /** Fallback colour for any unexpected Site_Type value. */
 export const SITE_CONDITION_FALLBACK_COLOR = '#6b7280';

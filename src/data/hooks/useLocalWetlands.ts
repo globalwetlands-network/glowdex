@@ -19,12 +19,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import {
-  loadLocalSites,
-  loadLocalObservations,
-  loadLocalMeta,
-} from '../loaders/loadLocalWetlands';
-import { deriveLocalWetlands } from '../transforms/deriveLocalWetlands';
+import { localWetlandsCache } from '../preload';
 import type { LocalSite } from '../types/local-wetlands.types';
 
 interface LocalWetlandsData {
@@ -36,27 +31,20 @@ interface LocalWetlandsData {
 
 /** Loads and processes local wetlands monitoring data, returning typed sites. */
 export function useLocalWetlands(): LocalWetlandsData {
-  const [data, setData] = useState<LocalWetlandsData>({
-    isLoading: true,
-    localSites: [],
-    localDataUpdated: null,
+  // Seeded from the shared cache when the landing page already loaded it.
+  const [data, setData] = useState<LocalWetlandsData>(() => {
+    const cached = localWetlandsCache.peek();
+    return cached
+      ? { isLoading: false, ...cached }
+      : { isLoading: true, localSites: [], localDataUpdated: null };
   });
 
   useEffect(() => {
-    /** Fetches both CSVs + meta and derives typed LocalSite objects. */
+    /** Loads (or reuses) both CSVs + meta, derived into typed LocalSite objects. */
     async function load() {
       try {
-        const [siteRows, obsRows, meta] = await Promise.all([
-          loadLocalSites(),
-          loadLocalObservations(),
-          loadLocalMeta(),
-        ]);
-        const localSites = deriveLocalWetlands(siteRows, obsRows);
-        setData({
-          isLoading: false,
-          localSites,
-          localDataUpdated: meta?.updated ?? null,
-        });
+        const loaded = await localWetlandsCache.get();
+        setData({ isLoading: false, ...loaded });
       } catch (error) {
         // Best-effort/non-critical: log the outage signal for operators, then
         // degrade to an empty site list rather than failing the app. See the

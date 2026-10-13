@@ -220,7 +220,7 @@ function SingleIndicatorRow({
         />
         {match &&
           match.cellValue !== undefined &&
-          selectedCellId &&
+          selectedCellId != null &&
           onAskAI && (
             <ChartAIInsights
               indicatorName={indicator.label}

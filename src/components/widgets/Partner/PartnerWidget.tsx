@@ -8,6 +8,7 @@ import type { EnrichedGridCell } from '@/app/types/app.types';
 import type { LocalSite } from '@/data/types/local-wetlands.types';
 import type { TypologyMap } from '@/data/types/cluster.types';
 import { TileCapsule } from '@/components/shared/TileCapsule';
+import type { EntryMode } from '@/app/hooks/useEntryMode';
 
 interface PartnerWidgetProps {
   selectedCell: EnrichedGridCell | null;
@@ -34,6 +35,8 @@ interface PartnerWidgetProps {
   onNavigateToAnalysis: () => void;
   /** Current active panel tab — passed through to PostHog for accurate tab attribution. */
   currentTab?: string;
+  /** Workflow mode (GLO-207). Local mode has no tiles, so the empty-state copy changes. */
+  mode?: EntryMode;
 }
 
 export function PartnerWidget({
@@ -47,6 +50,7 @@ export function PartnerWidget({
   currentScale,
   onNavigateToAnalysis,
   currentTab = 'biodiversity',
+  mode = 'global',
 }: PartnerWidgetProps) {
   const posthog = usePostHog();
   const { data: partnersData, isLoading, isError } = usePartners();
@@ -137,9 +141,12 @@ export function PartnerWidget({
         >
           <MapPin size={18} className="text-gray-300" />
           {/* Intentionally mentions both entry points since this empty state is
-              shown when neither a tile nor a partner is selected */}
+              shown when neither a tile (or, in Local mode, a monitoring
+              location) nor a partner is selected */}
           <p className="text-sm text-gray-400">
-            Select a colored tile or partner organisation to get started
+            {mode === 'local'
+              ? 'Select a monitoring location or partner organisation to get started'
+              : 'Select a colored tile or partner organisation to get started'}
           </p>
         </div>
       </div>

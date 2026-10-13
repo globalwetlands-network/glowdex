@@ -1,1 +1,25 @@
 @import 'tailwindcss';
+
+/* Brand colour tokens. Tailwind v4 generates bg-/text-/border-/ring-glowdex-* from these. */
+@theme {
+  --color-glowdex-green: #0a5c47;
+  --color-glowdex-teal: #1d9e75;
+  /* Local animal panel (docs/design/local-animal-panel/tokens.json). */
+  --color-glowdex-interactive: #0f6e56;
+  --color-glowdex-interactive-hover: #085041;
+  --color-glowdex-tint: #ecf5f2;
+}
+
+/* Landing page only (LandingPage adds the class to <html> while mounted).
+   scroll-padding-top matches SiteHeader's 72px height, so anchor jumps and
+   keyboard focus never land under the fixed header. Smooth jumps unless the
+   user prefers reduced motion. */
+.landing-page {
+  scroll-padding-top: 72px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-page {
+    scroll-behavior: smooth;
+  }
+}

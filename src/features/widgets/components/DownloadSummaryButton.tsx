@@ -3,10 +3,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { usePostHog } from 'posthog-js/react';
 
 import type { EnrichedGridCell } from '@/app/types/app.types';
-import type {
-  AIStatisticalIndicatorSummary,
-  LocalSiteContext,
-} from '@/api/types';
+import type { AIStatisticalIndicatorSummary } from '@/api/types';
 import type { SpeciesConfigResponse } from '@/api/species';
 import type { PartnerResponse } from '@/api/partners';
 
@@ -20,7 +17,6 @@ interface DownloadSummaryButtonProps {
   statisticalSummaries?: AIStatisticalIndicatorSummary[];
   species: SpeciesConfigResponse[];
   partners: PartnerResponse[];
-  localSiteContext: LocalSiteContext | null;
 }
 
 /**
@@ -36,7 +32,6 @@ export function DownloadSummaryButton({
   statisticalSummaries,
   species,
   partners,
-  localSiteContext,
 }: DownloadSummaryButtonProps) {
   const posthog = usePostHog();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -58,7 +53,6 @@ export function DownloadSummaryButton({
         scale,
         statisticalSummaries,
         species: regionSpecies,
-        localSiteContext,
         generatedDate,
       });
       await generateCellSummaryPdf(summary);
@@ -69,7 +63,6 @@ export function DownloadSummaryButton({
           typology_scale: scale,
           indicator_count: summary.indicators.length,
           species_count: summary.species.length,
-          has_local_data: summary.localMonitoring !== null,
         });
       } catch (error) {
         console.error(

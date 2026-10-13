@@ -10,6 +10,8 @@
     <!-- Warm the DNS/TLS connection to the canonical data store (GLO-176) so the
          manifest → bundle round trip starts sooner, esp. from SA/AU. -->
     <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
+    <!-- Warm the Mapbox connection so the map style/tiles start sooner on /map. -->
+    <link rel="preconnect" href="https://api.mapbox.com" crossorigin />
     <meta name="theme-color" content="#0a5c47" />
     <meta
       name="viewport"

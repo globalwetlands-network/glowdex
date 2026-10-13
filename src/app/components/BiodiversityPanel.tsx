@@ -16,6 +16,7 @@ import { useScrollToSignal } from '@/app/hooks/useScrollToSignal';
 import { SpeciesSpotlightWidget } from '@/components/widgets/SpeciesSpotlight';
 import { PartnerWidget } from '@/components/widgets/Partner';
 import { usePartners } from '@/api/hooks/usePartners';
+import type { EntryMode } from '@/app/hooks/useEntryMode';
 
 interface BiodiversityPanelProps {
   selectedCell: EnrichedGridCell | null;
@@ -39,6 +40,12 @@ interface BiodiversityPanelProps {
   typologies: TypologyMap;
   currentScale: 'scale5' | 'scale18';
   onNavigateToAnalysis: () => void;
+  /**
+   * Workflow mode (GLO-207). Local mode keeps every widget but hides the
+   * monitoring-location switch (pins are forced on), the tile prompt and
+   * tile wording.
+   */
+  mode?: EntryMode;
 }
 
 export function BiodiversityPanel({
@@ -59,7 +66,9 @@ export function BiodiversityPanel({
   typologies,
   currentScale,
   onNavigateToAnalysis,
+  mode = 'global',
 }: BiodiversityPanelProps) {
+  const isLocal = mode === 'local';
   const posthog = usePostHog();
   const partnerRef = useScrollToSignal(scrollToPartnerSignal);
   const { data: partnersData } = usePartners();
@@ -71,7 +80,9 @@ export function BiodiversityPanel({
 
   return (
     <div className="p-4 space-y-4">
-      {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+      {!isLocal && !selectedCell && (
+        <SelectTilePrompt tileColor={TILE_COLOUR} />
+      )}
 
       {/* Species Spotlight container */}
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -103,6 +114,7 @@ export function BiodiversityPanel({
           typologies={typologies}
           currentScale={currentScale}
           onNavigateToAnalysis={onNavigateToAnalysis}
+          mode={mode}
         />
       </div>
 
@@ -143,43 +155,45 @@ export function BiodiversityPanel({
               </p>
             </div>
           )}
-          <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <MonitoringLocationIcon size={12} />
-              <span className="text-xs text-gray-600 leading-snug">
-                Show monitoring locations on map
-              </span>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={localSiteLayerEnabled}
-              onClick={() => {
-                const next = !localSiteLayerEnabled;
-                try {
-                  posthog?.capture('local_site_layer_toggled', {
-                    enabled: next,
-                    source: 'biodiversity_panel',
-                  });
-                } catch (error) {
-                  console.error(
-                    'Failed to capture local_site_layer_toggled event:',
-                    error,
-                  );
-                }
-                onLocalSiteLayerToggle(next);
-              }}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                localSiteLayerEnabled ? 'bg-[#1d9e75]' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  localSiteLayerEnabled ? 'translate-x-4' : 'translate-x-0'
+          {!isLocal && (
+            <div className="rounded-lg border border-[#1d9e75]/30 bg-[#1d9e75]/5 p-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <MonitoringLocationIcon size={12} />
+                <span className="text-xs text-gray-600 leading-snug">
+                  Show monitoring locations on map
+                </span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={localSiteLayerEnabled}
+                onClick={() => {
+                  const next = !localSiteLayerEnabled;
+                  try {
+                    posthog?.capture('local_site_layer_toggled', {
+                      enabled: next,
+                      source: 'biodiversity_panel',
+                    });
+                  } catch (error) {
+                    console.error(
+                      'Failed to capture local_site_layer_toggled event:',
+                      error,
+                    );
+                  }
+                  onLocalSiteLayerToggle(next);
+                }}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  localSiteLayerEnabled ? 'bg-[#1d9e75]' : 'bg-gray-200'
                 }`}
-              />
-            </button>
-          </div>
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    localSiteLayerEnabled ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -236,9 +250,9 @@ export function BiodiversityPanel({
               <p className="text-xs text-gray-500 leading-relaxed">
                 Shows the spatial extent of mangrove habitat from the Global
                 Mangrove Watch dataset, providing a visual reference for where
-                mangroves occur within each tile. MBCAM uses this layer to
-                contextualise modelled indicators against observed habitat
-                distribution.
+                mangroves occur{isLocal ? ' on the map' : ' within each tile'}.
+                MBCAM uses this layer to contextualise modelled indicators
+                against observed habitat distribution.
               </p>
               <p className="text-xs text-gray-500 leading-relaxed">
                 Currently the GMW forest layer is used as a map overlay only. We

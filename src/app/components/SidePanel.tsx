@@ -17,14 +17,21 @@ import { DownloadSummaryButton } from '@/features/widgets/components/DownloadSum
 import { CollapsibleSection } from './CollapsibleSection';
 import { AnalysisAssistantWidget } from './AnalysisAssistantWidget';
 import { GlobalWetlandsAnalysisWidget } from './GlobalWetlandsAnalysisWidget';
-import { LocalWetlandsAnalysisWidget } from '@/components/widgets/LocalData';
+import { LocalAnimalPanel } from '@/features/localPanel';
 import { BiodiversityPanel } from './BiodiversityPanel';
-import { SelectTilePrompt } from './SelectTilePrompt';
+import { GlobalEmptyStateGuide } from './GlobalEmptyStateGuide';
+import { markTileGuideSeen } from './tileGuideSeen';
 import { useAnalysisScroll } from '../hooks/useAnalysisScroll';
-import { TILE_COLOUR } from '@/constants/map-colours';
 import type { AIStatisticalIndicatorSummary } from '@/api';
+import type { EntryMode } from '../hooks/useEntryMode';
 
 interface SidePanelProps {
+  /**
+   * Workflow mode (GLO-207). Gates the Analysis tab: Global shows the cell
+   * cards; Local shows only the local wetlands widget and a site-scoped
+   * assistant. Both tabs exist in both modes.
+   */
+  mode: EntryMode;
   filterState: FilterState;
   onFilterChange: (state: FilterState) => void;
   selectedCell: EnrichedGridCell | null;
@@ -48,10 +55,10 @@ interface SidePanelProps {
   onTabChange: (tab: 'analysis' | 'biodiversity') => void;
   clickedPartnerId: string | null;
   localSites: LocalSite[];
-  /** ISO date local data was last refreshed, or null if unavailable. */
-  localDataUpdated: string | null;
   selectedSiteId: string | null;
   onSiteSelect: (siteId: string) => void;
+  /** Clears the selected site (Local panel, when the user changes country). */
+  onSiteClear: () => void;
   localSiteLayerEnabled: boolean;
   onLocalSiteLayerToggle: (enabled: boolean) => void;
   onViewLocalData: (siteId: string) => void;
@@ -59,7 +66,6 @@ interface SidePanelProps {
   isLocalContextPending: boolean;
   speciesConfig: SpeciesConfigResponse[];
   partners: PartnerResponse[];
-  onSiteAssociated?: (siteId: string | null) => void;
   scrollToLocalDataSignal?: number;
   scrollToPartnerSignal?: number;
   scrollToTopSignal?: number;
@@ -73,6 +79,7 @@ interface SidePanelProps {
  * Responsive: Full-screen on mobile (via tabs), fixed sidebar on desktop
  */
 export function SidePanel({
+  mode,
   filterState,
   onFilterChange,
   selectedCell,
@@ -92,9 +99,9 @@ export function SidePanel({
   onTabChange,
   clickedPartnerId,
   localSites,
-  localDataUpdated,
   selectedSiteId,
   onSiteSelect,
+  onSiteClear,
   localSiteLayerEnabled,
   onLocalSiteLayerToggle,
   onViewLocalData,
@@ -102,17 +109,23 @@ export function SidePanel({
   isLocalContextPending,
   speciesConfig,
   partners,
-  onSiteAssociated,
   scrollToLocalDataSignal,
   scrollToPartnerSignal,
   scrollToTopSignal,
   showAnalysisBadge,
   dataSkewed,
 }: SidePanelProps) {
+  const isLocal = mode === 'local';
   const { containerRef: analysisPanelRef, localDataRef } = useAnalysisScroll(
     scrollToTopSignal,
     scrollToLocalDataSignal,
   );
+
+  // The first real tile selection switches the Global empty state guide
+  // from the looping demo to static steps on later visits.
+  useEffect(() => {
+    if (selectedCell) markTileGuideSeen();
+  }, [selectedCell]);
 
   useEffect(() => {
     if (activeTab === 'analysis') {
@@ -124,17 +137,6 @@ export function SidePanel({
     <div className="bg-white shadow-xl flex flex-col w-full h-full md:border-r md:border-gray-200">
       {/* Tab Strip */}
       <div className="hidden md:flex border-b border-gray-200 shrink-0">
-        <button
-          onClick={() => onTabChange('biodiversity')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
-            activeTab === 'biodiversity'
-              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Leaf size={16} />
-          Biodiversity
-        </button>
         <button
           onClick={() => onTabChange('analysis')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
@@ -154,6 +156,17 @@ export function SidePanel({
             )}
           </span>
         </button>
+        <button
+          onClick={() => onTabChange('biodiversity')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm transition-colors cursor-pointer ${
+            activeTab === 'biodiversity'
+              ? 'text-[#0f6e56] border-b-2 border-[#0f6e56] font-medium'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Leaf size={16} />
+          Biodiversity
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -165,131 +178,150 @@ export function SidePanel({
             : 'hidden'
         }
       >
-        {!selectedCell && <SelectTilePrompt tileColor={TILE_COLOUR} />}
+        {isLocal ? (
+          <>
+            {/* Local mode: the local animal panel + site-scoped assistant
+                only. No grid-cell cards, filters or tile prompt (GLO-207,
+                GLO-221). */}
+            <div ref={localDataRef}>
+              <LocalAnimalPanel
+                localSites={localSites}
+                selectedSiteId={selectedSiteId}
+                onSiteSelect={onSiteSelect}
+                onSiteClear={onSiteClear}
+              />
+            </div>
 
-        {/* Location + Assistant cards — only shown when a cell is selected */}
-        {selectedCell && (
-          <div className="space-y-4">
-            {/* Location card */}
-            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-              <div className="p-4">
-                <CollapsibleSection
-                  title="Location"
-                  icon={MapPin}
-                  defaultOpen={true}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <button
-                      onClick={onClearSelection}
-                      className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
-                    >
-                      Clear selection
-                    </button>
-                    <DownloadSummaryButton
-                      selectedCell={selectedCell}
-                      scale={filterState.typologyScale}
-                      statisticalSummaries={statisticalSummaries}
-                      species={speciesConfig}
-                      partners={partners}
-                      localSiteContext={localSiteContext}
+            {(localSiteContext || isLocalContextPending) && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Assistant"
+                    icon={CrabIcon}
+                    defaultOpen={true}
+                  >
+                    <AnalysisAssistantWidget
+                      mode="local"
+                      selectedSiteId={
+                        activeTab === 'analysis' ? selectedSiteId : null
+                      }
+                      localSiteContext={
+                        activeTab === 'analysis' ? localSiteContext : null
+                      }
+                      isLocalContextPending={isLocalContextPending}
                     />
-                  </div>
-                  <SelectionPanel
-                    selectedCell={selectedCell}
-                    typologies={typologies}
-                    currentScale={filterState.typologyScale}
-                  />
-                </CollapsibleSection>
+                  </CollapsibleSection>
+                </div>
               </div>
-            </div>
+            )}
+          </>
+        ) : (
+          <>
+            {!selectedCell && <GlobalEmptyStateGuide />}
 
-            {/* Assistant card */}
-            <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-              <div className="p-4">
-                <CollapsibleSection
-                  title="Assistant"
-                  icon={CrabIcon}
-                  defaultOpen={true}
-                >
-                  <AnalysisAssistantWidget
-                    selectedCellId={
-                      activeTab === 'analysis' ? selectedCell?.id : null
-                    }
-                    localSiteContext={localSiteContext}
-                    isLocalContextPending={isLocalContextPending}
-                    hasMangrove={selectedCell?.mangroves ?? false}
-                    dataSkewed={dataSkewed}
-                  />
-                </CollapsibleSection>
+            {/* Location card — only shown when a cell is selected */}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Location"
+                    icon={MapPin}
+                    defaultOpen={true}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <button
+                        onClick={onClearSelection}
+                        className="text-xs font-medium text-[#0f6e56] hover:text-[#085041] transition-colors cursor-pointer"
+                      >
+                        Clear selection
+                      </button>
+                      <DownloadSummaryButton
+                        selectedCell={selectedCell}
+                        scale={filterState.typologyScale}
+                        statisticalSummaries={statisticalSummaries}
+                        species={speciesConfig}
+                        partners={partners}
+                      />
+                    </div>
+                    <SelectionPanel
+                      selectedCell={selectedCell}
+                      typologies={typologies}
+                      currentScale={filterState.typologyScale}
+                    />
+                  </CollapsibleSection>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Filters + Global Wetlands Analysis — only shown when a cell is selected */}
-        {selectedCell && (
-          <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
-            <div className="p-4">
-              <CollapsibleSection
-                title="Filters"
-                icon={Filter}
-                defaultOpen={true}
-                childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
-              >
-                <FilterControls
-                  filterState={filterState}
-                  onFilterChange={onFilterChange}
-                  typologies={typologies}
-                  activeClusterId={
-                    selectedCell
-                      ? ((filterState.typologyScale === 'scale5'
-                          ? selectedCell.cluster5
-                          : selectedCell.cluster18) ?? undefined)
-                      : undefined
-                  }
-                />
-              </CollapsibleSection>
-            </div>
-          </div>
-        )}
+            {/* Filters + Global Wetlands Analysis — only shown when a cell is selected */}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-gray-50 shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Filters"
+                    icon={Filter}
+                    defaultOpen={true}
+                    childrenClassName="pt-2 block animate-in fade-in slide-in-from-top-1"
+                  >
+                    <FilterControls
+                      filterState={filterState}
+                      onFilterChange={onFilterChange}
+                      typologies={typologies}
+                      activeClusterId={
+                        selectedCell
+                          ? ((filterState.typologyScale === 'scale5'
+                              ? selectedCell.cluster5
+                              : selectedCell.cluster18) ?? undefined)
+                          : undefined
+                      }
+                    />
+                  </CollapsibleSection>
+                </div>
+              </div>
+            )}
 
-        {selectedCell && (
-          <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-            <div className="p-4">
-              <CollapsibleSection
-                title="Global Wetlands Analysis"
-                icon={BarChart2}
-                defaultOpen={true}
-              >
-                <GlobalWetlandsAnalysisWidget
-                  selectedCell={selectedCell}
-                  distributions={distributions}
-                  statisticalSummaries={statisticalSummaries}
-                  isLoading={isLoading}
-                />
-              </CollapsibleSection>
-            </div>
-          </div>
-        )}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Global Wetlands Analysis"
+                    icon={BarChart2}
+                    defaultOpen={true}
+                  >
+                    <GlobalWetlandsAnalysisWidget
+                      selectedCell={selectedCell}
+                      distributions={distributions}
+                      statisticalSummaries={statisticalSummaries}
+                      isLoading={isLoading}
+                    />
+                  </CollapsibleSection>
+                </div>
+              </div>
+            )}
 
-        {/* Local Wetlands Analysis card — always visible */}
-        <div
-          ref={localDataRef}
-          className="rounded-xl border border-gray-100 bg-white shadow-sm"
-        >
-          <div className="p-4">
-            <LocalWetlandsAnalysisWidget
-              localSites={localSites}
-              localDataUpdated={localDataUpdated}
-              selectedCell={selectedCell}
-              selectedSiteId={selectedSiteId}
-              onSiteSelect={onSiteSelect}
-              localSiteLayerEnabled={localSiteLayerEnabled}
-              onLocalSiteLayerToggle={onLocalSiteLayerToggle}
-              onSiteAssociated={onSiteAssociated}
-            />
-          </div>
-        </div>
+            {/* Assistant card — last, after the analysis it answers questions about */}
+            {selectedCell && (
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="p-4">
+                  <CollapsibleSection
+                    title="Assistant"
+                    icon={CrabIcon}
+                    defaultOpen={true}
+                  >
+                    <AnalysisAssistantWidget
+                      mode="global"
+                      selectedCellId={
+                        activeTab === 'analysis' ? selectedCell?.id : null
+                      }
+                      hasMangrove={selectedCell?.mangroves ?? false}
+                      dataSkewed={dataSkewed}
+                    />
+                  </CollapsibleSection>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div
@@ -298,6 +330,7 @@ export function SidePanel({
         }
       >
         <BiodiversityPanel
+          mode={mode}
           selectedCell={selectedCell}
           onSpeciesLayerToggle={onSpeciesLayerToggle}
           onPartnerLayerToggle={onPartnerLayerToggle}
@@ -318,10 +351,12 @@ export function SidePanel({
         />
       </div>
 
-      {/* Footer info */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
-        {visibleCellCount.toLocaleString()} Mangrove Tiles
-      </div>
+      {/* Footer info — tile count is a Global-mode concept */}
+      {!isLocal && (
+        <div className="p-3 border-t border-gray-100 bg-gray-50 text-xs text-center text-gray-400 shrink-0">
+          {visibleCellCount.toLocaleString()} Mangrove Tiles
+        </div>
+      )}
     </div>
   );
 }
