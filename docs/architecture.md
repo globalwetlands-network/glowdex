@@ -34,7 +34,7 @@ Two data sources feed the UI:
 `src/main.tsx` mounts a `BrowserRouter` with two routes: `/` renders the public
 `LandingPage` (`Hero`, `FactSheet`, See it in action; `src/features/landing/`) and `/map` renders the map app (`App.tsx`); anything else
 redirects to `/`. The map's TopBar menu has a **Home** item that navigates back to `/`. `basename` is `import.meta.env.BASE_URL`, so the same routes work at `/`
-in dev and under `/glowdex/` on GitHub Pages.
+in dev and under the Pages base path (`PAGES_BASE_PATH`, default `/glowdex/`) on GitHub Pages.
 
 The map app is **lazy-loaded** (`React.lazy` + `Suspense` with `LoadingState`), so `/` doesn't
 download mapbox-gl, plotly, etc. Once the Hero has painted and the browser is idle (skipped on
@@ -53,7 +53,7 @@ data-store snapshot made by `node scripts/snapshot-landing-example.mjs` and run 
 app's own transforms. A dedicated pre-seeded `QueryClient` means the showcase makes no API
 calls, and the assistant runs in its `staticInsight` + `readOnly` mode.
 
-GitHub Pages has no rewrite rules, so a direct visit to `/glowdex/map` would 404. The deploy
+GitHub Pages has no rewrite rules, so a direct visit to `<base>/map` would 404. The deploy
 workflow (`deploy-pages.yml`) copies `dist/index.html` to `dist/404.html`: Pages serves that for any unknown
 path, the SPA boots, and the router renders the matching route. (Deep links therefore return
 HTTP 404 with the correct page, which browsers ignore; a crawler would see the status.)
@@ -141,7 +141,8 @@ component ──▶ useQuery/useMutation hook ──▶ fetchX() in src/api/*.ts
 
 - **Build/deploy:** `npm run build` (`tsc -b && vite build`) → `dist/`, published to GitHub
   Pages by `.github/workflows/deploy-pages.yml` on push to `main`/`develop`. The Vite `base` is
-  `/glowdex/` in production.
+  the Pages base path from the `PAGES_BASE_PATH` repo variable (unset/empty → `/glowdex/`; `/`
+  for the root of a custom domain), read by `vite.config.ts` at build time.
 - **Env vars are build-time only.** All `VITE_` vars are read at build and baked into the
   bundle; there is no runtime config. GitHub Actions injects them from repo **Secrets**
   (sensitive — Mapbox/API/PostHog keys) and **Variables** (config — hosts, feature flags) in the

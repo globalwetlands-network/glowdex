@@ -40,9 +40,10 @@ Newer code lives under `src/features/` and `src/app/`; `src/components/` holds s
 some legacy widgets still in use. Prefer `features/` for new feature work.
 
 **Routing:** `react-router-dom` in `src/main.tsx` — `/` → `LandingPage` (hero, fact sheet, See it in action), `/map` → the map
-app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL` (`/glowdex/` in prod);
-the Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
-`/glowdex/map` work on GitHub Pages.
+app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL`, i.e. the Vite
+`base`: the Pages base path from `PAGES_BASE_PATH` (default `/glowdex/`) in builds, `/` in dev.
+The Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
+`<base>/map` work on GitHub Pages.
 
 ## Conventions & patterns
 
@@ -94,6 +95,10 @@ truth). Copy it to `.env` for local dev. **⚠️ `VITE_` vars are bundled into 
 visible in the browser** — never put a real secret in one; `VITE_API_KEY` only deters casual
 abuse. In dev, `VITE_API_BASE_URL=/api` is proxied to the backend by Vite.
 
+The one non-`VITE_` build var is **`PAGES_BASE_PATH`** (repo Variable, in both workflows), read
+by `vite.config.ts` from the shell environment, not `.env`. Unset/empty builds for `/glowdex/`;
+set it to `/` to serve from the root of a custom domain.
+
 ### Adding a new environment variable (do all four, or prod breaks)
 
 Env vars are injected at **build time** from GitHub Actions — they are NOT read at runtime.
@@ -122,4 +127,11 @@ run them.
 - Branch from Linear issues: `feature/glo-<number>-<kebab-slug>` (or `chore/<slug>`).
 - PRs target `develop` (though `main` remains the repo's default branch). Fill out
   `.github/pull_request_template.md`.
+- **Release PRs (`develop` → `main`) must use "Create a merge commit", never squash.** A squash
+  leaves `main` with a commit `develop` doesn't have, so the next release PR conflicts on every
+  file touched since (this happened after #60). If it does happen, merge `main` back into
+  `develop` with a real merge commit, resolving to `develop`'s side once you've confirmed `main`
+  has no unique content.
+- When creating a branch from a remote ref, use `git switch --no-track -c <branch> origin/develop`.
+  Without `--no-track` the new branch's upstream is `develop`, and a push can land on `develop` directly.
 - **Never run git commit/push here** — the maintainer commits and pushes manually.
