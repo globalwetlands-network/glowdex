@@ -40,9 +40,10 @@ Newer code lives under `src/features/` and `src/app/`; `src/components/` holds s
 some legacy widgets still in use. Prefer `features/` for new feature work.
 
 **Routing:** `react-router-dom` in `src/main.tsx` — `/` → `LandingPage` (hero, fact sheet, See it in action), `/map` → the map
-app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL` (`/glowdex/` in prod);
-the Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
-`/glowdex/map` work on GitHub Pages.
+app (`App.tsx`). The router's `basename` is `import.meta.env.BASE_URL`, i.e. the Vite
+`base`: the Pages base path from `PAGES_BASE_PATH` (default `/glowdex/`) in builds, `/` in dev.
+The Pages deploy workflow copies `dist/index.html` to `dist/404.html` so deep links like
+`<base>/map` work on GitHub Pages.
 
 ## Conventions & patterns
 
@@ -93,6 +94,10 @@ All frontend vars are prefixed **`VITE_`** and defined in `.env.example` (the so
 truth). Copy it to `.env` for local dev. **⚠️ `VITE_` vars are bundled into client-side JS and
 visible in the browser** — never put a real secret in one; `VITE_API_KEY` only deters casual
 abuse. In dev, `VITE_API_BASE_URL=/api` is proxied to the backend by Vite.
+
+The one non-`VITE_` build var is **`PAGES_BASE_PATH`** (repo Variable, in both workflows), read
+by `vite.config.ts` from the shell environment, not `.env`. Unset/empty builds for `/glowdex/`;
+set it to `/` to serve from the root of a custom domain.
 
 ### Adding a new environment variable (do all four, or prod breaks)
 

@@ -34,7 +34,7 @@ function parseEntry(search: string): {
  *
  * Navigation goes through React Router, so the router sees every change and
  * Back/Forward need no extra handling. The helpers edit the current query
- * rather than rebuilding it, so the path (`/map` under the `/glowdex/`
+ * rather than rebuilding it, so the path (`/map` under the Pages
  * basename), unrelated params (e.g. `utm_*`, feature flags) and the `#hash`
  * are all kept. Their identities are stable across URL changes.
  */
