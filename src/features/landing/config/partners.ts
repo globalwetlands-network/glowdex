@@ -2,6 +2,7 @@ import aveiroLogo from '@/assets/partners/aveiro.png';
 import glowLogo from '@/assets/partners/glow.png';
 import griffithLogo from '@/assets/partners/griffith.png';
 import iiserKolkataLogo from '@/assets/partners/iiser-kolkata.png';
+import imasLogo from '@/assets/partners/imas.png';
 import ucrLogo from '@/assets/partners/ucr.png';
 import uwcLogo from '@/assets/partners/uwc.png';
 import type { SiteDestinationId } from '@/constants/comingSoon';
@@ -62,6 +63,11 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
   {
     name: 'IISER Kolkata',
     logoUrl: iiserKolkataLogo,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Institute for Marine and Antarctic Studies, University of Tasmania',
+    logoUrl: imasLogo,
     listingConfirmed: true,
   },
 ];
