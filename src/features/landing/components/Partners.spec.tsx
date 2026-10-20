@@ -16,9 +16,9 @@ describe('Partners', () => {
         'Led by the Global Wetlands Project at Griffith University and the University of the Western Cape.',
       ),
     ).toBeVisible();
-    expect(section.getAllByRole('listitem')).toHaveLength(6);
+    expect(section.getAllByRole('listitem')).toHaveLength(7);
     // Every featured partner has confirmed, so each tile shows its logo.
-    expect(section.getAllByRole('img')).toHaveLength(6);
+    expect(section.getAllByRole('img')).toHaveLength(7);
     expect(
       section.getByRole('img', { name: 'IISER Kolkata' }),
     ).toBeInTheDocument();
