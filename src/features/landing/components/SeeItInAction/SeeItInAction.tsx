@@ -26,11 +26,9 @@ import { useSlowConnection } from '../../hooks/useSlowConnection';
 import { AskTheAssistantExplainer } from './AskTheAssistantExplainer';
 import {
   EXAMPLE_STEPS,
-  FOOTNOTE_AFTER_DOI,
-  FOOTNOTE_BEFORE_DOI,
-  FOOTNOTE_DOI_URL,
   MODE_EXPLAINERS,
   MODE_LABELS,
+  SECTION_FOOTNOTE,
   SECTION_HEADING,
   SECTION_SUBHEAD,
   type ExampleMode,
@@ -383,44 +381,38 @@ export function SeeItInAction() {
               </p>
             </div>
 
-            <div
-              role="region"
-              aria-roledescription="carousel"
-              aria-label={SECTION_HEADING}
-              className="h-[480px] w-full rounded-2xl border border-gray-200 bg-[#f6f6f3] p-4 md:h-[540px] md:p-6"
-            >
+            {/* The stage and its footnote share the right column, so the
+                footnote sits directly under the stage however tall the
+                controls column is. The full reference is in the footer. */}
+            <div className="flex flex-col gap-3">
               <div
-                key={`${mode}-${step.target}`}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
-                data-example-target={step.target}
-                className="h-full w-full"
+                role="region"
+                aria-roledescription="carousel"
+                aria-label={SECTION_HEADING}
+                className="h-[480px] w-full rounded-2xl border border-gray-200 bg-[#f6f6f3] p-4 md:h-[540px] md:p-6"
               >
-                {MAP_TARGETS.has(step.target) ? (
-                  renderExample(step.target, mode)
-                ) : (
-                  <FitToStage>{renderExample(step.target, mode)}</FitToStage>
-                )}
+                <div
+                  key={`${mode}-${step.target}`}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
+                  data-example-target={step.target}
+                  className="h-full w-full"
+                >
+                  {MAP_TARGETS.has(step.target) ? (
+                    renderExample(step.target, mode)
+                  ) : (
+                    <FitToStage>{renderExample(step.target, mode)}</FitToStage>
+                  )}
+                </div>
               </div>
+              <p className="m-0 text-xs leading-relaxed text-gray-500">
+                {SECTION_FOOTNOTE}
+              </p>
             </div>
           </div>
 
           <AskTheAssistantExplainer />
-
-          {/* The long DOI may break anywhere so it can't overflow a phone. */}
-          <p className="m-0 -mt-10 text-xs leading-relaxed text-gray-500">
-            {FOOTNOTE_BEFORE_DOI}
-            <a
-              href={FOOTNOTE_DOI_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="break-all underline hover:text-gray-700"
-            >
-              {FOOTNOTE_DOI_URL}
-            </a>
-            {FOOTNOTE_AFTER_DOI}
-          </p>
         </div>
       </section>
     </LandingQueryProvider>

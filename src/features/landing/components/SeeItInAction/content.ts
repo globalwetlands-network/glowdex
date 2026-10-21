@@ -22,9 +22,9 @@ export interface ExampleStep {
   /** Explanatory label for this part of the example. */
   label: string;
   /**
-   * True while the label is a content-review step caption standing in for
-   * the final copy (GLO-190). Swap in the verbatim label and flip this to
-   * false.
+   * TODO(GLO-190): true while the label is a content-review step caption
+   * standing in for the final copy (four steps still are). Swap in the
+   * verbatim label and flip this to false.
    */
   placeholderLabel: boolean;
 }
@@ -118,12 +118,6 @@ export const INDICATOR_DISPLAY_NAMES: Record<string, string> = {
 /** Example follow-up — the assistant's own local-data suggestion chip. */
 export const EXAMPLE_FOLLOW_UP = 'What does the local field data show?';
 
-/**
- * Footnote under the section (GLO-216), split around the DOI so it can be a
- * link. The paper title is quoted as published, so it keeps "typologies".
- */
-export const FOOTNOTE_BEFORE_DOI =
-  "Sources: Sievers, M., Brown, C.J., Buelow, C.A., Pearson, R.M., Turschwell, M.P., Adame, M.F., Griffiths, L., Holgate, B., Rayner, T.S., Tulloch, V.J.D., Roy Chowdhury, M., zu Ermgassen, P.S.E., Lee, S.Y., Lillebø, A.I., Mackey, B., Maxwell, P.S., Rajkaran, A., Sousa, A.I. and Connolly, R.M. (2021) 'Global typologies of coastal wetland status to inform conservation and management', Ecological Indicators, 131, p. 108141. Available at: ";
-export const FOOTNOTE_DOI_URL = 'https://doi.org/10.1016/j.ecolind.2021.108141';
-export const FOOTNOTE_AFTER_DOI =
-  ' · AI-generated interpretation; always verify with an expert.';
+/** Footnote under the section; the full method reference is in the footer. */
+export const SECTION_FOOTNOTE =
+  'AI-generated interpretation; always verify with an expert. Method: Sievers et al. (2021).';

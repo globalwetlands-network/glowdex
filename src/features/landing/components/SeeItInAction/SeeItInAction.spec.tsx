@@ -346,20 +346,20 @@ describe('See it in action copy (GLO-216)', () => {
     }
   });
 
-  it('shows the Sievers et al. (2021) footnote with the DOI as a link', () => {
+  it('shows the short AI and method footnote under the carousel', () => {
     renderSection();
 
-    const doi = screen.getByRole('link', {
-      name: 'https://doi.org/10.1016/j.ecolind.2021.108141',
-    });
-    expect(doi).toHaveAttribute(
-      'href',
-      'https://doi.org/10.1016/j.ecolind.2021.108141',
+    const footnote = screen.getByText(
+      'AI-generated interpretation; always verify with an expert. Method: Sievers et al. (2021).',
     );
-    expect(doi).toHaveAttribute('target', '_blank');
-    expect(doi).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(doi.parentElement?.textContent).toBe(
-      "Sources: Sievers, M., Brown, C.J., Buelow, C.A., Pearson, R.M., Turschwell, M.P., Adame, M.F., Griffiths, L., Holgate, B., Rayner, T.S., Tulloch, V.J.D., Roy Chowdhury, M., zu Ermgassen, P.S.E., Lee, S.Y., Lillebø, A.I., Mackey, B., Maxwell, P.S., Rajkaran, A., Sousa, A.I. and Connolly, R.M. (2021) 'Global typologies of coastal wetland status to inform conservation and management', Ecological Indicators, 131, p. 108141. Available at: https://doi.org/10.1016/j.ecolind.2021.108141 · AI-generated interpretation; always verify with an expert.",
+    // Directly under the carousel stage, before the assistant explainer.
+    expect(footnote.previousElementSibling).toHaveAttribute(
+      'aria-roledescription',
+      'carousel',
     );
+    // The full reference and its DOI live in the footer, not here.
+    expect(
+      screen.queryByText(/Global typologies of coastal wetland/),
+    ).toBeNull();
   });
 });
