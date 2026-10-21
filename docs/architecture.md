@@ -44,6 +44,14 @@ The data hooks read through shared caches in `src/data/preload.ts` (`createCache
 `/map` picks up the preloaded data and skips `LoadingState`, and remounts (Home → map) reuse
 it. Each hook's `reload()` clears its cache entry, so the retry flow still refetches.
 
+**Charts load on demand.** Plotly is not in the map app's or the carousel's up-front code. Every
+chart renders through `Plot` (`src/components/charts/Plot.tsx`), which lazy-loads
+`PlotlyChart.tsx`, a partial Plotly bundle (core + violin + bar only), and shows a placeholder
+of the chart's height meanwhile. The map fetches that chunk once it is interactive (`onLoad` →
+`preloadChartsWhenIdle`); the carousel fetches it once it scrolls into view. To add a chart type,
+register its trace module in `PlotlyChart.tsx`; never import `react-plotly.js` directly, which
+pulls in the full Plotly bundle.
+
 Below the hero, the lazily loaded **"See it in action"** carousel
 (`src/features/landing/components/SeeItInAction/`) renders the app's **real** widgets
 (`LocalSiteTooltip`, `LocalWetlandsAnalysisWidget`, `MapTooltip`, `SelectionPanel`,

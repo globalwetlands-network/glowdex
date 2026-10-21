@@ -5,8 +5,8 @@ import { EXAMPLE_STEPS } from './content';
 import { SeeItInAction } from './SeeItInAction';
 
 // Plotly needs a real canvas; the chart's own wrapper markup still renders.
-vi.mock('react-plotly.js', () => ({
-  default: () => <div data-testid="plot" />,
+vi.mock('@/components/charts/Plot', () => ({
+  Plot: () => <div data-testid="plot" />,
 }));
 const capture = vi.hoisted(() => vi.fn());
 vi.mock('posthog-js/react', () => ({
