@@ -20,12 +20,12 @@ describe('WhyItMatters', () => {
     );
     expect(
       section.getByText(
-        'Mangroves protect coastlines, store carbon, shelter young fish and support the livelihoods of coastal communities.',
+        'Mangroves protect coastlines, provide timber products, improve water quality, store carbon, support fisheries harvests and the livelihoods of coastal communities.',
       ),
     ).toBeVisible();
     expect(
       section.getByText(
-        "But a mangrove in Kenya and one in Australia face very different conditions. Comparing each to similar places, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
+        "But a mangrove forest in Kenya and one in Australia face very different conditions. Comparing each to similar places, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
       ),
     ).toBeVisible();
   });
@@ -40,7 +40,7 @@ describe('WhyItMatters', () => {
     ]);
     expect(
       screen.getByText(
-        'After a restoration effort or a disturbance, local wildlife monitoring tracks whether a site is recovering toward a healthy reference condition, comparing reference, degraded and rehabilitated areas over time.',
+        'After a restoration effort or a disturbance, local wildlife monitoring tracks whether a site is recovering toward a healthy reference condition, comparing reference, degraded and restored areas over time.',
       ),
     ).toBeVisible();
     expect(
