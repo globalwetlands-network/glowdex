@@ -46,7 +46,11 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
                 <img
                   src={partner.logoUrl}
                   alt={partner.name}
-                  className="max-h-12 max-w-full object-contain"
+                  width={partner.logoWidth}
+                  height={partner.logoHeight}
+                  // The classes cap the display size; width/height only give
+                  // the aspect ratio so the tile doesn't shift on load.
+                  className="h-auto max-h-12 w-auto max-w-full object-contain"
                 />
               ) : (
                 <span className="text-center text-sm font-medium text-gray-600">
