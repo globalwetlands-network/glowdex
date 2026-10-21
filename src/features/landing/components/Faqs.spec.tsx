@@ -23,11 +23,11 @@ describe('Faqs', () => {
     expect(container.querySelectorAll('details')).toHaveLength(5);
 
     const toggle = screen.getByRole('button', {
-      name: 'Show 6 more questions',
+      name: 'Show 7 more questions',
     });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(toggle);
-    expect(container.querySelectorAll('details')).toHaveLength(11);
+    expect(container.querySelectorAll('details')).toHaveLength(12);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle).toHaveAccessibleName('Show fewer questions');
 
@@ -139,6 +139,35 @@ describe('Faqs', () => {
     expect(answerTo('How do I cite MBCAM?')).not.toMatch(/Sievers/);
     expect(answerTo('Where does the data come from?')).toMatch(
       /Sievers and colleagues in 2021/,
+    );
+  });
+
+  it('adds the indicator-selection FAQ, shown, under Data & methods', () => {
+    const group = FAQ_GROUPS.find((g) => g.heading === 'Data & methods');
+    const faq = group?.faqs.find(
+      (f) => f.question === 'How are biodiversity indicators being selected?',
+    );
+    expect(faq).toEqual({
+      question: 'How are biodiversity indicators being selected?',
+      answer:
+        'Indicators of biodiversity are selected based on extensive local knowledge at each location, in conjunction with their sensitivity to change and cost-effectiveness. Indicators that represent the status of wildlife and ecosystem condition more generally are preferred. Indicators can be for wildlife above (e.g. birds) and below (e.g. fish) water.',
+    });
+  });
+
+  it('says "condition profile", never "typology", including hidden FAQs', () => {
+    const all = FAQ_GROUPS.flatMap((g) => g.faqs);
+    expect(all.map((f) => f.question)).toContain(
+      'What is a condition profile?',
+    );
+    for (const faq of all) {
+      expect(`${faq.question} ${faq.answer ?? ''}`).not.toMatch(/typolog/i);
+    }
+    const confidence = all.find(
+      (f) => f.question === 'How confident is the classification?',
+    );
+    expect(confidence?.hidden).toBe(true);
+    expect(confidence?.answer).toMatch(
+      /^Each place shows a confidence score for its condition profile, plus the next-closest condition profile it could belong to\./,
     );
   });
 

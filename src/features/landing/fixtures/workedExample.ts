@@ -131,12 +131,12 @@ export const EXAMPLE_LOCAL_SITE_CONTEXT: LocalSiteContext = (() => {
 
 /** The global key finding, highlighted in the global assistant and explainer. */
 export const EXAMPLE_HIGHLIGHT =
-  'exceptionally low fish density compared to similar systems in its typology';
+  'exceptionally low fish density compared to similar systems in its condition profile';
 
 /** Pull quote for the explainer: the key finding, led by its highlight. */
 export const EXAMPLE_QUOTE = {
   highlight: 'Exceptionally low fish density',
-  rest: ' compared to similar systems in its typology.',
+  rest: ' compared to similar systems in its condition profile.',
 };
 
 const GLOBAL_SUMMARY =
@@ -181,7 +181,7 @@ export const EXAMPLE_INSIGHTS: Record<InsightMode, InsightResponse> = {
       `${EXAMPLE_LOCAL_SITE_CONTEXT.country}, by the ` +
       `${EXAMPLE_LOCAL_SITE_CONTEXT.partner} in ` +
       `${EXAMPLE_LOCAL_SITE_CONTEXT.year} shows crab densities in degraded ` +
-      `and rehabilitated zones ${LOCAL_HIGHLIGHT}.`,
+      `and restored zones ${LOCAL_HIGHLIGHT}.`,
     // Empty, as the live backend returns for local answers: ChatInterface
     // then credits the partner's field monitoring, never Sievers et al.
     sources: [],

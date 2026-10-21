@@ -10,8 +10,12 @@ export interface FactSheetFigure {
   provisional: boolean;
 }
 
-/** Shared with the hero's "… sites, and growing" byline so the two can't drift. */
-export const MONITORING_SITES_COUNT = 14;
+/**
+ * Shared with the hero's "… locations, and growing" byline so the two can't
+ * drift. Typed by hand, not counted from the data: check it against the live
+ * local data (unique locations in local-sites.csv) at each monthly publish.
+ */
+export const MONITORING_LOCATIONS_COUNT = 14;
 
 /**
  * Single source of truth for the partner figures, shared with the Partners
@@ -24,22 +28,22 @@ export const PARTNER_COUNTRIES_COUNT = 17;
 export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
   {
     value: '1,600+',
-    label: 'mangrove areas analysed worldwide',
+    label: 'Mangrove areas analysed worldwide',
     provisional: false,
   },
   {
     value: '~20',
-    label: 'indicators',
+    label: 'Indicators',
     provisional: false,
   },
   {
-    value: String(MONITORING_SITES_COUNT),
-    label: 'monitoring sites in 8 countries and territories',
+    value: String(MONITORING_LOCATIONS_COUNT),
+    label: 'Monitoring locations in 8 countries and territories',
     provisional: false,
   },
   {
     value: String(RESEARCH_PARTNERS_COUNT),
-    label: `research partners in ${PARTNER_COUNTRIES_COUNT} countries`,
+    label: `Research partners in ${PARTNER_COUNTRIES_COUNT} countries`,
     provisional: false,
   },
 ];
