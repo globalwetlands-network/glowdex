@@ -447,8 +447,9 @@ export function ChatInterface({
             type="submit"
             disabled={!inputValue.trim() || isLoading || readOnly}
             className="absolute right-2 p-1.5 text-gray-400 hover:text-blue-600 cursor-pointer disabled:cursor-not-allowed"
+            aria-label="Send follow-up question"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
           </button>
         </form>
         {readOnly && readOnlyHint && (
