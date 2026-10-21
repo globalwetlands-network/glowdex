@@ -13,7 +13,8 @@ architecture doc when you need detail.
 - **React 19** + **TypeScript** (strict), built with **Vite**. Deployed to **GitHub Pages**.
 - **Tailwind CSS v4** (via `@tailwindcss/postcss`) — utility-first, this is the ONLY styling mechanism.
 - **Mapbox GL** via **react-map-gl v7** for the map; **@turf/\*** for geo math.
-- **@tanstack/react-query** for all server state; **plotly.js** / `react-plotly.js` for charts.
+- **@tanstack/react-query** for all server state; **plotly.js** for charts, always through the
+  lazy `Plot` wrapper in `@/components/charts/Plot` (a partial bundle; never import `react-plotly.js` directly).
 - **papaparse** for CSV data, **react-markdown** for AI responses, **posthog-js** for analytics.
 - **Vitest** + **Testing Library** for tests; **ESLint + Prettier + Husky**.
 

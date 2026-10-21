@@ -24,8 +24,8 @@ vi.mock('@/api/hooks/usePartners', () => ({
   usePartners: () => ({ data: { partners: [] } }),
 }));
 
-vi.mock('react-plotly.js', () => ({
-  default: () => <div data-testid="plotly" />,
+vi.mock('@/components/charts/Plot', () => ({
+  Plot: () => <div data-testid="plotly" />,
 }));
 
 function obs(siteType: SiteCondition, density = 10): LocalObservation {

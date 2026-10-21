@@ -1,3 +1,5 @@
+// Unused (imported nowhere). Before rendering it, switch to `@/components/charts/Plot`
+// and register `pie` in its partial Plotly bundle (see PlotlyChart.tsx).
 import Plot from 'react-plotly.js';
 import type { SpeciesPopulationSegment } from '@/data/speciesSpotlight';
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Plot from 'react-plotly.js';
+import { Plot } from '@/components/charts/Plot';
 import { Info } from 'lucide-react';
 import type { IndicatorDistribution } from '../types/indicator.types';
 import type { AIStatisticalIndicatorSummary } from '@/api';

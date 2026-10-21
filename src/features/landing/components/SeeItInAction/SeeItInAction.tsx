@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AnalysisAssistantWidget } from '@/app/components/AnalysisAssistantWidget';
+import { usePreloadChartsInView } from '@/components/charts/usePreloadChartsInView';
 // Direct file imports: the LocalData barrel also exports the map layer, which
 // would drag mapbox-gl into the landing page's chunk.
 import { LocalSiteTooltip } from '@/components/widgets/LocalData/LocalSiteTooltip';
@@ -21,6 +22,7 @@ import {
   EXAMPLE_HIGHLIGHTS,
   EXAMPLE_INSIGHTS,
 } from '../../fixtures/workedExample';
+import { useSlowConnection } from '../../hooks/useSlowConnection';
 import { AskTheAssistantExplainer } from './AskTheAssistantExplainer';
 import {
   EXAMPLE_STEPS,
@@ -255,9 +257,16 @@ export function SeeItInAction() {
   const goTo = (index: number) =>
     setStepIndex((index + steps.length) % steps.length);
 
+  // The chart steps aren't first, so fetching Plotly once the section is on
+  // screen has it ready by the time a chart step opens. Skipped on Data Saver
+  // and slow connections, like the map preload; charts then load on demand.
+  const sectionRef = useRef<HTMLElement>(null);
+  const isSlowConnection = useSlowConnection();
+  usePreloadChartsInView(sectionRef, !isSlowConnection);
+
   return (
     <LandingQueryProvider>
-      <section className="bg-white px-6 py-20 md:px-16">
+      <section ref={sectionRef} className="bg-white px-6 py-20 md:px-16">
         <div className="mx-auto flex max-w-6xl flex-col gap-16">
           {/* Two columns from lg: title and controls beside the example, so
               both are on screen together. Below lg the controls sit above the
