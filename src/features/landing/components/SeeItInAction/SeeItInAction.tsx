@@ -1,6 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnalysisAssistantWidget } from '@/app/components/AnalysisAssistantWidget';
 import { usePreloadChartsInView } from '@/components/charts/usePreloadChartsInView';
 // Direct file imports: the LocalData barrel also exports the map layer, which
@@ -38,19 +37,8 @@ import {
 import { ExampleMapBackdrop } from './ExampleMapBackdrop';
 import { FitToStage } from './FitToStage';
 import { LandingQueryProvider } from './LandingQueryProvider';
-import { PRELOAD_ON_INTENT } from '../../preloadOnIntent';
 
 const noop = () => {};
-
-/**
- * Opens the map in the example's own mode — on the example site itself in
- * Local mode, which exists in the live data the fixture was snapshotted from.
- */
-function tryItInTheMapHref(mode: ExampleMode): string {
-  return mode === 'local'
-    ? `/map?mode=local&site=${EXAMPLE_LOCAL_SITE.id}`
-    : '/map?mode=global';
-}
 
 const MODES: ExampleMode[] = ['local', 'global'];
 
@@ -155,16 +143,6 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
             highlights={[EXAMPLE_HIGHLIGHTS[mode]]}
             showSuggestions
             readOnly
-            readOnlyHint={
-              <Link
-                to={tryItInTheMapHref(mode)}
-                {...PRELOAD_ON_INTENT}
-                className="inline-flex items-center gap-1 font-semibold text-glowdex-green hover:underline"
-              >
-                Try it in the map
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            }
           />
         </div>
       );

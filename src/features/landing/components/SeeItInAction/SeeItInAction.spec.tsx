@@ -154,23 +154,18 @@ describe('SeeItInAction carousel', () => {
     expect(wrapper).toHaveClass('invisible');
   });
 
-  it('shows the assistant read-only, linking to the map in the same mode', () => {
+  it('shows the assistant read-only, with no link into the map', () => {
     renderSection();
     goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
       slide().getByPlaceholderText('Ask a follow-up question...'),
     ).toBeDisabled();
-    // Local opens the example site itself.
-    expect(
-      slide().getByRole('link', { name: /try it in the map/i }),
-    ).toHaveAttribute('href', '/map?mode=local&site=za-bayhead');
+    expect(screen.queryByRole('link', { name: /in the map/i })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
     goToStep(EXAMPLE_STEPS.global[3].label);
-    expect(
-      slide().getByRole('link', { name: /try it in the map/i }),
-    ).toHaveAttribute('href', '/map?mode=global');
+    expect(screen.queryByRole('link', { name: /in the map/i })).toBeNull();
   });
 });
 
