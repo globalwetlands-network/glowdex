@@ -4,12 +4,18 @@ import { preloadCharts } from './preloadCharts';
 /**
  * Fetches the chart code once the element is actually on screen (no margin),
  * so a page that merely mounts a chart section early doesn't download Plotly
- * until the visitor scrolls to it.
+ * until the visitor scrolls to it. Pass `enabled: false` to skip the early
+ * fetch (e.g. on slow connections); charts then load when they render.
  */
-export function usePreloadChartsInView(ref: RefObject<Element | null>): void {
+export function usePreloadChartsInView(
+  ref: RefObject<Element | null>,
+  enabled = true,
+): void {
   useEffect(() => {
     const element = ref.current;
-    if (!element || typeof IntersectionObserver === 'undefined') return;
+    if (!enabled || !element || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         observer.disconnect();
@@ -18,5 +24,5 @@ export function usePreloadChartsInView(ref: RefObject<Element | null>): void {
     });
     observer.observe(element);
     return () => observer.disconnect();
-  }, [ref]);
+  }, [ref, enabled]);
 }

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Stands in for the Plotly bundle; shows which trace type it was given.
@@ -54,25 +54,25 @@ describe('Plot', () => {
     expect(screen.getByTestId('plotly-chart')).toHaveTextContent('bar');
   });
 
-  it('shows an error for a failed download, and a later chart retries it', async () => {
+  it('offers a page reload when the chart code fails to download', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    const reload = vi.fn();
+    vi.stubGlobal('location', { ...window.location, reload });
     vi.resetModules();
     vi.doMock('./PlotlyChart', () => {
       throw new Error('Failed to fetch dynamically imported module');
     });
     ({ Plot } = await import('./Plot'));
-    const { unmount } = render(
-      <Plot data={[{ type: 'bar' }]} layout={{ height: 220 }} />,
-    );
-    expect(await screen.findByText('Chart could not load')).toBeInTheDocument();
-    unmount();
+    render(<Plot data={[{ type: 'bar' }]} layout={{ height: 220 }} />);
 
-    // The network is back: the next chart must fetch again, not reuse the failure.
+    // Browsers never re-fetch a failed dynamic import, so only a reload helps.
+    expect(
+      await screen.findByText('Chart could not load.'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload page' }));
+    expect(reload).toHaveBeenCalled();
+    vi.unstubAllGlobals();
     vi.doMock('./PlotlyChart', fakeChartModule);
-    render(<Plot data={[{ type: 'violin' }]} layout={{ height: 80 }} />);
-    expect(await screen.findByTestId('plotly-chart')).toHaveTextContent(
-      'violin',
-    );
   });
 
   it('fetches the chart code only once', () => {

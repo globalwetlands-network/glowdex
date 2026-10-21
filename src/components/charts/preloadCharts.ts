@@ -7,17 +7,12 @@ let pending: Promise<ChartModule> | undefined;
 let loaded: ChartModule | undefined;
 
 /**
- * Fetches the chart code (Plotly) once. Safe to call repeatedly; a failed
- * fetch is forgotten so the next call retries.
+ * Fetches the chart code (Plotly) once. Safe to call repeatedly. A failed
+ * fetch stays failed: browsers never re-request a dynamic import that failed
+ * in this page, so only a reload recovers (see ChartPlaceholder).
  */
 export function preloadCharts(): Promise<ChartModule> {
-  pending ??= import('./PlotlyChart').then(
-    (module) => (loaded = module),
-    (error: unknown) => {
-      pending = undefined;
-      throw error;
-    },
-  );
+  pending ??= import('./PlotlyChart').then((module) => (loaded = module));
   return pending;
 }
 

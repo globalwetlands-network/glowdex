@@ -22,6 +22,7 @@ import {
   EXAMPLE_HIGHLIGHTS,
   EXAMPLE_INSIGHTS,
 } from '../../fixtures/workedExample';
+import { useSlowConnection } from '../../hooks/useSlowConnection';
 import { AskTheAssistantExplainer } from './AskTheAssistantExplainer';
 import {
   EXAMPLE_STEPS,
@@ -257,9 +258,11 @@ export function SeeItInAction() {
     setStepIndex((index + steps.length) % steps.length);
 
   // The chart steps aren't first, so fetching Plotly once the section is on
-  // screen has it ready by the time a chart step opens.
+  // screen has it ready by the time a chart step opens. Skipped on Data Saver
+  // and slow connections, like the map preload; charts then load on demand.
   const sectionRef = useRef<HTMLElement>(null);
-  usePreloadChartsInView(sectionRef);
+  const isSlowConnection = useSlowConnection();
+  usePreloadChartsInView(sectionRef, !isSlowConnection);
 
   return (
     <LandingQueryProvider>

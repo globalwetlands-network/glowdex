@@ -8,12 +8,20 @@ import { SeeItInAction } from './SeeItInAction';
 vi.mock('@/components/charts/Plot', () => ({
   Plot: () => <div data-testid="plot" />,
 }));
+const preloadInView = vi.hoisted(() => vi.fn());
+vi.mock('@/components/charts/usePreloadChartsInView', () => ({
+  usePreloadChartsInView: preloadInView,
+}));
 const capture = vi.hoisted(() => vi.fn());
 vi.mock('posthog-js/react', () => ({
   usePostHog: () => ({ capture }),
 }));
 
-beforeEach(() => capture.mockClear());
+beforeEach(() => {
+  capture.mockClear();
+  preloadInView.mockClear();
+  Reflect.deleteProperty(navigator, 'connection');
+});
 
 function renderSection() {
   return render(
@@ -163,6 +171,24 @@ describe('SeeItInAction carousel', () => {
     expect(
       slide().getByRole('link', { name: /try it in the map/i }),
     ).toHaveAttribute('href', '/map?mode=global');
+  });
+});
+
+describe('chart code preload', () => {
+  it('prefetches the charts once on screen on a normal connection', () => {
+    renderSection();
+
+    expect(preloadInView).toHaveBeenLastCalledWith(expect.anything(), true);
+  });
+
+  it('skips the prefetch on Data Saver or a slow connection', () => {
+    Object.defineProperty(navigator, 'connection', {
+      value: { saveData: true },
+      configurable: true,
+    });
+    renderSection();
+
+    expect(preloadInView).toHaveBeenLastCalledWith(expect.anything(), false);
   });
 });
 
