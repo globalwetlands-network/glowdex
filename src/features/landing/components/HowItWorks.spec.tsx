@@ -11,13 +11,22 @@ describe('HowItWorks', () => {
     expect(items).toHaveLength(4);
 
     for (const [index, [title, description]] of [
-      ['Gather', /we bring together global data on every mangrove area/i],
-      ['Group', /a statistical model sorts mangrove areas into typologies/i],
+      [
+        'Gather',
+        'We bring together global data on every mangrove area: its extent, its structure, the wildlife it supports and the pressures it faces.',
+      ],
+      [
+        'Group',
+        'A statistical model sorts mangrove areas into condition profiles: groups of places with similar characteristics and pressures.',
+      ],
       [
         'Compare',
-        /measuring it against places like it, not against a global average/i,
+        'We compare each area with others in its profile: measuring it against places like it, not against a global average.',
       ],
-      ['Monitor', /their data joins the global dataset/i],
+      [
+        'Monitor',
+        'Partners monitor sites in the field, recording wildlife such as crabs at reference, degraded and restored sites. Their data joins the global dataset, feeding back into future rounds of comparison.',
+      ],
     ].entries()) {
       const item = within(items[index]);
       expect(item.getByText(String(index + 1))).toBeVisible();
