@@ -38,7 +38,7 @@ export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
   },
   {
     value: String(MONITORING_LOCATIONS_COUNT),
-    label: 'monitoring sites in 8 countries and territories',
+    label: 'monitoring locations in 8 countries and territories',
     provisional: false,
   },
   {

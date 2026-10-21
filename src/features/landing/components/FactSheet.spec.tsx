@@ -14,7 +14,7 @@ describe('FactSheet', () => {
     for (const [value, label] of [
       ['1,600+', /mangrove areas analysed worldwide/i],
       ['~20', /^indicators$/i],
-      ['14', /monitoring sites in 8 countries and territories/i],
+      ['14', /monitoring locations in 8 countries and territories/i],
       ['19', /research partners in 17 countries/i],
     ] as const) {
       expect(screen.getByText(value)).toBeVisible();
