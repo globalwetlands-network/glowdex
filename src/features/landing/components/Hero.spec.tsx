@@ -74,7 +74,9 @@ describe('Hero', () => {
       screen.getByRole('heading', { name: /explore the world's mangroves/i }),
     ).toBeVisible();
     expect(
-      screen.getByText(/combines a global assessment of mangrove conditions/i),
+      screen.getByText(
+        /^MBCAM brings together a global comparison of mangrove areas and wildlife monitoring by partners on the ground\.$/,
+      ),
     ).toBeVisible();
     expect(
       screen.getByRole('link', { name: 'Local wildlife data' }),
@@ -88,7 +90,7 @@ describe('Hero', () => {
     expect(
       screen.getByText(/overall ecosystem condition for any mangrove area/i),
     ).toBeVisible();
-    expect(screen.getByText(/14 sites, and growing/i)).toBeVisible();
+    expect(screen.getByText(/^14 locations, and growing$/)).toBeVisible();
     expect(screen.getByText(/free and open to everyone/i)).toBeVisible();
   });
 

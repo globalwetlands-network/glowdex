@@ -154,23 +154,18 @@ describe('SeeItInAction carousel', () => {
     expect(wrapper).toHaveClass('invisible');
   });
 
-  it('shows the assistant read-only, linking to the map in the same mode', () => {
+  it('shows the assistant read-only, with no link into the map', () => {
     renderSection();
     goToStep(EXAMPLE_STEPS.local[2].label);
 
     expect(
       slide().getByPlaceholderText('Ask a follow-up question...'),
     ).toBeDisabled();
-    // Local opens the example site itself.
-    expect(
-      slide().getByRole('link', { name: /try it in the map/i }),
-    ).toHaveAttribute('href', '/map?mode=local&site=za-bayhead');
+    expect(screen.queryByRole('link', { name: /in the map/i })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Global assessment' }));
     goToStep(EXAMPLE_STEPS.global[3].label);
-    expect(
-      slide().getByRole('link', { name: /try it in the map/i }),
-    ).toHaveAttribute('href', '/map?mode=global');
+    expect(screen.queryByRole('link', { name: /in the map/i })).toBeNull();
   });
 });
 
@@ -251,7 +246,7 @@ describe('carousel assistant', () => {
 
     expect(
       slide().getByText(
-        'exceptionally low fish density compared to similar systems in its typology',
+        'exceptionally low fish density compared to similar systems in its condition profile',
         { selector: 'mark' },
       ),
     ).toBeInTheDocument();
@@ -293,5 +288,73 @@ describe('Ask the assistant explainer', () => {
       screen.queryByAltText(/chatgpt|claude|gemini|grok/i),
     ).not.toBeInTheDocument();
     expect(container.textContent).not.toContain('22654');
+    expect(
+      screen.queryByText(/Works like the AI assistants you already use/),
+    ).not.toBeInTheDocument();
+  });
+
+  it('describes the place by its condition profile, not its typology', () => {
+    renderSection();
+
+    expect(screen.getByText('Condition profile 1')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'The condition profile, its indicators, and any local monitoring available.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'In plain language, comparing this place with others in its condition profile.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /compared to similar systems in its condition profile\./,
+      ),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('See it in action copy (GLO-216)', () => {
+  it('uses the final labels for the supplied steps', () => {
+    expect(EXAMPLE_STEPS.local[1]).toMatchObject({
+      label: 'See direct measurements recorded there',
+      placeholderLabel: false,
+    });
+    expect(EXAMPLE_STEPS.global[1]).toMatchObject({
+      label:
+        'See its condition profile and confidence from satellite-derived estimates',
+      placeholderLabel: false,
+    });
+    expect(EXAMPLE_STEPS.global[2]).toMatchObject({
+      label: 'Compare it with similar places around the world',
+      placeholderLabel: false,
+    });
+    // The rest still wait on final copy.
+    for (const step of [
+      EXAMPLE_STEPS.local[0],
+      EXAMPLE_STEPS.local[2],
+      EXAMPLE_STEPS.global[0],
+      EXAMPLE_STEPS.global[3],
+    ]) {
+      expect(step.placeholderLabel).toBe(true);
+    }
+  });
+
+  it('shows the short AI and method footnote under the carousel', () => {
+    renderSection();
+
+    const footnote = screen.getByText(
+      'AI-generated interpretation; always verify with an expert. Method: Sievers et al. (2021).',
+    );
+    // Directly under the carousel stage, before the assistant explainer.
+    expect(footnote.previousElementSibling).toHaveAttribute(
+      'aria-roledescription',
+      'carousel',
+    );
+    // The full reference and its DOI live in the footer, not here.
+    expect(
+      screen.queryByText(/Global typologies of coastal wetland/),
+    ).toBeNull();
   });
 });

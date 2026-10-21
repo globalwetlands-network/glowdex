@@ -8,7 +8,8 @@ import {
 
 /**
  * "Who it's for" persona blocks (GLO-191), verbatim from the landing-page
- * content review: four audiences, two of them without a question line.
+ * content review, updated for GLO-216: four audiences, one of them without
+ * a question line.
  *
  * Adding, removing, rewording or reordering a persona is an edit here only.
  * Cards sit two to a row on wider screens, so an even count keeps the grid
@@ -31,9 +32,10 @@ export const PERSONAS: readonly Persona[] = [
   {
     audience: 'Conservation Managers',
     icon: MapPinned,
+    question: 'Where should we focus effort?',
     points: [
       'Find your area on the map and see which kind of mangrove it is.',
-      'Compare it with similar places rather than a global average.',
+      'Compare it with places with similar condition profiles.',
       'Download a summary for a report or a funding proposal.',
     ],
   },
@@ -42,7 +44,7 @@ export const PERSONAS: readonly Persona[] = [
     icon: GraduationCap,
     question: 'How does my site compare with others like it?',
     points: [
-      'See how a site sits against others in its typology across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
+      'See how a site sits against others in its condition profile across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
       'Download the data and cite the method.',
     ],
   },
@@ -51,7 +53,7 @@ export const PERSONAS: readonly Persona[] = [
     icon: Users,
     question: 'How does what we record fit into the bigger picture?',
     points: [
-      "See your site's wildlife records alongside the global picture for that area, and compare reference, degraded and rehabilitated sites.",
+      "See your site's wildlife records alongside the global picture for that area, and compare reference, degraded and restored sites.",
       'Your data becomes part of a global dataset others can use.',
     ],
   },

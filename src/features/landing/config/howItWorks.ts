@@ -25,17 +25,17 @@ export const HOW_IT_WORKS_STEPS: readonly HowItWorksStep[] = [
   {
     title: 'Group',
     description:
-      'A statistical model sorts mangrove areas into typologies: groups of places with similar characteristics and pressures.',
+      'A statistical model sorts mangrove areas into condition profiles: groups of places with similar characteristics and pressures.',
   },
   {
     title: 'Compare',
     description:
-      'We compare each place with others in its typology: measuring it against places like it, not against a global average.',
+      'We compare each area with others in its profile: measuring it against places like it, not against a global average.',
   },
   {
     title: 'Monitor',
     description:
-      'Partners monitor sites in the field, recording wildlife such as crabs at reference, degraded and rehabilitated sites. Their data joins the global dataset, feeding back into future rounds of comparison.',
+      'Partners monitor sites in the field, recording wildlife such as crabs at reference, degraded and restored sites. Their data joins the global dataset, feeding back into future rounds of comparison.',
   },
 ];
 

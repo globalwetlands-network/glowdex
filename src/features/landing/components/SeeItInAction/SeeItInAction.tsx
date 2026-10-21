@@ -1,6 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnalysisAssistantWidget } from '@/app/components/AnalysisAssistantWidget';
 import { usePreloadChartsInView } from '@/components/charts/usePreloadChartsInView';
 // Direct file imports: the LocalData barrel also exports the map layer, which
@@ -28,6 +27,7 @@ import {
   EXAMPLE_STEPS,
   MODE_EXPLAINERS,
   MODE_LABELS,
+  SECTION_FOOTNOTE,
   SECTION_HEADING,
   SECTION_SUBHEAD,
   type ExampleMode,
@@ -37,19 +37,8 @@ import {
 import { ExampleMapBackdrop } from './ExampleMapBackdrop';
 import { FitToStage } from './FitToStage';
 import { LandingQueryProvider } from './LandingQueryProvider';
-import { PRELOAD_ON_INTENT } from '../../preloadOnIntent';
 
 const noop = () => {};
-
-/**
- * Opens the map in the example's own mode — on the example site itself in
- * Local mode, which exists in the live data the fixture was snapshotted from.
- */
-function tryItInTheMapHref(mode: ExampleMode): string {
-  return mode === 'local'
-    ? `/map?mode=local&site=${EXAMPLE_LOCAL_SITE.id}`
-    : '/map?mode=global';
-}
 
 const MODES: ExampleMode[] = ['local', 'global'];
 
@@ -154,16 +143,6 @@ function renderExample(target: ExampleTarget, mode: ExampleMode): ReactNode {
             highlights={[EXAMPLE_HIGHLIGHTS[mode]]}
             showSuggestions
             readOnly
-            readOnlyHint={
-              <Link
-                to={tryItInTheMapHref(mode)}
-                {...PRELOAD_ON_INTENT}
-                className="inline-flex items-center gap-1 font-semibold text-glowdex-green hover:underline"
-              >
-                Try it in the map
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            }
           />
         </div>
       );
@@ -380,26 +359,34 @@ export function SeeItInAction() {
               </p>
             </div>
 
-            <div
-              role="region"
-              aria-roledescription="carousel"
-              aria-label={SECTION_HEADING}
-              className="h-[480px] w-full rounded-2xl border border-gray-200 bg-[#f6f6f3] p-4 md:h-[540px] md:p-6"
-            >
+            {/* The stage and its footnote share the right column, so the
+                footnote sits directly under the stage however tall the
+                controls column is. The full reference is in the footer. */}
+            <div className="flex flex-col gap-3">
               <div
-                key={`${mode}-${step.target}`}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
-                data-example-target={step.target}
-                className="h-full w-full"
+                role="region"
+                aria-roledescription="carousel"
+                aria-label={SECTION_HEADING}
+                className="h-[480px] w-full rounded-2xl border border-gray-200 bg-[#f6f6f3] p-4 md:h-[540px] md:p-6"
               >
-                {MAP_TARGETS.has(step.target) ? (
-                  renderExample(step.target, mode)
-                ) : (
-                  <FitToStage>{renderExample(step.target, mode)}</FitToStage>
-                )}
+                <div
+                  key={`${mode}-${step.target}`}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`Step ${stepIndex + 1} of ${steps.length}`}
+                  data-example-target={step.target}
+                  className="h-full w-full"
+                >
+                  {MAP_TARGETS.has(step.target) ? (
+                    renderExample(step.target, mode)
+                  ) : (
+                    <FitToStage>{renderExample(step.target, mode)}</FitToStage>
+                  )}
+                </div>
               </div>
+              <p className="m-0 text-xs leading-relaxed text-gray-500">
+                {SECTION_FOOTNOTE}
+              </p>
             </div>
           </div>
 

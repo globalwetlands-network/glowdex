@@ -1,11 +1,18 @@
+import { ExternalLink } from 'lucide-react';
 import logo from '@/assets/globalwetlands.png';
 import { SiteLink } from '@/components/shared/SiteLink';
 import { useDatasetVersion } from '@/data/hooks/useDatasetVersion';
-import { FOOTER_CREDIT, FOOTER_LINKS } from '../config/footer';
+import {
+  FOOTER_CREDIT,
+  FOOTER_LINKS,
+  FOOTER_SOURCE_LINK_LABEL,
+  FOOTER_SOURCES,
+  FOOTER_SOURCES_HEADING,
+} from '../config/footer';
 
 /**
- * Landing page footer: logo, nav, the builder credit and the live dataset
- * version.
+ * Landing page footer: logo, nav, the builder credit, the method reference
+ * and the live dataset version.
  *
  * The version is the store manifest's `dataset_version`, the one place the
  * site shows it. Its line is omitted until the manifest resolves, and stays
@@ -46,6 +53,36 @@ export function SiteFooter() {
         <p className="m-0 mb-2 max-w-[600px] text-xs leading-relaxed text-gray-500">
           {FOOTER_CREDIT}
         </p>
+        <section
+          aria-labelledby="footer-sources-heading"
+          className="mb-4 max-w-[720px] border-t border-gray-100 pt-4"
+        >
+          <h2
+            id="footer-sources-heading"
+            className="m-0 mb-2 text-[11px] font-bold tracking-widest text-gray-500 uppercase"
+          >
+            {FOOTER_SOURCES_HEADING}
+          </h2>
+          <ul className="m-0 list-none space-y-2 p-0 text-xs leading-relaxed text-gray-600">
+            {FOOTER_SOURCES.map((source) => (
+              <li key={source.url}>
+                {source.authors} ({source.year}) &lsquo;{source.title}&rsquo;,{' '}
+                <i>{source.journal}</i>, {source.details}.{' '}
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${FOOTER_SOURCE_LINK_LABEL}: ${source.title} (opens in a new tab)`}
+                  title={source.url}
+                  className="inline-flex items-center gap-1 font-semibold whitespace-nowrap text-glowdex-green underline underline-offset-2 hover:text-glowdex-teal"
+                >
+                  {FOOTER_SOURCE_LINK_LABEL}
+                  <ExternalLink aria-hidden="true" className="h-3 w-3" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
         {datasetVersion && (
           <p className="m-0 flex items-center gap-2 text-xs text-gray-500">
             Dataset version

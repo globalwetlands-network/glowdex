@@ -52,9 +52,9 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
     heading: 'How it works',
     faqs: [
       {
-        question: 'What is a typology?',
+        question: 'What is a condition profile?',
         answer:
-          'A group of mangrove areas that share similar characteristics and pressures. Placing an area in a typology is what lets it be compared with places like it, rather than with the whole world.',
+          'A group of mangrove areas that share similar characteristics and pressures. Placing an area in a condition profile is what lets it be compared with places like it, rather than with the whole world.',
       },
       {
         question: 'Does MBCAM show how healthy a mangrove is?',
@@ -87,7 +87,7 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       {
         question: 'How confident is the classification?',
         answer:
-          'Each place shows a confidence score for its typology, plus the next-closest typology it could belong to. Confidence drops where data is sparse. The model also flags which values it estimated rather than measured directly.',
+          'Each place shows a confidence score for its condition profile, plus the next-closest condition profile it could belong to. Confidence drops where data is sparse. The model also flags which values it estimated rather than measured directly.',
         // Hidden until confidence scores ship in the map.
         hidden: true,
       },
@@ -95,6 +95,11 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         question: "Why doesn't the species count match GBIF?",
         answer:
           "MBCAM only counts wild observations with verified coordinates from the last ten years. GBIF's totals also include older and unverified records, which is why the numbers differ.",
+      },
+      {
+        question: 'How are biodiversity indicators being selected?',
+        answer:
+          'Indicators of biodiversity are selected based on extensive local knowledge at each location, in conjunction with their sensitivity to change and cost-effectiveness. Indicators that represent the status of wildlife and ecosystem condition more generally are preferred. Indicators can be for wildlife above (e.g. birds) and below (e.g. fish) water.',
       },
       {
         question: 'Is the AI assistant always right?',

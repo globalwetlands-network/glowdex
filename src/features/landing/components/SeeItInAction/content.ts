@@ -22,9 +22,9 @@ export interface ExampleStep {
   /** Explanatory label for this part of the example. */
   label: string;
   /**
-   * TODO(GLO-190): the six explanatory labels haven't been supplied yet —
-   * these are the content-review step captions standing in. Swap in the
-   * verbatim labels and flip this to false.
+   * TODO(GLO-190): true while the label is a content-review step caption
+   * standing in for the final copy (four steps still are). Swap in the
+   * verbatim label and flip this to false.
    */
   placeholderLabel: boolean;
 }
@@ -52,8 +52,8 @@ export const EXAMPLE_STEPS: Record<ExampleMode, ExampleStep[]> = {
     },
     {
       target: 'local-chart',
-      label: 'See real measurements recorded there',
-      placeholderLabel: true,
+      label: 'See direct measurements recorded there',
+      placeholderLabel: false,
     },
     {
       target: 'assistant',
@@ -69,13 +69,14 @@ export const EXAMPLE_STEPS: Record<ExampleMode, ExampleStep[]> = {
     },
     {
       target: 'typology-panel',
-      label: 'See its typology, from satellite-derived estimates',
-      placeholderLabel: true,
+      label:
+        'See its condition profile and confidence from satellite-derived estimates',
+      placeholderLabel: false,
     },
     {
       target: 'global-chart',
-      label: 'Compare it with similar places globally',
-      placeholderLabel: true,
+      label: 'Compare it with similar places around the world',
+      placeholderLabel: false,
     },
     {
       target: 'assistant',
@@ -92,11 +93,11 @@ export const ASSISTANT_EXPLAINER_STEPS: [title: string, body: string][] = [
   ],
   [
     'It reads the data for that place',
-    'The typology, its indicators, and any local monitoring available.',
+    'The condition profile, its indicators, and any local monitoring available.',
   ],
   [
     'It explains what stands out',
-    'In plain language, comparing this place with others in its typology.',
+    'In plain language, comparing this place with others in its condition profile.',
   ],
   [
     'You can ask follow-up questions',
@@ -116,3 +117,7 @@ export const INDICATOR_DISPLAY_NAMES: Record<string, string> = {
 
 /** Example follow-up — the assistant's own local-data suggestion chip. */
 export const EXAMPLE_FOLLOW_UP = 'What does the local field data show?';
+
+/** Footnote under the section; the full method reference is in the footer. */
+export const SECTION_FOOTNOTE =
+  'AI-generated interpretation; always verify with an expert. Method: Sievers et al. (2021).';

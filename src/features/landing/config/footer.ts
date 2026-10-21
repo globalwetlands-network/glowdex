@@ -25,3 +25,35 @@ export const FOOTER_LINKS: readonly FooterLink[] = [
 
 export const FOOTER_CREDIT =
   'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, with partners worldwide.';
+
+export interface FooterSource {
+  authors: string;
+  year: number;
+  title: string;
+  journal: string;
+  /** Volume and page, e.g. "131, p. 108141". */
+  details: string;
+  url: string;
+}
+
+export const FOOTER_SOURCES_HEADING = 'Sources';
+
+/** Text of each source's link, in place of the bare DOI. */
+export const FOOTER_SOURCE_LINK_LABEL = 'Read the paper';
+
+/**
+ * Method references, in the published citation (Harvard style). The title is
+ * as published, so it keeps "typologies".
+ */
+export const FOOTER_SOURCES: readonly FooterSource[] = [
+  {
+    authors:
+      'Sievers, M., Brown, C.J., Buelow, C.A., Pearson, R.M., Turschwell, M.P., Adame, M.F., Griffiths, L., Holgate, B., Rayner, T.S., Tulloch, V.J.D., Roy Chowdhury, M., zu Ermgassen, P.S.E., Lee, S.Y., Lillebø, A.I., Mackey, B., Maxwell, P.S., Rajkaran, A., Sousa, A.I. and Connolly, R.M.',
+    year: 2021,
+    title:
+      'Global typologies of coastal wetland status to inform conservation and management',
+    journal: 'Ecological Indicators',
+    details: '131, p. 108141',
+    url: 'https://doi.org/10.1016/j.ecolind.2021.108141',
+  },
+];

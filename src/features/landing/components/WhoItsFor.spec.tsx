@@ -21,10 +21,10 @@ describe('WhoItsFor', () => {
       [
         [
           'Conservation Managers',
-          null,
+          'Where should we focus effort?',
           [
             'Find your area on the map and see which kind of mangrove it is.',
-            'Compare it with similar places rather than a global average.',
+            'Compare it with places with similar condition profiles.',
             'Download a summary for a report or a funding proposal.',
           ],
         ],
@@ -32,7 +32,7 @@ describe('WhoItsFor', () => {
           'Researchers and Students',
           'How does my site compare with others like it?',
           [
-            'See how a site sits against others in its typology across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
+            'See how a site sits against others in its condition profile across every indicator, with the confidence behind the classification and which values are measured rather than estimated.',
             'Download the data and cite the method.',
           ],
         ],
@@ -40,7 +40,7 @@ describe('WhoItsFor', () => {
           'Monitoring Partners',
           'How does what we record fit into the bigger picture?',
           [
-            "See your site's wildlife records alongside the global picture for that area, and compare reference, degraded and rehabilitated sites.",
+            "See your site's wildlife records alongside the global picture for that area, and compare reference, degraded and restored sites.",
             'Your data becomes part of a global dataset others can use.',
           ],
         ],

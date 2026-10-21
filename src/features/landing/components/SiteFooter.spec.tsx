@@ -48,6 +48,31 @@ describe('SiteFooter', () => {
     expect(FOOTER_CREDIT).toMatch(/with partners worldwide\.$/);
   });
 
+  it('shows the method reference as a Sources section, linked by name', () => {
+    render(<SiteFooter />);
+
+    const sources = within(screen.getByRole('region', { name: 'Sources' }));
+    const item = sources.getByRole('listitem');
+    expect(item.textContent).toBe(
+      'Sievers, M., Brown, C.J., Buelow, C.A., Pearson, R.M., Turschwell, M.P., Adame, M.F., Griffiths, L., Holgate, B., Rayner, T.S., Tulloch, V.J.D., Roy Chowdhury, M., zu Ermgassen, P.S.E., Lee, S.Y., Lillebø, A.I., Mackey, B., Maxwell, P.S., Rajkaran, A., Sousa, A.I. and Connolly, R.M. (2021) ‘Global typologies of coastal wetland status to inform conservation and management’, Ecological Indicators, 131, p. 108141. Read the paper',
+    );
+    expect(within(item).getByText('Ecological Indicators').tagName).toBe('I');
+
+    const link = sources.getByRole('link', { name: /^Read the paper/ });
+    expect(link).toHaveTextContent('Read the paper');
+    expect(link).toHaveAttribute(
+      'href',
+      'https://doi.org/10.1016/j.ecolind.2021.108141',
+    );
+    expect(link).toHaveAttribute(
+      'title',
+      'https://doi.org/10.1016/j.ecolind.2021.108141',
+    );
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link).toHaveAccessibleName(/opens in a new tab/);
+  });
+
   it('shows no acknowledgement placeholder', () => {
     const { container } = render(<SiteFooter />);
 
