@@ -32,9 +32,10 @@ export function HeroMedia({ variant }: HeroMediaProps) {
   // file is fixed for the visit and never swapped mid-play on resize.
   const [useMobileVideo] = useState(isSmallViewport);
   const videoRef = useRef<HTMLVideoElement>(null);
-  // Follows the element's own play/pause events, so it stays right when the
-  // browser blocks autoplay (e.g. iOS Low Power Mode).
-  const [paused, setPaused] = useState(false);
+  // Starts paused and follows the element's own play/pause events. Blocked
+  // autoplay (e.g. iOS Low Power Mode) fires no event at all, so assuming
+  // "playing" would leave the button saying Pause over a still video.
+  const [paused, setPaused] = useState(true);
 
   const video = HERO_MEDIA.video;
   const showVideo =

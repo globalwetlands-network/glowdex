@@ -160,7 +160,9 @@ describe('Hero', () => {
   it('has a focusable pause button whose label follows the playback state', () => {
     mockMediaQueries({});
     mockMediaPlayback();
-    renderHero();
+    const { container } = renderHero();
+    // Autoplay starts.
+    fireEvent.play(container.querySelector('video')!);
 
     const button = screen.getByRole('button', {
       name: 'Pause background video',
@@ -178,6 +180,20 @@ describe('Hero', () => {
     expect(
       screen.getByRole('button', { name: 'Pause background video' }),
     ).toBeInTheDocument();
+  });
+
+  it('offers Play, not Pause, when the browser blocks autoplay', () => {
+    mockMediaQueries({});
+    mockMediaPlayback();
+    vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockReturnValue(true);
+    renderHero();
+
+    // Blocked autoplay fires no event, so the video never reports playing.
+    const button = screen.getByRole('button', {
+      name: 'Play background video',
+    });
+    fireEvent.click(button);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
   });
 
   it('has no pause button when the poster is shown instead of the video', () => {

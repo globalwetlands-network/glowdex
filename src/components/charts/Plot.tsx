@@ -2,8 +2,6 @@ import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
 import type { PlotParams } from 'react-plotly.js';
 import { getLoadedChart, preloadCharts } from './preloadCharts';
 
-const LazyPlotlyChart = lazy(preloadCharts);
-
 interface ChartPlaceholderProps {
   height: number | string | undefined;
   failed?: boolean;
@@ -38,7 +36,7 @@ interface ChartErrorBoundaryProps {
   children: ReactNode;
 }
 
-/** Keeps a failed chart download from taking down the panel around it. */
+/** Keeps a failed chart download, or a chart that throws, from taking down the panel around it. */
 class ChartErrorBoundary extends Component<
   ChartErrorBoundaryProps,
   { failed: boolean }
@@ -65,13 +63,20 @@ export function Plot(props: PlotParams) {
   const height = props.style?.height ?? props.layout.height;
   // Decided once per mount: switching paths later would remount (and redraw) the chart.
   const [LoadedChart] = useState(getLoadedChart);
-  if (LoadedChart) return <LoadedChart {...props} />;
+  // One lazy() per mount, not per module: React.lazy keeps a failed load for
+  // good, so a shared one would leave every later chart broken after a single
+  // failed download. A fresh one calls preloadCharts() again, which retries.
+  const [LazyPlotlyChart] = useState(() => lazy(preloadCharts));
 
   return (
     <ChartErrorBoundary height={height}>
-      <Suspense fallback={<ChartPlaceholder height={height} />}>
-        <LazyPlotlyChart {...props} />
-      </Suspense>
+      {LoadedChart ? (
+        <LoadedChart {...props} />
+      ) : (
+        <Suspense fallback={<ChartPlaceholder height={height} />}>
+          <LazyPlotlyChart {...props} />
+        </Suspense>
+      )}
     </ChartErrorBoundary>
   );
 }

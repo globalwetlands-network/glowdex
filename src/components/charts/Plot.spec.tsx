@@ -2,16 +2,18 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Stands in for the Plotly bundle; shows which trace type it was given.
-vi.mock('./PlotlyChart', () => ({
+const fakeChartModule = vi.hoisted(() => () => ({
   default: (props: { data: Array<{ type: string }> }) => (
     <div data-testid="plotly-chart">{props.data[0].type}</div>
   ),
 }));
+vi.mock('./PlotlyChart', fakeChartModule);
 
 // The chart code is cached per module, so each test starts from a fresh, cold copy.
 let Plot: typeof import('./Plot').Plot;
 let preloadCharts: typeof import('./preloadCharts').preloadCharts;
 beforeEach(async () => {
+  vi.restoreAllMocks();
   vi.resetModules();
   ({ Plot } = await import('./Plot'));
   ({ preloadCharts } = await import('./preloadCharts'));
@@ -50,6 +52,27 @@ describe('Plot', () => {
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getByTestId('plotly-chart')).toHaveTextContent('bar');
+  });
+
+  it('shows an error for a failed download, and a later chart retries it', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.resetModules();
+    vi.doMock('./PlotlyChart', () => {
+      throw new Error('Failed to fetch dynamically imported module');
+    });
+    ({ Plot } = await import('./Plot'));
+    const { unmount } = render(
+      <Plot data={[{ type: 'bar' }]} layout={{ height: 220 }} />,
+    );
+    expect(await screen.findByText('Chart could not load')).toBeInTheDocument();
+    unmount();
+
+    // The network is back: the next chart must fetch again, not reuse the failure.
+    vi.doMock('./PlotlyChart', fakeChartModule);
+    render(<Plot data={[{ type: 'violin' }]} layout={{ height: 80 }} />);
+    expect(await screen.findByTestId('plotly-chart')).toHaveTextContent(
+      'violin',
+    );
   });
 
   it('fetches the chart code only once', () => {
