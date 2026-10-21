@@ -10,8 +10,12 @@ export interface FactSheetFigure {
   provisional: boolean;
 }
 
-/** Shared with the hero's "… sites, and growing" byline so the two can't drift. */
-export const MONITORING_SITES_COUNT = 14;
+/**
+ * Shared with the hero's "… locations, and growing" byline so the two can't
+ * drift. Typed by hand, not counted from the data: check it against the live
+ * local data (unique locations in local-sites.csv) at each monthly publish.
+ */
+export const MONITORING_LOCATIONS_COUNT = 14;
 
 /**
  * Single source of truth for the partner figures, shared with the Partners
@@ -33,7 +37,7 @@ export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
     provisional: false,
   },
   {
-    value: String(MONITORING_SITES_COUNT),
+    value: String(MONITORING_LOCATIONS_COUNT),
     label: 'monitoring sites in 8 countries and territories',
     provisional: false,
   },

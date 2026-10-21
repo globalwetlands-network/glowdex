@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MONITORING_SITES_COUNT } from '../config/factSheet';
+import { MONITORING_LOCATIONS_COUNT } from '../config/factSheet';
 import { resolveHeroMediaVariant } from '../config/heroMedia';
 import { useSlowConnection } from '../hooks/useSlowConnection';
 import { preloadMapApp } from '../preloadMapApp';
@@ -43,8 +43,8 @@ export function Hero() {
           Explore the world&apos;s mangroves
         </h1>
         <p className="m-0 max-w-[480px] text-base leading-[1.4] text-[#f2f1ec]">
-          MBCAM combines a global assessment of mangrove conditions with
-          wildlife monitoring from partners on the ground.
+          MBCAM brings together a global comparison of mangrove areas and
+          wildlife monitoring by partners on the ground.
         </p>
 
         <div className="mt-2.5 flex flex-col gap-2">
@@ -69,7 +69,7 @@ export function Hero() {
                 .
               </p>
               <p className="m-0 text-[10px] text-[#d8e3da]">
-                {MONITORING_SITES_COUNT} sites, and growing
+                {MONITORING_LOCATIONS_COUNT} locations, and growing
               </p>
             </div>
             <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-[240px] sm:flex-1">
