@@ -28,22 +28,22 @@ export const PARTNER_COUNTRIES_COUNT = 17;
 export const FACT_SHEET_FIGURES: readonly FactSheetFigure[] = [
   {
     value: '1,600+',
-    label: 'mangrove areas analysed worldwide',
+    label: 'Mangrove areas analysed worldwide',
     provisional: false,
   },
   {
     value: '~20',
-    label: 'indicators',
+    label: 'Indicators',
     provisional: false,
   },
   {
     value: String(MONITORING_LOCATIONS_COUNT),
-    label: 'monitoring locations in 8 countries and territories',
+    label: 'Monitoring locations in 8 countries and territories',
     provisional: false,
   },
   {
     value: String(RESEARCH_PARTNERS_COUNT),
-    label: `research partners in ${PARTNER_COUNTRIES_COUNT} countries`,
+    label: `Research partners in ${PARTNER_COUNTRIES_COUNT} countries`,
     provisional: false,
   },
 ];

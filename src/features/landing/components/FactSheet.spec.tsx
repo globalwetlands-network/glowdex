@@ -12,10 +12,10 @@ describe('FactSheet', () => {
     expect(items).toHaveLength(4);
 
     for (const [value, label] of [
-      ['1,600+', /mangrove areas analysed worldwide/i],
-      ['~20', /^indicators$/i],
-      ['14', /monitoring locations in 8 countries and territories/i],
-      ['19', /research partners in 17 countries/i],
+      ['1,600+', 'Mangrove areas analysed worldwide'],
+      ['~20', 'Indicators'],
+      ['14', 'Monitoring locations in 8 countries and territories'],
+      ['19', 'Research partners in 17 countries'],
     ] as const) {
       expect(screen.getByText(value)).toBeVisible();
       expect(screen.getByText(label)).toBeVisible();
