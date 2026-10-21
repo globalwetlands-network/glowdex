@@ -251,7 +251,7 @@ describe('carousel assistant', () => {
 
     expect(
       slide().getByText(
-        'exceptionally low fish density compared to similar systems in its typology',
+        'exceptionally low fish density compared to similar systems in its condition profile',
         { selector: 'mark' },
       ),
     ).toBeInTheDocument();
@@ -293,5 +293,73 @@ describe('Ask the assistant explainer', () => {
       screen.queryByAltText(/chatgpt|claude|gemini|grok/i),
     ).not.toBeInTheDocument();
     expect(container.textContent).not.toContain('22654');
+    expect(
+      screen.queryByText(/Works like the AI assistants you already use/),
+    ).not.toBeInTheDocument();
+  });
+
+  it('describes the place by its condition profile, not its typology', () => {
+    renderSection();
+
+    expect(screen.getByText('Condition profile 1')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'The condition profile, its indicators, and any local monitoring available.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'In plain language, comparing this place with others in its condition profile.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /compared to similar systems in its condition profile\./,
+      ),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('See it in action copy (GLO-216)', () => {
+  it('uses the final labels for the supplied steps', () => {
+    expect(EXAMPLE_STEPS.local[1]).toMatchObject({
+      label: 'See direct measurements recorded there',
+      placeholderLabel: false,
+    });
+    expect(EXAMPLE_STEPS.global[1]).toMatchObject({
+      label:
+        'See its condition profile and confidence from satellite-derived estimates',
+      placeholderLabel: false,
+    });
+    expect(EXAMPLE_STEPS.global[2]).toMatchObject({
+      label: 'Compare it with similar places around the world',
+      placeholderLabel: false,
+    });
+    // The rest still wait on final copy.
+    for (const step of [
+      EXAMPLE_STEPS.local[0],
+      EXAMPLE_STEPS.local[2],
+      EXAMPLE_STEPS.global[0],
+      EXAMPLE_STEPS.global[3],
+    ]) {
+      expect(step.placeholderLabel).toBe(true);
+    }
+  });
+
+  it('shows the Sievers et al. (2021) footnote with the DOI as a link', () => {
+    renderSection();
+
+    const doi = screen.getByRole('link', {
+      name: 'https://doi.org/10.1016/j.ecolind.2021.108141',
+    });
+    expect(doi).toHaveAttribute(
+      'href',
+      'https://doi.org/10.1016/j.ecolind.2021.108141',
+    );
+    expect(doi).toHaveAttribute('target', '_blank');
+    expect(doi).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(doi.parentElement?.textContent).toBe(
+      "Sources: Sievers, M., Brown, C.J., Buelow, C.A., Pearson, R.M., Turschwell, M.P., Adame, M.F., Griffiths, L., Holgate, B., Rayner, T.S., Tulloch, V.J.D., Roy Chowdhury, M., zu Ermgassen, P.S.E., Lee, S.Y., Lillebø, A.I., Mackey, B., Maxwell, P.S., Rajkaran, A., Sousa, A.I. and Connolly, R.M. (2021) 'Global typologies of coastal wetland status to inform conservation and management', Ecological Indicators, 131, p. 108141. Available at: https://doi.org/10.1016/j.ecolind.2021.108141 · AI-generated interpretation; always verify with an expert.",
+    );
   });
 });

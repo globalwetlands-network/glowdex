@@ -57,7 +57,7 @@ const STEP_CARDS = [
           // Runtime typology colour — not expressible as a static class.
           style={{ backgroundColor: EXAMPLE_TILE.color }}
         />
-        Typology {EXAMPLE_CELL.cluster5}
+        Condition profile {EXAMPLE_CELL.cluster5}
       </span>
     </div>
   </Card>,
@@ -73,7 +73,10 @@ const STEP_CARDS = [
             </span>
             <span className="text-gray-500">
               {ordinal(percentile)}
-              <span className="sr-only"> percentile in its typology</span>
+              <span className="sr-only">
+                {' '}
+                percentile in its condition profile
+              </span>
             </span>
           </div>
           <div className="mt-1 h-1 rounded-full bg-gray-100">
@@ -129,8 +132,6 @@ export function AskTheAssistantExplainer() {
         <p className="m-0 text-base text-gray-600 md:text-lg">
           {ASSISTANT_SUBHEAD}
         </p>
-        {/* The "Works like the AI assistants you already use" strip with
-            competitor AI logos is excluded pending explicit sign-off (GLO-190). */}
       </header>
 
       {/* Each step is paired with the card that illustrates it, so on mobile

@@ -78,7 +78,7 @@ describe('worked example fixture', () => {
     // "covers 64 hectares"
     expect(Math.round(EXAMPLE_MANGROVE_AREA_HA)).toBe(64);
     expect(EXAMPLE_INSIGHTS.global.text).toContain('covers 64 hectares');
-    // "crab densities in degraded and rehabilitated zones well below the reference"
+    // "crab densities in degraded and restored zones well below the reference"
     const density = Object.fromEntries(
       EXAMPLE_LOCAL_SITE_CONTEXT.conditions.map((c) => [
         c.siteType,
@@ -96,6 +96,9 @@ describe('worked example fixture', () => {
       `Field monitoring at Bayhead, South Africa, by the ` +
         `${EXAMPLE_LOCAL_SITE_CONTEXT.partner} in ${EXAMPLE_LOCAL_SITE_CONTEXT.year}`,
     );
+    // The partner and year credit stays; only the site-type word changed.
+    expect(local).toContain('in degraded and restored zones');
+    expect(local).not.toMatch(/rehabilitated/i);
     expect(local).not.toContain(EXAMPLE_HIGHLIGHT);
     expect(local).not.toMatch(/hectares|typology|invertebrate/);
     expect(EXAMPLE_INSIGHTS.local.sources).toEqual([]);

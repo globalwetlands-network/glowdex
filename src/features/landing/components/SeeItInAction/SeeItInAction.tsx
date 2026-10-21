@@ -26,6 +26,9 @@ import { useSlowConnection } from '../../hooks/useSlowConnection';
 import { AskTheAssistantExplainer } from './AskTheAssistantExplainer';
 import {
   EXAMPLE_STEPS,
+  FOOTNOTE_AFTER_DOI,
+  FOOTNOTE_BEFORE_DOI,
+  FOOTNOTE_DOI_URL,
   MODE_EXPLAINERS,
   MODE_LABELS,
   SECTION_HEADING,
@@ -404,6 +407,20 @@ export function SeeItInAction() {
           </div>
 
           <AskTheAssistantExplainer />
+
+          {/* The long DOI may break anywhere so it can't overflow a phone. */}
+          <p className="m-0 -mt-10 text-xs leading-relaxed text-gray-500">
+            {FOOTNOTE_BEFORE_DOI}
+            <a
+              href={FOOTNOTE_DOI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all underline hover:text-gray-700"
+            >
+              {FOOTNOTE_DOI_URL}
+            </a>
+            {FOOTNOTE_AFTER_DOI}
+          </p>
         </div>
       </section>
     </LandingQueryProvider>
