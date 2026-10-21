@@ -1,22 +1,54 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { HERO_MEDIA } from '../config/heroMedia';
 import { preloadMapApp } from '../preloadMapApp';
 import { Hero } from './Hero';
 
 // Keep the real map chunk and dataset loads out of jsdom.
 vi.mock('../preloadMapApp', () => ({ preloadMapApp: vi.fn() }));
 
-function mockReducedMotion(matches: boolean) {
+function mockMediaQueries({
+  reducedMotion = false,
+  smallViewport = false,
+}: {
+  reducedMotion?: boolean;
+  smallViewport?: boolean;
+}) {
   vi.stubGlobal(
     'matchMedia',
     vi.fn().mockImplementation((query: string) => ({
-      matches,
+      matches: query.includes('reduced-motion') ? reducedMotion : smallViewport,
       media: query,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     })),
   );
+}
+
+function mockReducedMotion(matches: boolean) {
+  mockMediaQueries({ reducedMotion: matches });
+}
+
+/** jsdom can't play media: make play()/pause() flip `paused` and fire the events. */
+function mockMediaPlayback() {
+  let paused = false;
+  vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockImplementation(
+    () => paused,
+  );
+  vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
+    this: HTMLMediaElement,
+  ) {
+    paused = true;
+    this.dispatchEvent(new Event('pause'));
+  });
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function (
+    this: HTMLMediaElement,
+  ) {
+    paused = false;
+    this.dispatchEvent(new Event('play'));
+    return Promise.resolve();
+  });
 }
 
 function renderHero(url = '/') {
@@ -30,6 +62,8 @@ function renderHero(url = '/') {
 describe('Hero', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    Reflect.deleteProperty(navigator, 'connection');
     vi.mocked(preloadMapApp).mockClear();
   });
 
@@ -101,6 +135,75 @@ describe('Hero', () => {
     expect(
       screen.getByAltText(/moses perch swimming among mangrove roots/i),
     ).toBeInTheDocument();
+  });
+
+  it('plays the lighter mobile video on small viewports', () => {
+    mockMediaQueries({ smallViewport: true });
+    const { container } = renderHero();
+
+    expect(container.querySelector('video')).toHaveAttribute(
+      'src',
+      HERO_MEDIA.video.srcMobile,
+    );
+  });
+
+  it('plays the desktop video on larger viewports, sized to its poster', () => {
+    mockMediaQueries({ smallViewport: false });
+    const { container } = renderHero();
+
+    const video = container.querySelector('video');
+    expect(video).toHaveAttribute('src', HERO_MEDIA.video.src);
+    expect(video).toHaveAttribute('width', '1280');
+    expect(video).toHaveAttribute('height', '720');
+  });
+
+  it('has a focusable pause button whose label follows the playback state', () => {
+    mockMediaQueries({});
+    mockMediaPlayback();
+    renderHero();
+
+    const button = screen.getByRole('button', {
+      name: 'Pause background video',
+    });
+    button.focus();
+    expect(button).toHaveFocus();
+    expect(button).not.toHaveAttribute('aria-pressed');
+
+    fireEvent.click(button);
+    expect(
+      screen.getByRole('button', { name: 'Play background video' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(button);
+    expect(
+      screen.getByRole('button', { name: 'Pause background video' }),
+    ).toBeInTheDocument();
+  });
+
+  it('has no pause button when the poster is shown instead of the video', () => {
+    mockReducedMotion(true);
+    renderHero();
+
+    expect(
+      screen.queryByRole('button', { name: /background video/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to the sized poster image on a slow connection', () => {
+    mockMediaQueries({});
+    Object.defineProperty(navigator, 'connection', {
+      value: { effectiveType: '3g' },
+      configurable: true,
+    });
+    const { container } = renderHero();
+
+    expect(container.querySelector('video')).toBeNull();
+    const poster = screen.getByAltText(
+      /moses perch swimming among mangrove roots/i,
+    );
+    expect(poster).toHaveAttribute('src', HERO_MEDIA.video.poster);
+    expect(poster).toHaveAttribute('width', '1280');
+    expect(poster).toHaveAttribute('height', '720');
   });
 
   it('preloads the map app when the visitor shows intent to open it', () => {

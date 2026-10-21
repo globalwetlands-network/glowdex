@@ -69,7 +69,10 @@ HTTP 404 with the correct page, which browsers ignore; a crawler would see the s
 The hero media (mangrove video vs static photo) is selected by `resolveHeroMediaVariant`
 (`src/features/landing/config/heroMedia.ts`): the `?hero=photo|video` query param wins, then
 `VITE_PUBLIC_HERO_MEDIA`, then `video`. The video falls back to its poster for
-`prefers-reduced-motion`, Data Saver / slow connections, and playback errors.
+`prefers-reduced-motion`, Data Saver / slow connections, and playback errors. Viewports
+below 768px get a lighter mobile video, chosen once with `matchMedia` in `HeroMedia.tsx`, and
+the video has a keyboard-operable pause button. File sizes and encode commands are in
+`src/assets/hero/CREDITS.md`.
 
 ## Layout & composition
 

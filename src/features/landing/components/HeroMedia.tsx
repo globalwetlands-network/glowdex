@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Pause, Play } from 'lucide-react';
 import { HERO_MEDIA, type HeroMediaVariant } from '../config/heroMedia';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { useSlowConnection } from '../hooks/useSlowConnection';
@@ -9,15 +10,31 @@ interface HeroMediaProps {
 
 const MEDIA_CLASS = 'absolute inset-0 h-full w-full object-cover';
 
+/** Below Tailwind's `md`: phones get the lighter mobile video. */
+const SMALL_VIEWPORT_QUERY = '(max-width: 767px)';
+
+function isSmallViewport(): boolean {
+  return typeof window.matchMedia === 'function'
+    ? window.matchMedia(SMALL_VIEWPORT_QUERY).matches
+    : false;
+}
+
 /**
  * Full-bleed hero background plus the legibility gradient. The video variant
  * falls back to its poster image for reduced motion, slow connections, or a
- * playback error.
+ * playback error, and has a pause button (WCAG 2.2.2).
  */
 export function HeroMedia({ variant }: HeroMediaProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const isSlowConnection = useSlowConnection();
   const [videoFailed, setVideoFailed] = useState(false);
+  // Chosen once in code, not with a `media` attribute on <source>, so the
+  // file is fixed for the visit and never swapped mid-play on resize.
+  const [useMobileVideo] = useState(isSmallViewport);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  // Follows the element's own play/pause events, so it stays right when the
+  // browser blocks autoplay (e.g. iOS Low Power Mode).
+  const [paused, setPaused] = useState(false);
 
   const video = HERO_MEDIA.video;
   const showVideo =
@@ -25,6 +42,16 @@ export function HeroMedia({ variant }: HeroMediaProps) {
     !prefersReducedMotion &&
     !isSlowConnection &&
     !videoFailed;
+
+  const togglePlayback = () => {
+    const element = videoRef.current;
+    if (!element) return;
+    if (element.paused) {
+      element.play().catch(() => {});
+    } else {
+      element.pause();
+    }
+  };
 
   let media;
   if (variant === 'photo') {
@@ -37,21 +64,50 @@ export function HeroMedia({ variant }: HeroMediaProps) {
     );
   } else if (showVideo) {
     media = (
-      <video
-        src={video.src}
-        poster={video.poster}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-label={video.alt}
-        onError={() => setVideoFailed(true)}
+      <>
+        <video
+          ref={videoRef}
+          src={useMobileVideo ? video.srcMobile : video.src}
+          poster={video.poster}
+          width={video.width}
+          height={video.height}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label={video.alt}
+          onPlay={() => setPaused(false)}
+          onPause={() => setPaused(true)}
+          onError={() => setVideoFailed(true)}
+          className={MEDIA_CLASS}
+        />
+        <button
+          type="button"
+          onClick={togglePlayback}
+          aria-label={
+            paused ? 'Play background video' : 'Pause background video'
+          }
+          className="absolute right-4 bottom-8 z-[2] flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
+        >
+          {paused ? (
+            <Play aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <Pause aria-hidden="true" className="h-4 w-4" />
+          )}
+        </button>
+      </>
+    );
+  } else {
+    media = (
+      <img
+        src={video.poster}
+        alt={video.alt}
+        width={video.width}
+        height={video.height}
         className={MEDIA_CLASS}
       />
     );
-  } else {
-    media = <img src={video.poster} alt={video.alt} className={MEDIA_CLASS} />;
   }
 
   return (
