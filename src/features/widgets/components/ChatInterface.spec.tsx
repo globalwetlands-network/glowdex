@@ -83,6 +83,14 @@ describe('ChatInterface', () => {
     expect(screen.queryByText('Suggested questions')).not.toBeInTheDocument();
   });
 
+  it('gives the icon-only send button an accessible name', () => {
+    renderChat();
+
+    expect(
+      screen.getByRole('button', { name: 'Send follow-up question' }),
+    ).toHaveAttribute('type', 'submit');
+  });
+
   it('keeps the input and suggestions interactive by default', () => {
     renderChat({ showSuggestions: true });
 

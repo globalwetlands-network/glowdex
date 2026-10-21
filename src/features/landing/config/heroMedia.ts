@@ -4,10 +4,12 @@
  * Two media options are supported (GLO-188). `video` is the default; switch it
  * via the `VITE_PUBLIC_HERO_MEDIA` repo variable, or preview either option with
  * the `?hero=photo|video` query param. The video's poster doubles as its
- * fallback for reduced motion, slow connections and playback errors.
+ * fallback for reduced motion, slow connections and playback errors. Small
+ * viewports get a lighter video (`srcMobile`); see src/assets/hero/CREDITS.md.
  */
-import heroPoster from '@/assets/hero/hero-video-moses-perch-poster.jpg';
+import heroPoster from '@/assets/hero/hero-video-moses-perch-poster.webp';
 import heroVideo from '@/assets/hero/hero-video-moses-perch.mp4';
+import heroVideoMobile from '@/assets/hero/hero-video-moses-perch-mobile.mp4';
 import heroPhoto from '@/assets/hero/split-shot-photo.jpg';
 
 export type HeroMediaVariant = 'photo' | 'video';
@@ -46,7 +48,11 @@ export const HERO_MEDIA = {
   },
   video: {
     src: heroVideo,
+    srcMobile: heroVideoMobile,
     poster: heroPoster,
+    // Intrinsic size of the poster and the desktop video.
+    width: 1280,
+    height: 720,
     alt: 'A school of Moses perch swimming among mangrove roots below the waterline',
     credit: 'Video: Baramee Temboonkiat',
   },

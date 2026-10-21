@@ -26,6 +26,7 @@ import type { LocalSite } from '@/data/types/local-wetlands.types';
 import MapTooltip from './MapTooltip';
 import { SearchMarkerIcon } from '@/components/map/markers';
 import { MapLayerLegend } from './MapLayerLegend';
+import { preloadChartsWhenIdle } from '@/components/charts/preloadCharts';
 
 interface MapProps {
   /**
@@ -720,6 +721,9 @@ export function GridMap({
       />
       <MapGL
         ref={setMapRef}
+        // Fetch the chart code once the map is interactive, so the first chart
+        // opens without a visible wait.
+        onLoad={preloadChartsWhenIdle}
         initialViewState={initialViewState}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v10"

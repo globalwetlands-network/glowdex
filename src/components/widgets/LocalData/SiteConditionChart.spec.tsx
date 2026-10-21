@@ -20,8 +20,8 @@ const plotProps = vi.hoisted(() => ({
   current: null as CapturedPlot | null,
 }));
 
-vi.mock('react-plotly.js', () => ({
-  default: (props: CapturedPlot) => {
+vi.mock('@/components/charts/Plot', () => ({
+  Plot: (props: CapturedPlot) => {
     plotProps.current = props;
     return null;
   },

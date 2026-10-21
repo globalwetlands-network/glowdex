@@ -25,7 +25,7 @@
  *   c(0, NA)) rather than a fixed global max
  */
 
-import Plot from 'react-plotly.js';
+import { Plot } from '@/components/charts/Plot';
 import type { LocalObservation } from '@/data/types/local-wetlands.types';
 import {
   CONDITIONS,

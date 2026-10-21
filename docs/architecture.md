@@ -44,6 +44,14 @@ The data hooks read through shared caches in `src/data/preload.ts` (`createCache
 `/map` picks up the preloaded data and skips `LoadingState`, and remounts (Home → map) reuse
 it. Each hook's `reload()` clears its cache entry, so the retry flow still refetches.
 
+**Charts load on demand.** Plotly is not in the map app's or the carousel's up-front code. Every
+chart renders through `Plot` (`src/components/charts/Plot.tsx`), which lazy-loads
+`PlotlyChart.tsx`, a partial Plotly bundle (core + violin + bar only), and shows a placeholder
+of the chart's height meanwhile. The map fetches that chunk once it is interactive (`onLoad` →
+`preloadChartsWhenIdle`); the carousel fetches it once it scrolls into view. To add a chart type,
+register its trace module in `PlotlyChart.tsx`; never import `react-plotly.js` directly, which
+pulls in the full Plotly bundle.
+
 Below the hero, the lazily loaded **"See it in action"** carousel
 (`src/features/landing/components/SeeItInAction/`) renders the app's **real** widgets
 (`LocalSiteTooltip`, `LocalWetlandsAnalysisWidget`, `MapTooltip`, `SelectionPanel`,
@@ -61,7 +69,10 @@ HTTP 404 with the correct page, which browsers ignore; a crawler would see the s
 The hero media (mangrove video vs static photo) is selected by `resolveHeroMediaVariant`
 (`src/features/landing/config/heroMedia.ts`): the `?hero=photo|video` query param wins, then
 `VITE_PUBLIC_HERO_MEDIA`, then `video`. The video falls back to its poster for
-`prefers-reduced-motion`, Data Saver / slow connections, and playback errors.
+`prefers-reduced-motion`, Data Saver / slow connections, and playback errors. Viewports
+below 768px get a lighter mobile video, chosen once with `matchMedia` in `HeroMedia.tsx`, and
+the video has a keyboard-operable pause button. File sizes and encode commands are in
+`src/assets/hero/CREDITS.md`.
 
 ## Layout & composition
 
