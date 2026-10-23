@@ -17,11 +17,11 @@ describe('HowItWorks', () => {
       ],
       [
         'Group',
-        'A statistical model sorts mangrove areas into condition profiles: groups of places with similar characteristics and pressures.',
+        'A statistical model sorts mangrove areas into condition profiles: groups of areas with similar characteristics and pressures.',
       ],
       [
         'Compare',
-        'We compare each area with others in its profile: measuring it against places like it, not against a global average.',
+        'We compare each area with others in its profile: measuring it against areas like it, not against a global average.',
       ],
       [
         'Monitor',

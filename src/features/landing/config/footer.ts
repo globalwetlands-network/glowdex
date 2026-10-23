@@ -24,7 +24,7 @@ export const FOOTER_LINKS: readonly FooterLink[] = [
 ];
 
 export const FOOTER_CREDIT =
-  'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, with partners worldwide.';
+  'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, working with global partners listed above.';
 
 export interface FooterSource {
   authors: string;

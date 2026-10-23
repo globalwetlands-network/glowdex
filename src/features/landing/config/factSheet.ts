@@ -19,8 +19,8 @@ export const MONITORING_LOCATIONS_COUNT = 14;
 
 /**
  * Single source of truth for the partner figures, shared with the Partners
- * section and the "Who is behind MBCAM?" FAQ. The 17-vs-19 question is open:
- * change it here, not in each section.
+ * section. The 17-vs-19 question is open: change it here, not in each
+ * section.
  */
 export const RESEARCH_PARTNERS_COUNT = 19;
 export const PARTNER_COUNTRIES_COUNT = 17;

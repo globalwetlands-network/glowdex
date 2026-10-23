@@ -25,7 +25,7 @@ describe('WhyItMatters', () => {
     ).toBeVisible();
     expect(
       section.getByText(
-        "But a mangrove forest in Kenya and one in Australia face very different conditions. Comparing each to similar places, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
+        "But a mangrove forest in Kenya and one in Australia face very different conditions. Comparing each to similar areas, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
       ),
     ).toBeVisible();
   });

@@ -23,11 +23,11 @@ describe('Faqs', () => {
     expect(container.querySelectorAll('details')).toHaveLength(5);
 
     const toggle = screen.getByRole('button', {
-      name: 'Show 7 more questions',
+      name: 'Show 6 more questions',
     });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(toggle);
-    expect(container.querySelectorAll('details')).toHaveLength(12);
+    expect(container.querySelectorAll('details')).toHaveLength(11);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle).toHaveAccessibleName('Show fewer questions');
 
@@ -37,11 +37,7 @@ describe('Faqs', () => {
 
   it('shows a group heading only once any of its questions is visible', () => {
     render(<Faqs />);
-    expect(groupHeadings()).toEqual([
-      'About MBCAM',
-      'How it works',
-      'Data & methods',
-    ]);
+    expect(groupHeadings()).toEqual(['About MBCAM', 'How it works']);
 
     fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
     expect(groupHeadings()).toEqual([
@@ -88,11 +84,31 @@ describe('Faqs', () => {
         "What's the difference between the Global assessments and Local wildlife data?",
       ),
     ).toBeNull();
+    // Placeholder answers stay off the page until their copy is decided.
+    expect(screen.queryByText('Can I download the data?')).toBeNull();
+    expect(
+      screen.queryByText('Can my organisation contribute monitoring data?'),
+    ).toBeNull();
+    expect(screen.getByText('How do I cite MBCAM?')).toBeInTheDocument();
   });
 
   it('marks each bracketed gap as a placeholder with a "Coming soon" tooltip', () => {
-    render(<Faqs />);
-    fireEvent.click(screen.getByRole('button', { name: /more questions/i }));
+    render(
+      <Faqs
+        groups={[
+          {
+            heading: 'Group',
+            faqs: [
+              { question: 'One?', answer: 'Under [licence to be confirmed].' },
+              {
+                question: 'Two?',
+                answer: '[Contact method to be confirmed] for now.',
+              },
+            ],
+          },
+        ]}
+      />,
+    );
 
     for (const gap of [
       'licence to be confirmed',
@@ -152,6 +168,18 @@ describe('Faqs', () => {
       answer:
         'Indicators of biodiversity are selected based on extensive local knowledge at each location, in conjunction with their sensitivity to change and cost-effectiveness. Indicators that represent the status of wildlife and ecosystem condition more generally are preferred. Indicators can be for wildlife above (e.g. birds) and below (e.g. fish) water.',
     });
+  });
+
+  it('adds the monitoring-benefit FAQ as the third About question', () => {
+    const about = FAQ_GROUPS.find((g) => g.heading === 'About MBCAM');
+    expect(about?.faqs.map((f) => f.question)).toEqual([
+      'What is MBCAM?',
+      'Who is behind MBCAM?',
+      'How does the monitoring program benefit wetland conservation and restoration?',
+    ]);
+    expect(about?.faqs[1].answer).toMatch(
+      /working with global partners listed above\.$/,
+    );
   });
 
   it('says "condition profile", never "typology", including hidden FAQs', () => {

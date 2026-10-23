@@ -9,7 +9,7 @@ export const WHY_IT_MATTERS_HEADING = 'Why it matters';
 
 export const WHY_IT_MATTERS_PARAGRAPHS: readonly string[] = [
   'Mangroves protect coastlines, provide timber products, improve water quality, store carbon, support fisheries harvests and the livelihoods of coastal communities.',
-  "But a mangrove forest in Kenya and one in Australia face very different conditions. Comparing each to similar places, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
+  "But a mangrove forest in Kenya and one in Australia face very different conditions. Comparing each to similar areas, not to a global average, shows what's unusual about it and helps focus conservation where it's actually needed.",
 ];
 
 export interface WhyItMattersScale {
