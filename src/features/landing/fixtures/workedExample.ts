@@ -181,7 +181,7 @@ export const EXAMPLE_INSIGHTS: Record<InsightMode, InsightResponse> = {
       `${EXAMPLE_LOCAL_SITE_CONTEXT.country}, by the ` +
       `${EXAMPLE_LOCAL_SITE_CONTEXT.partner} in ` +
       `${EXAMPLE_LOCAL_SITE_CONTEXT.year} shows crab densities in degraded ` +
-      `and restored zones ${LOCAL_HIGHLIGHT}.`,
+      `and restored sites ${LOCAL_HIGHLIGHT}.`,
     // Empty, as the live backend returns for local answers: ChatInterface
     // then credits the partner's field monitoring, never Sievers et al.
     sources: [],

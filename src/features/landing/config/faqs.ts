@@ -1,5 +1,3 @@
-import { PARTNER_COUNTRIES_COUNT } from './factSheet';
-
 /**
  * FAQs (GLO-204), verbatim from the landing-page content review, in four
  * groups.
@@ -44,7 +42,14 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       },
       {
         question: 'Who is behind MBCAM?',
-        answer: `MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, working with research partners in ${PARTNER_COUNTRIES_COUNT} countries.`,
+        answer:
+          'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, working with global partners listed above.',
+      },
+      {
+        question:
+          'How does the monitoring program benefit wetland conservation and restoration?',
+        answer:
+          'The integration of local wildlife trends with regional data about changes in habitat and threats increases the relevance and reliability of measures of wetland status and condition. Cost-effective automated monitoring of biodiversity indicators provides up-to-date, quality-assured data. Monitoring systems are deployed with local stewardship and indicator selection and provide compelling imagery and publicly accessible local data trends.',
       },
     ],
   },
@@ -54,12 +59,12 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       {
         question: 'What is a condition profile?',
         answer:
-          'A group of mangrove areas that share similar characteristics and pressures. Placing an area in a condition profile is what lets it be compared with places like it, rather than with the whole world.',
+          'A group of mangrove areas that share similar characteristics and pressures. Placing an area in a profile is what lets it be compared with areas like it, rather than with the whole world. These diagnostic profiles help to indicate which conservation actions might be most applicable.',
       },
       {
         question: 'Does MBCAM show how healthy a mangrove is?',
         answer:
-          "No. MBCAM doesn't score or rate any place. It compares each area with similar mangroves, showing what's typical for that kind of place and what stands out.",
+          "No, not via a score or ranking; rather, the condition profile highlights typical characteristics and pressures and what stands out. MBCAM doesn't score or rate any area.",
       },
       {
         question:
@@ -77,12 +82,17 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
       {
         question: 'Where does the data come from?',
         answer:
-          "The global assessments use Global Mangrove Watch and other global datasets, analysed with a method published by Sievers and colleagues in 2021. Local wildlife data comes from partners' field surveys.",
+          'The global assessment uses numerous publicly available datasets, including Global Mangrove Watch analysed with a method published by Sievers and colleagues in 2021. Local wildlife data are field measurements by partners at individual locations.',
       },
       {
         question: 'How up to date is it?',
         answer:
-          'Global assessment data is updated periodically, most recently with data to 2025. Local wildlife data is updated monthly.',
+          'The global assessment is updated periodically, most recently with data to 2025. Local wildlife data is updated monthly.',
+      },
+      {
+        question: 'How are biodiversity indicators being selected?',
+        answer:
+          'Indicators of biodiversity are selected based on extensive local knowledge at each location, in conjunction with their sensitivity to change and cost-effectiveness. Indicators that represent the status of wildlife and ecosystem condition more generally are preferred. Indicators can be for wildlife above (e.g. birds) and below (e.g. fish) water.',
       },
       {
         question: 'How confident is the classification?',
@@ -97,14 +107,9 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
           "MBCAM only counts wild observations with verified coordinates from the last ten years. GBIF's totals also include older and unverified records, which is why the numbers differ.",
       },
       {
-        question: 'How are biodiversity indicators being selected?',
-        answer:
-          'Indicators of biodiversity are selected based on extensive local knowledge at each location, in conjunction with their sensitivity to change and cost-effectiveness. Indicators that represent the status of wildlife and ecosystem condition more generally are preferred. Indicators can be for wildlife above (e.g. birds) and below (e.g. fish) water.',
-      },
-      {
         question: 'Is the AI assistant always right?',
         answer:
-          'No. It explains the data in plain language, drawing on published research, but it can make mistakes. Check anything important with an expert.',
+          'No. It explains the data in plain language, drawing on published research, but it can make mistakes.',
       },
     ],
   },
@@ -115,6 +120,9 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         question: 'Can I download the data?',
         answer:
           "Yes — most of MBCAM's data is free to download for non-commercial and research use, under [licence to be confirmed].",
+        // Hidden: the licence is a placeholder and the app has no data
+        // download yet (GLO-211, GLO-218).
+        hidden: true,
       },
       {
         question: 'How do I cite MBCAM?',
@@ -125,6 +133,8 @@ export const FAQ_GROUPS: readonly FaqGroup[] = [
         question: 'Can my organisation contribute monitoring data?',
         answer:
           "Yes — we're setting up a formal route for new monitoring partners. [Contact method to be confirmed] in the meantime, and we'll point you straight to it once it's live.",
+        // Hidden: the contact route is a placeholder (GLO-212).
+        hidden: true,
       },
     ],
   },
