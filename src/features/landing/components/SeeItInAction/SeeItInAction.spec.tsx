@@ -327,7 +327,7 @@ describe('See it in action copy (GLO-216)', () => {
       placeholderLabel: false,
     });
     expect(EXAMPLE_STEPS.global[2]).toMatchObject({
-      label: 'Compare it with similar places around the world',
+      label: 'Compare it with similar areas around the world',
       placeholderLabel: false,
     });
     // The rest still wait on final copy.

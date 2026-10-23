@@ -24,7 +24,7 @@ describe('WhoItsFor', () => {
           'Where should we focus effort?',
           [
             'Find your area on the map and see which kind of mangrove it is.',
-            'Compare it with places with similar condition profiles.',
+            'Compare it with areas with similar condition profiles.',
             'Download a summary for a report or a funding proposal.',
           ],
         ],

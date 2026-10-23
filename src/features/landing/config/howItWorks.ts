@@ -25,12 +25,12 @@ export const HOW_IT_WORKS_STEPS: readonly HowItWorksStep[] = [
   {
     title: 'Group',
     description:
-      'A statistical model sorts mangrove areas into condition profiles: groups of places with similar characteristics and pressures.',
+      'A statistical model sorts mangrove areas into condition profiles: groups of areas with similar characteristics and pressures.',
   },
   {
     title: 'Compare',
     description:
-      'We compare each area with others in its profile: measuring it against places like it, not against a global average.',
+      'We compare each area with others in its profile: measuring it against areas like it, not against a global average.',
   },
   {
     title: 'Monitor',

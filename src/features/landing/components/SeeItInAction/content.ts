@@ -75,7 +75,7 @@ export const EXAMPLE_STEPS: Record<ExampleMode, ExampleStep[]> = {
     },
     {
       target: 'global-chart',
-      label: 'Compare it with similar places around the world',
+      label: 'Compare it with similar areas around the world',
       placeholderLabel: false,
     },
     {

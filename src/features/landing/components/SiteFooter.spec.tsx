@@ -42,10 +42,12 @@ describe('SiteFooter', () => {
     );
     expect(
       screen.getByText(
-        'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, with partners worldwide.',
+        'MBCAM is built by the Global Wetlands Project at Griffith University and the University of the Western Cape, working with global partners listed above.',
       ),
     ).toBeInTheDocument();
-    expect(FOOTER_CREDIT).toMatch(/with partners worldwide\.$/);
+    expect(FOOTER_CREDIT).toMatch(
+      /working with global partners listed above\.$/,
+    );
   });
 
   it('shows the method reference as a Sources section, linked by name', () => {
