@@ -16,7 +16,7 @@ describe('Partners', () => {
         'Led by the Global Wetlands Project at Griffith University and the University of the Western Cape.',
       ),
     ).toBeVisible();
-    expect(section.getAllByRole('listitem')).toHaveLength(14);
+    expect(section.getAllByRole('listitem')).toHaveLength(16);
     // Every featured partner has confirmed, so each tile shows its logo.
     expect(
       section.getByText(/and more partners across 17 countries/i),
@@ -39,7 +39,7 @@ describe('Partners', () => {
       'Global Wetlands Project (GLOW)',
       'Griffith University',
       'University of the Western Cape',
-      'Indian Institute of Science Education and Research Kolkata (IISER Kolkata)',
+      'Indian Institute of Science Education and Research Kolkata',
       'Universidad de Costa Rica',
       'University of Aveiro',
       'Bôndy International',
@@ -49,6 +49,8 @@ describe('Partners', () => {
       'Katala Foundation',
       'Universidade do Estado do Rio de Janeiro',
       'Universitas Gadjah Mada',
+      'Université Cheikh Anta Diop',
+      'Université Libre de Bruxelles',
       'World Academy of Sustainable Development',
     ]);
     // Explicit size on every logo, so the strip doesn't shift as they load.

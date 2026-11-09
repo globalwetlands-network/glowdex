@@ -17,7 +17,8 @@ interface PartnersProps {
 /**
  * A wrapping row of partner tiles. A tile shows the logo only once the partner
  * has confirmed they're happy to be listed; otherwise it shows their name in
- * the same tile, never an empty box.
+ * the same tile, never an empty box. From `md` up every tile is the same fixed
+ * width and rows are centred, so a short last row never stretches its tiles.
  */
 export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
   const headingId = useId();
@@ -36,11 +37,11 @@ export function Partners({ partners = FEATURED_PARTNERS }: PartnersProps) {
           {PARTNERS_HEADING}
         </h2>
         <p className="m-0 mt-2 text-sm text-gray-500">{PARTNERS_SUBHEAD}</p>
-        <ul className="m-0 mt-8 flex list-none flex-wrap gap-4 p-0">
+        <ul className="m-0 mt-8 flex list-none flex-wrap gap-4 p-0 md:justify-center">
           {partners.map((partner) => (
             <li
               key={partner.name}
-              className="flex min-h-[84px] min-w-[150px] flex-1 items-center justify-center rounded-lg border border-gray-100 bg-[#f6f6f3] p-4"
+              className="flex min-h-[84px] min-w-[150px] flex-1 items-center justify-center rounded-lg border border-gray-100 bg-[#f6f6f3] p-4 md:w-[150px] md:flex-none"
             >
               {partner.listingConfirmed && partner.logoUrl ? (
                 <img

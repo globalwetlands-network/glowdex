@@ -12,6 +12,8 @@ import ugmLogo from '@/assets/partners/12-universitas-gadjah-mada.webp';
 import imasLogo from '@/assets/partners/14-university-of-tasmania.webp';
 import warwickLogo from '@/assets/partners/15-university-of-warwick.webp';
 import wasdLogo from '@/assets/partners/17-world-academy-of-sustainable-development.webp';
+import ucadLogo from '@/assets/partners/18-universite-cheikh-anta-diop.webp';
+import ulbLogo from '@/assets/partners/19-universite-libre-de-bruxelles.webp';
 import type { SiteDestinationId } from '@/constants/comingSoon';
 
 /**
@@ -29,7 +31,9 @@ import type { SiteDestinationId } from '@/constants/comingSoon';
  * - Order: the array order is the display order and the only source of truth
  *   for it. GLOW first, then the five hubs, then the partners already live in
  *   their original order (Bôndy International to University of Warwick), then
- *   newer partners alphabetically by display name.
+ *   newer partners alphabetically by display name (Katala Foundation onwards).
+ *   Insert a new partner into that alphabetical tail; never reorder the
+ *   earlier groups.
  * - The asset file number (`NN-…`) is the partner's slot in the full list, not
  *   its display position, and does not control display order. Gaps are
  *   partners with no logo file yet.
@@ -77,7 +81,7 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
     listingConfirmed: true,
   },
   {
-    name: 'Indian Institute of Science Education and Research Kolkata (IISER Kolkata)',
+    name: 'Indian Institute of Science Education and Research Kolkata',
     logoUrl: iiserKolkataLogo,
     logoWidth: 175,
     logoHeight: 192,
@@ -143,6 +147,20 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
     name: 'Universitas Gadjah Mada',
     logoUrl: ugmLogo,
     logoWidth: 185,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Université Cheikh Anta Diop',
+    logoUrl: ucadLogo,
+    logoWidth: 202,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Université Libre de Bruxelles',
+    logoUrl: ulbLogo,
+    logoWidth: 633,
     logoHeight: 192,
     listingConfirmed: true,
   },
