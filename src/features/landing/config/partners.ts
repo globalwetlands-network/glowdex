@@ -5,9 +5,15 @@ import iiserKolkataLogo from '@/assets/partners/03-indian-institute-of-science-e
 import ucrLogo from '@/assets/partners/04-universidad-de-costa-rica.webp';
 import aveiroLogo from '@/assets/partners/05-university-of-aveiro.webp';
 import bondyLogo from '@/assets/partners/07-bondy-international.webp';
+import katalaLogo from '@/assets/partners/08-katala-foundation.webp';
 import nmuLogo from '@/assets/partners/09-nelson-mandela-university.webp';
+import uerjLogo from '@/assets/partners/10-universidade-do-estado-do-rio-de-janeiro.webp';
+import ugmLogo from '@/assets/partners/12-universitas-gadjah-mada.webp';
 import imasLogo from '@/assets/partners/14-university-of-tasmania.webp';
 import warwickLogo from '@/assets/partners/15-university-of-warwick.webp';
+import wasdLogo from '@/assets/partners/17-world-academy-of-sustainable-development.webp';
+import ucadLogo from '@/assets/partners/18-universite-cheikh-anta-diop.webp';
+import ulbLogo from '@/assets/partners/19-universite-libre-de-bruxelles.webp';
 import type { SiteDestinationId } from '@/constants/comingSoon';
 
 /**
@@ -22,9 +28,15 @@ import type { SiteDestinationId } from '@/constants/comingSoon';
  * - A logo only shows when `listingConfirmed` is true (the partner has agreed
  *   to be listed) and `logoUrl` is set; otherwise the tile shows the name. Add
  *   new partners as unconfirmed until they agree.
- * - Order: the five hubs first, then the other partners alphabetically. The
- *   asset file number (`NN-…`) matches each partner's slot in the full list,
- *   so gaps are partners with no logo file yet.
+ * - Order: the array order is the display order and the only source of truth
+ *   for it. GLOW first, then the five hubs, then the partners already live in
+ *   their original order (Bôndy International to University of Warwick), then
+ *   newer partners alphabetically by display name (Katala Foundation onwards).
+ *   Insert a new partner into that alphabetical tail; never reorder the
+ *   earlier groups.
+ * - The asset file number (`NN-…`) is the partner's slot in the full list, not
+ *   its display position, and does not control display order. Gaps are
+ *   partners with no logo file yet.
  * - Logos in `src/assets/partners/` are web copies of the design originals:
  *   background removed, trimmed, scaled to 192px tall, and saved as WebP.
  *   `width`/`height` are the file's own pixel size, so the browser reserves
@@ -69,7 +81,7 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
     listingConfirmed: true,
   },
   {
-    name: 'Indian Institute of Science Education and Research Kolkata (IISER Kolkata)',
+    name: 'Indian Institute of Science Education and Research Kolkata',
     logoUrl: iiserKolkataLogo,
     logoWidth: 175,
     logoHeight: 192,
@@ -114,6 +126,48 @@ export const FEATURED_PARTNERS: readonly Partner[] = [
     name: 'University of Warwick',
     logoUrl: warwickLogo,
     logoWidth: 642,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Katala Foundation',
+    logoUrl: katalaLogo,
+    logoWidth: 245,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Universidade do Estado do Rio de Janeiro',
+    logoUrl: uerjLogo,
+    logoWidth: 172,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Universitas Gadjah Mada',
+    logoUrl: ugmLogo,
+    logoWidth: 185,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Université Cheikh Anta Diop',
+    logoUrl: ucadLogo,
+    logoWidth: 202,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'Université Libre de Bruxelles',
+    logoUrl: ulbLogo,
+    logoWidth: 633,
+    logoHeight: 192,
+    listingConfirmed: true,
+  },
+  {
+    name: 'World Academy of Sustainable Development',
+    logoUrl: wasdLogo,
+    logoWidth: 190,
     logoHeight: 192,
     listingConfirmed: true,
   },
