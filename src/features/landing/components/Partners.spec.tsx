@@ -16,7 +16,7 @@ describe('Partners', () => {
         'Led by the Global Wetlands Project at Griffith University and the University of the Western Cape.',
       ),
     ).toBeVisible();
-    expect(section.getAllByRole('listitem')).toHaveLength(10);
+    expect(section.getAllByRole('listitem')).toHaveLength(14);
     // Every featured partner has confirmed, so each tile shows its logo.
     expect(
       section.getByText(/and more partners across 17 countries/i),
@@ -27,7 +27,7 @@ describe('Partners', () => {
     expect(seeAll).toHaveAccessibleDescription('Coming soon');
   });
 
-  it('shows the logos in the agreed order: hubs first, then alphabetical', () => {
+  it('shows the logos in the agreed order: GLOW, hubs, live partners, then newer partners alphabetically', () => {
     render(<Partners />);
 
     const logos = within(
@@ -46,6 +46,10 @@ describe('Partners', () => {
       'Nelson Mandela University',
       'Institute for Marine and Antarctic Studies, University of Tasmania',
       'University of Warwick',
+      'Katala Foundation',
+      'Universidade do Estado do Rio de Janeiro',
+      'Universitas Gadjah Mada',
+      'World Academy of Sustainable Development',
     ]);
     // Explicit size on every logo, so the strip doesn't shift as they load.
     for (const img of logos) {
